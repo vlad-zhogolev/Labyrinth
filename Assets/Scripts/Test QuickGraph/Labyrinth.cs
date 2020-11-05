@@ -32,6 +32,11 @@ public class Labyrinth : MonoBehaviour
         }  
     }
 
+    bool IsTileFixed(int i, int j)
+    {
+        return (i % 2 == 0) && (j % 2 == 0);
+    }
+
     void InitializeVertices()
     {
         // Corner fixed tiles
@@ -83,7 +88,7 @@ public class Labyrinth : MonoBehaviour
         {
             for (var j = 0; j < BoardLength; ++j)
             {
-                if (i % 2 == 0 && j % 2 == 0)
+                if (IsTileFixed(i, j))
                 {
                     continue;
                 }
@@ -117,6 +122,20 @@ public class Labyrinth : MonoBehaviour
         }
     }
 
+    void RotateTileRandomly(Tile tile)
+    {
+        if (tile == null)
+        {
+            return;
+        }
+
+        var rotationsNumber = rng.Next(4);
+        for (var k = 0; k < rotationsNumber; ++k)
+        {
+            tile.RotateCW();
+        }
+    }
+
     void Initialize()
     {
         InitializeVertices();
@@ -129,12 +148,11 @@ public class Labyrinth : MonoBehaviour
             for (var j = 0; j < m_vertices.GetLength(1); ++j)
             {
                 var tile = m_vertices[i, j].tile;
-                var rotationsNumber = rng.Next(4);
-                for (var k = 0; k < rotationsNumber; ++k)
-                {
-                    tile.RotateCW();
-                }
                 Transform prefab = GetPrefabByTileType(tile.type);
+                if (!IsTileFixed(i, j))
+                {
+                    RotateTileRandomly(tile);
+                }
                 var instance = Instantiate(prefab, new Vector3(x, 0, z), tile.GetRotation());
                 var scale = 0.9f;
                 instance.localScale = new Vector3(scale, scale, scale);
