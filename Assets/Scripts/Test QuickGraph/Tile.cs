@@ -5,6 +5,21 @@ namespace QuickGraphTest {
 
 public class Tile
 {
+    public enum Type
+    {
+        Straight,
+        Junction,
+        Turn
+    }
+
+    public enum Side
+    {
+        Up,
+        Down,
+        Right,
+        Left
+    }
+
     private static Tile[] CreateAvailableTiles()
     {
         Tile[] tiles = new Tile[Labyrinth.MovableTilesNumber];
@@ -29,12 +44,7 @@ public class Tile
         return tiles;
     }
     public static readonly Tile[] MovableTiles = CreateAvailableTiles();
-    public enum Type
-    {
-        Straight,
-        Junction,
-        Turn
-    }
+    
 
     public Tile(Type type)
     {
@@ -185,6 +195,33 @@ public class Tile
             default:
             {
                 throw new ArgumentException("Invalid tile type");
+            }
+        }
+    }
+
+    public bool IsConnected(Tile other, Side side)
+    {
+        switch (side)
+        {
+            case Side.Up:
+            {
+                return up && other.down;
+            }
+            case Side.Down:
+            {
+                return down && other.up;
+            }
+            case Side.Right:
+            {
+                return right && other.left;
+            }
+            case Side.Left:
+            {
+                return left && other.right;
+            }
+            default:
+            {
+                throw new ArgumentException("Invalid side type");
             }
         }
     }

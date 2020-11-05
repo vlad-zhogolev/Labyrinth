@@ -9,6 +9,14 @@ using QuickGraph.Algorithms;
 namespace QuickGraphTest {
 public class Labyrinth : MonoBehaviour
 {
+    public enum Side
+    {
+        Up,
+        Down,
+        Right,
+        Left
+    }
+
     public static readonly int BoardLength = 7;
     public static readonly int TilesNumber = 49;
     public static readonly int FixedTilesNumber = 16;
@@ -17,7 +25,7 @@ public class Labyrinth : MonoBehaviour
     public static readonly int MovableTurnTilesNumber = 15;
     public static readonly int MovableStraightTilesNumber = 13;
 
-    private static System.Random rng = new System.Random();  
+    private static System.Random rng = new System.Random();
 
     public static void Shuffle(int[] list)  
     {  
@@ -58,17 +66,17 @@ public class Labyrinth : MonoBehaviour
         {
             for (var j = 0; j < m_vertices.GetLength(1); ++j)
             {
-                m_vertices[i, j] = new Vertex();
+                m_vertices[i, j] = new Vertex(i, j);
             }
         }
 
         // Associate tile with each vertex
         // Corner fixed tiles
-        var turnTile = new Tile(Tile.Type.Turn).RotateCCW();
-        m_vertices[6, 0].tile = turnTile.Copy();
-        m_vertices[0, 0].tile = turnTile.Copy().RotateCW();
-        m_vertices[0, 6].tile = turnTile.Copy().RotateCW().RotateCW();
-        m_vertices[6, 6].tile = turnTile.Copy().RotateCCW();
+        var turnTile = new Tile(Tile.Type.Turn);
+        m_vertices[6, 0].tile = turnTile.Copy().RotateCCW();
+        m_vertices[0, 0].tile = turnTile.Copy();
+        m_vertices[0, 6].tile = turnTile.Copy().RotateCW();
+        m_vertices[6, 6].tile = turnTile.Copy().RotateCW().RotateCW();
 
         // Border fixed tiles
         var junctionTile = new Tile(Tile.Type.Junction);
@@ -171,8 +179,8 @@ public class Labyrinth : MonoBehaviour
             {
                 var tile = m_vertices[i, j].tile;
                 InstantiateTile(tile, x, z);
-                Debug.LogFormat("{0}: tile [{1}, {2}] type = {3}, rotation = {4}",
-                    GetType().Name, i, j, tile.type, tile.GetRotation());
+                //Debug.LogFormat("{0}: tile [{1}, {2}] type = {3}, rotation = {4}",
+                //    GetType().Name, i, j, tile.type, tile.GetRotation());
                 z -= step;
             }
             x -= step;
@@ -183,9 +191,74 @@ public class Labyrinth : MonoBehaviour
         InstantiateTile(m_freeTile, freeTileX, freeTileY);
     }
 
+    bool IsVertexIndexValid(int index)
+    {
+        return (0 <= index) && (index < BoardLength);
+    }
+
+    void AddEdges(Func<int, int, Tuple<Vertex, Vertex>> adjacentVerticesProvider, Tile.Side side)
+    {
+        for (var i = 0; i < BoardLength - 1; ++i)
+        {
+            for (var j = 0; j < BoardLength; ++j)
+            {
+                var adjacentVertices = adjacentVerticesProvider(i, j);
+                var firstVertex = adjacentVertices.Item1;
+                var secondVertex = adjacentVertices.Item2;
+                if (firstVertex.tile.IsConnected(secondVertex.tile, side))
+                {
+                    m_graph.AddEdge(new QuickGraph.Edge<Vertex>(firstVertex, secondVertex));
+                    m_graph.AddEdge(new QuickGraph.Edge<Vertex>(secondVertex, firstVertex));
+                }
+            }
+        }
+    }
+
+    void InitializeGraph()
+    {
+        for (var i = 0; i < BoardLength; ++i)
+        {
+            for (var j = 0; j < BoardLength; ++j)
+            {
+                m_graph.AddVertex(m_vertices[i, j]);
+            }
+        }
+
+        AddEdges(
+            (i, j) => { 
+                return new Tuple<Vertex, Vertex>(m_vertices[i, j], m_vertices[i + 1, j]);
+            },
+            Tile.Side.Up
+        );
+        AddEdges(
+            (i, j) => { 
+            return new Tuple<Vertex, Vertex>(m_vertices[j, i], m_vertices[j, i + 1]);
+            },
+            Tile.Side.Left
+        );
+
+        Func<Edge<Vertex>, double> distances = x => 1.0;
+        var source = m_vertices[0, 0];
+        var tryGetPath = m_graph.ShortestPathsDijkstra(distances, source);
+
+        foreach (var vertex in m_vertices)
+        {
+            IEnumerable<Edge<Vertex>> path;
+            if (tryGetPath(vertex, out path))
+            {
+                Debug.LogFormat("{0}: Shortest path from ({1}, {2}) to ({3}, {4})", GetType().Name, source.Row, source.Сolumn, vertex.Row, vertex.Сolumn);
+                foreach (var e in path)
+                {
+                    Debug.LogFormat("{0}: {1}, ({2}, {3})->({4}, {5})", GetType().Name, e, e.Source.Row, e.Source.Сolumn, e.Target.Row, e.Target.Сolumn);
+                }
+            }
+        }
+    }
+
     void Initialize()
     {
         InitializeVertices();
+        InitializeGraph();
         InstantiateLabyrinth();
     }
 
@@ -202,7 +275,7 @@ public class Labyrinth : MonoBehaviour
         
     }
 
-    public AdjacencyGraph<Vertex, Edge<Vertex>> m_graph = null;
+    public AdjacencyGraph<Vertex, Edge<Vertex>> m_graph = new AdjacencyGraph<Vertex, Edge<Vertex>>();
     public Vertex [,] m_vertices = new Vertex[BoardLength, BoardLength];
 
     public Tile m_freeTile = null;
