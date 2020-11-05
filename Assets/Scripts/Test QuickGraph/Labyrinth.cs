@@ -232,14 +232,18 @@ public class Labyrinth : MonoBehaviour
         );
         AddEdges(
             (i, j) => { 
-            return new Tuple<Vertex, Vertex>(m_vertices[j, i], m_vertices[j, i + 1]);
+                return new Tuple<Vertex, Vertex>(m_vertices[j, i], m_vertices[j, i + 1]);
             },
             Tile.Side.Left
         );
 
         Func<Edge<Vertex>, double> distances = x => 1.0;
         var source = m_vertices[0, 0];
+        var startTime = Time.realtimeSinceStartup;
         var tryGetPath = m_graph.ShortestPathsDijkstra(distances, source);
+        var endTime = Time.realtimeSinceStartup;
+
+        Debug.LogFormat("{0}: Time passed {1}", GetType().Name, endTime - startTime);
 
         foreach (var vertex in m_vertices)
         {
