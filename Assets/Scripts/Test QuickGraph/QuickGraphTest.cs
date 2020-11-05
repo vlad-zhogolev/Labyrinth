@@ -5,6 +5,7 @@ using UnityEngine;
 using QuickGraph;
 using QuickGraph.Algorithms;
 
+namespace QuickGraphTest { 
 public class QuickGraphTest : MonoBehaviour
 {
     // Start is called before the first frame update
@@ -16,17 +17,19 @@ public class QuickGraphTest : MonoBehaviour
             new Edge<int>(0, 1),
             new Edge<int>(1, 2),
             new Edge<int>(1, 3),
-            new Edge<int>(2, 3),
+            new Edge<int>(3, 1),
+            //new Edge<int>(2, 3),
             new Edge<int>(0, 2)
 
-
+            
         };
-        graph = edges.ToAdjacencyGraph<int, Edge<int>>();
 
+            //graph = edges.ToAdjacencyGraph<int, Edge<int>>();
+        graph = edges.ToBidirectionalGraph<int, Edge<int>>();
         Func<Edge<int>, double> distances = x => 1.0;
 
         // Find shortest path
-        var source = 0;
+        var source = 3;
         var target = 2;
 
         var tryGetPath = graph.ShortestPathsDijkstra(distances, source);
@@ -46,5 +49,7 @@ public class QuickGraphTest : MonoBehaviour
         
     }
 
-    public AdjacencyGraph<int, Edge<int>> graph = null;
+    public BidirectionalGraph<int, Edge<int>> graph = null;
 }
+
+} // namespace QuickGraphTest
