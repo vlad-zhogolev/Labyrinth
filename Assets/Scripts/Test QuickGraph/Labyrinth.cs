@@ -37,6 +37,20 @@ public class Labyrinth : MonoBehaviour
         return (i % 2 == 0) && (j % 2 == 0);
     }
 
+    void RotateTileRandomly(Tile tile)
+    {
+        if (tile == null)
+        {
+            return;
+        }
+
+        var rotationsNumber = rng.Next(4);
+        for (var k = 0; k < rotationsNumber; ++k)
+        {
+            tile.RotateCW();
+        }
+    }
+
     void InitializeVertices()
     {
         // Create vertices
@@ -104,9 +118,13 @@ public class Labyrinth : MonoBehaviour
                 }
 
                 m_vertices[i, j].tile = Tile.MovableTiles[range[counter]].Copy();
+                RotateTileRandomly( m_vertices[i, j].tile);
                 ++counter;
             }
         }
+
+        // Free tile
+        m_freeTile = Tile.MovableTiles[range[counter]].Copy();
     }
 
     private Transform GetPrefabByTileType(Tile.Type type)
@@ -132,18 +150,14 @@ public class Labyrinth : MonoBehaviour
         }
     }
 
-    void RotateTileRandomly(Tile tile)
+    Transform InstantiateTile(Tile tile, float x, float z)
     {
-        if (tile == null)
-        {
-            return;
-        }
+        Transform prefab = GetPrefabByTileType(tile.type);
+        var instance = Instantiate(prefab, new Vector3(x, 0, z), tile.GetRotation());
+        var scale = 0.9f;
+        instance.localScale = new Vector3(scale, scale, scale);
 
-        var rotationsNumber = rng.Next(4);
-        for (var k = 0; k < rotationsNumber; ++k)
-        {
-            tile.RotateCW();
-        }
+        return instance;
     }
 
     void InstantiateLabyrinth()
@@ -156,20 +170,17 @@ public class Labyrinth : MonoBehaviour
             for (var j = 0; j < m_vertices.GetLength(1); ++j)
             {
                 var tile = m_vertices[i, j].tile;
-                Transform prefab = GetPrefabByTileType(tile.type);
-                if (!IsTileFixed(i, j))
-                {
-                    RotateTileRandomly(tile);
-                }
-                var instance = Instantiate(prefab, new Vector3(x, 0, z), tile.GetRotation());
-                var scale = 0.9f;
-                instance.localScale = new Vector3(scale, scale, scale);
+                InstantiateTile(tile, x, z);
                 Debug.LogFormat("{0}: tile [{1}, {2}] type = {3}, rotation = {4}",
                     GetType().Name, i, j, tile.type, tile.GetRotation());
                 z -= step;
             }
             x -= step;
         }
+
+        var freeTileX = 5.0f;
+        var freeTileY = 5.0f;
+        InstantiateTile(m_freeTile, freeTileX, freeTileY);
     }
 
     void Initialize()
@@ -182,7 +193,6 @@ public class Labyrinth : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        
         Initialize();
     }
 
@@ -194,6 +204,8 @@ public class Labyrinth : MonoBehaviour
 
     public AdjacencyGraph<Vertex, Edge<Vertex>> m_graph = null;
     public Vertex [,] m_vertices = new Vertex[BoardLength, BoardLength];
+
+    public Tile m_freeTile = null;
 
     public Transform junctionTilePrefab;
     public Transform turnTilePrefab;
