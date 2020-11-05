@@ -131,6 +131,7 @@ GameObject:
   m_Component:
   - component: {fileID: 15432044}
   - component: {fileID: 15432043}
+  - component: {fileID: 15432045}
   m_Layer: 0
   m_Name: GameManager
   m_TagString: Untagged
@@ -145,7 +146,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 15432042}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: d020aa12f9d8fff4697a7caa5c886b63, type: 3}
   m_Name: 
@@ -164,6 +165,24 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 2
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &15432045
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 15432042}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5f6935747b9df6947992efc28fe64277, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  junctionTilePrefab: {fileID: -8679921383154817045, guid: 14f39f714ea2385499b46543287d2e80,
+    type: 3}
+  turnTilePrefab: {fileID: -8679921383154817045, guid: 59279e9981497984fbb7008b7bd3cf5c,
+    type: 3}
+  straightTilePrefab: {fileID: -8679921383154817045, guid: 3af1e725e4d11794a9bfebd5cf47d0ff,
+    type: 3}
 --- !u!1 &1176419304
 GameObject:
   m_ObjectHideFlags: 0
