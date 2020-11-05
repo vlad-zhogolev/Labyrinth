@@ -39,6 +39,16 @@ public class Labyrinth : MonoBehaviour
 
     void InitializeVertices()
     {
+        // Create vertices
+        for (var i = 0; i < m_vertices.GetLength(0); ++i)
+        {
+            for (var j = 0; j < m_vertices.GetLength(1); ++j)
+            {
+                m_vertices[i, j] = new Vertex();
+            }
+        }
+
+        // Associate tile with each vertex
         // Corner fixed tiles
         var turnTile = new Tile(Tile.Type.Turn).RotateCCW();
         m_vertices[6, 0].tile = turnTile.Copy();
@@ -82,7 +92,7 @@ public class Labyrinth : MonoBehaviour
         }
         Shuffle(range);
 
-        // Fill movable tiles
+        // Movable tiles
         var counter = 0;
         for (var i = 0; i < BoardLength; ++i)
         {
@@ -136,10 +146,8 @@ public class Labyrinth : MonoBehaviour
         }
     }
 
-    void Initialize()
+    void InstantiateLabyrinth()
     {
-        InitializeVertices();
-
         var x = 3.0f;
         var step = 1.0f;
         for (var i = 0; i < m_vertices.GetLength(0); ++i)
@@ -162,21 +170,19 @@ public class Labyrinth : MonoBehaviour
             }
             x -= step;
         }
+    }
 
-        
+    void Initialize()
+    {
+        InitializeVertices();
+        InstantiateLabyrinth();
     }
 
 
     // Start is called before the first frame update
     void Start()
     {
-        for (var i = 0; i < m_vertices.GetLength(0); ++i)
-        {
-            for (var j = 0; j < m_vertices.GetLength(1); ++j)
-            {
-                m_vertices[i, j] = new Vertex();
-            }
-        }
+        
         Initialize();
     }
 
