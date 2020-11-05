@@ -129,6 +129,11 @@ public class Labyrinth : MonoBehaviour
             for (var j = 0; j < m_vertices.GetLength(1); ++j)
             {
                 var tile = m_vertices[i, j].tile;
+                var rotationsNumber = rng.Next(4);
+                for (var k = 0; k < rotationsNumber; ++k)
+                {
+                    tile.RotateCW();
+                }
                 Transform prefab = GetPrefabByTileType(tile.type);
                 var instance = Instantiate(prefab, new Vector3(x, 0, z), tile.GetRotation());
                 var scale = 0.9f;
