@@ -52,17 +52,17 @@ public class Tile
         {
             case Type.Straight:
             {
-                left = true;
-                right = true;
-                down = false;
-                up = false;
+                left = false;
+                right = false;
+                down = true;
+                up = true;
             }
             break;
             case Type.Junction:
             {
                 left = true;
-                right = true;
-                down = false;
+                right = false;
+                down = true;
                 up = true;
             }
             break;
@@ -70,8 +70,8 @@ public class Tile
             {
                 left = true;
                 right = false;
-                down = false;
-                up = true;
+                down = true;
+                up = false;
             }
             break;
             default:
@@ -122,57 +122,57 @@ public class Tile
     {
         if (up)
         {
-            return Quaternion.Euler(0, 90, 0);
+            return Quaternion.identity;
         }
         else
         {
-            return Quaternion.identity;
+            return Quaternion.Euler(0, 90, 0);
         }
     }
 
     private Quaternion GetRotationForTurn()
     {
-        if (up)
+        if (down)
         {
             if (left)
             {
-                return Quaternion.identity;
+                return Quaternion.identity; 
             }
             else
             {
-                return Quaternion.Euler(0, 90, 0);
+                return Quaternion.Euler(0, -90, 0);
             }
         }
         else
         {
-            if (right)
+            if (left)
             {
-                return Quaternion.Euler(0, 180, 0);
+                return Quaternion.Euler(0, 90, 0);
             }
             else
             {
-                return Quaternion.Euler(0, 270, 0);
+                return Quaternion.Euler(0, 180, 0);
             }
         }
     }
 
     private Quaternion GetRotationForJunction()
     {
-        if (!down)
+        if (!right)
         {
             return Quaternion.identity;
         }
         else if (!left)
         {
-            return Quaternion.Euler(0, 90, 0);
+            return Quaternion.Euler(0, 180, 0);
         }
         else if (!up)
         {
-            return Quaternion.Euler(0, 180, 0);
+            return Quaternion.Euler(0, -90, 0);
         }
         else
         {
-            return Quaternion.Euler(0, 270, 0);
+            return Quaternion.Euler(0, 90, 0);
         }
     }
 

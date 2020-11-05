@@ -73,13 +73,13 @@ public class Labyrinth : MonoBehaviour
         // Associate tile with each vertex
         // Corner fixed tiles
         var turnTile = new Tile(Tile.Type.Turn);
-        m_vertices[6, 0].tile = turnTile.Copy().RotateCCW();
-        m_vertices[0, 0].tile = turnTile.Copy();
-        m_vertices[0, 6].tile = turnTile.Copy().RotateCW();
-        m_vertices[6, 6].tile = turnTile.Copy().RotateCW().RotateCW();
+        m_vertices[0, 0].tile = turnTile.Copy().RotateCCW();
+        m_vertices[6, 0].tile = turnTile.Copy().RotateCW().RotateCW();
+        m_vertices[6, 6].tile = turnTile.Copy().RotateCW();
+        m_vertices[0, 6].tile = turnTile.Copy();
 
         // Border fixed tiles
-        var junctionTile = new Tile(Tile.Type.Junction);
+        var junctionTile = new Tile(Tile.Type.Junction).RotateCCW();
         m_vertices[0, 2].tile = junctionTile.Copy();
         m_vertices[0, 4].tile = junctionTile.Copy();
         
@@ -162,28 +162,27 @@ public class Labyrinth : MonoBehaviour
     {
         Transform prefab = GetPrefabByTileType(tile.type);
         var instance = Instantiate(prefab, new Vector3(x, 0, z), tile.GetRotation());
-        var scale = 0.9f;
-        instance.localScale = new Vector3(scale, scale, scale);
+        instance.localScale = new Vector3(m_tileScale, m_tileScale, m_tileScale);
 
         return instance;
     }
 
     void InstantiateLabyrinth()
     {
-        var x = 3.0f;
+        var z = 3.0f;
         var step = 1.0f;
-        for (var i = 0; i < m_vertices.GetLength(0); ++i)
+        for (var i = 0; i < BoardLength; ++i)
         {
-            var z = 3.0f;
-            for (var j = 0; j < m_vertices.GetLength(1); ++j)
+            var x = -3.0f;
+            for (var j = 0; j < BoardLength; ++j)
             {
                 var tile = m_vertices[i, j].tile;
                 InstantiateTile(tile, x, z);
-                //Debug.LogFormat("{0}: tile [{1}, {2}] type = {3}, rotation = {4}",
-                //    GetType().Name, i, j, tile.type, tile.GetRotation());
-                z -= step;
+                Debug.LogFormat("{0}: tile [{1}, {2}] type = {3}, rotation = {4}",
+                    GetType().Name, i, j, tile.type, tile.GetRotation());
+                x += step;
             }
-            x -= step;
+            z -= step;
         }
 
         var freeTileX = 5.0f;
@@ -228,19 +227,18 @@ public class Labyrinth : MonoBehaviour
             (i, j) => { 
                 return new Tuple<Vertex, Vertex>(m_vertices[i, j], m_vertices[i + 1, j]);
             },
-            Tile.Side.Up
+            Tile.Side.Down
         );
         AddEdges(
             (i, j) => { 
                 return new Tuple<Vertex, Vertex>(m_vertices[j, i], m_vertices[j, i + 1]);
             },
-            Tile.Side.Left
+            Tile.Side.Right
         );
 
-        Func<Edge<Vertex>, double> distances = x => 1.0;
         var source = m_vertices[0, 0];
         var startTime = Time.realtimeSinceStartup;
-        var tryGetPath = m_graph.ShortestPathsDijkstra(distances, source);
+        var tryGetPath = m_graph.ShortestPathsDijkstra(distance => 1.0, source);
         var endTime = Time.realtimeSinceStartup;
 
         Debug.LogFormat("{0}: Time passed {1}", GetType().Name, endTime - startTime);
@@ -283,6 +281,8 @@ public class Labyrinth : MonoBehaviour
     public Vertex [,] m_vertices = new Vertex[BoardLength, BoardLength];
 
     public Tile m_freeTile = null;
+
+    public float m_tileScale = 0.9f;
 
     public Transform junctionTilePrefab;
     public Transform turnTilePrefab;
