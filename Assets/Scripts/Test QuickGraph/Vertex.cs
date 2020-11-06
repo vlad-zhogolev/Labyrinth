@@ -31,6 +31,11 @@ public class Vertex : IEquatable<Vertex>
 
         return (Row == other.Row) && (Column == other.Column);
     }
+
+    public override string ToString()
+    {
+        return string.Format("({0}, {1})", Row, Column);
+    }
 }
 
 } // namespace QuickGraphTest

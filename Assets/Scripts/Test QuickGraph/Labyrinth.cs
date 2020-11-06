@@ -16,8 +16,10 @@ public class Labyrinth : MonoBehaviour
     public static readonly int MovableJunctionTilesNumber = 6;
     public static readonly int MovableTurnTilesNumber = 15;
     public static readonly int MovableStraightTilesNumber = 13;
+    public static readonly int TileSidesNumber = 4;
 
-    private static System.Random rng = new System.Random();
+    private static System.Random TilePositionRandomizer = new System.Random(4);
+    private static System.Random TileRotationRandomizer = new System.Random(0);
 
     public static void Shuffle(int[] list)  
     {  
@@ -25,7 +27,7 @@ public class Labyrinth : MonoBehaviour
         while (n > 1)
         {  
             n--;  
-            int k = rng.Next(n + 1);
+            int k = TilePositionRandomizer.Next(n + 1);
             int value = list[k];  
             list[k] = list[n];  
             list[n] = value;  
@@ -44,7 +46,7 @@ public class Labyrinth : MonoBehaviour
             return;
         }
 
-        var rotationsNumber = rng.Next(4);
+        var rotationsNumber = TileRotationRandomizer.Next(TileSidesNumber);
         for (var k = 0; k < rotationsNumber; ++k)
         {
             tile.RotateCW();
@@ -199,7 +201,7 @@ public class Labyrinth : MonoBehaviour
                 var secondVertex = adjacentVertices.Item2;
                 if (firstVertex.tile.IsConnected(secondVertex.tile, side))
                 {
-                    m_graph.AddEdge(new QuickGraphTest.UndirectedEdge<Vertex>(firstVertex, secondVertex));
+                    m_graph.AddEdge(new QuickGraph.SEquatableUndirectedEdge<Vertex>(firstVertex, secondVertex));
                     //m_graph.AddEdge(new QuickGraph.Edge<Vertex>(secondVertex, firstVertex));
                 }
             }
@@ -238,9 +240,19 @@ public class Labyrinth : MonoBehaviour
         //    m_graph.RemoveEdge(edge);
         //}
 
-        var res = m_graph.AddEdge(new QuickGraphTest.UndirectedEdge<Vertex>(m_vertices[0, 0], m_vertices[1, 0]));
+        if (m_graph.ContainsEdge(new QuickGraph.SEquatableUndirectedEdge<Vertex>(m_vertices[0, 0], m_vertices[1, 0])))
+        {
+            Debug.LogFormat("{0}: graph contains edge (0, 0) <-> (1, 0)", GetType().Name);
+        }
 
-        res = m_graph.RemoveEdge(new QuickGraphTest.UndirectedEdge<Vertex>(m_vertices[0, 0], m_vertices[1, 0]));
+        var res1 = m_graph.AddEdge(new QuickGraph.SEquatableUndirectedEdge<Vertex>(m_vertices[0, 0], m_vertices[1, 0]));
+
+        var res2 = m_graph.RemoveEdge(new QuickGraph.SEquatableUndirectedEdge<Vertex>(m_vertices[0, 0], m_vertices[1, 0]));
+
+        foreach (var e in m_graph.AdjacentEdges(m_vertices[0,0]))
+        {
+            Debug.LogFormat("{0}: edge = {1}", GetType().Name, e);
+        }
 
         //var first = new Edge<Vertex>(m_vertices[0, 0], m_vertices[1, 0]);
         //var second = new Edge<Vertex>(m_vertices[0, 0], m_vertices[1, 0]);
@@ -253,7 +265,6 @@ public class Labyrinth : MonoBehaviour
         //    m_graph.RemoveEdge(edge);
         //}
         
-        QuickGraph.SEquatableUndirectedEdge
         var source = m_vertices[0, 0];
         var startTime = Time.realtimeSinceStartup;
         var tryGetPath = m_graph.ShortestPathsDijkstra(distance => 1.0, source);
@@ -263,7 +274,7 @@ public class Labyrinth : MonoBehaviour
 
         foreach (var vertex in m_vertices)
         {
-            IEnumerable<QuickGraphTest.UndirectedEdge<Vertex>> path;
+            IEnumerable<QuickGraph.SEquatableUndirectedEdge<Vertex>> path;
             if (tryGetPath(vertex, out path))
             {
                 Debug.LogFormat("{0}: Shortest path from ({1}, {2}) to ({3}, {4})", GetType().Name, source.Row, source.Column, vertex.Row, vertex.Column);
@@ -291,7 +302,7 @@ public class Labyrinth : MonoBehaviour
             var vertices = adjacentVerticesProvider(i);
             var firstVertex = vertices.Item1;
             var secondVertex = vertices.Item2;
-            m_graph.RemoveEdge(new QuickGraphTest.UndirectedEdge<Vertex>(firstVertex, secondVertex));
+            m_graph.RemoveEdge(new QuickGraph.SEquatableUndirectedEdge<Vertex>(firstVertex, secondVertex));
         }
     }
 
@@ -328,7 +339,7 @@ public class Labyrinth : MonoBehaviour
             var secondVertex = m_vertices[neighbourLine, i];
             if (firstVertex.tile.IsConnected(secondVertex.tile, side))
             {
-                m_graph.AddEdge(new QuickGraphTest.UndirectedEdge<Vertex>(firstVertex, secondVertex));
+                m_graph.AddEdge(new QuickGraph.SEquatableUndirectedEdge<Vertex>(firstVertex, secondVertex));
                 //m_graph.AddEdge(new QuickGraph.Edge<Vertex>(secondVertex, firstVertex));
             }
         }
@@ -393,8 +404,8 @@ public class Labyrinth : MonoBehaviour
         
     }
 
-    public QuickGraph.UndirectedGraph<Vertex, QuickGraphTest.UndirectedEdge<Vertex>> m_graph =
-        new QuickGraph.UndirectedGraph<Vertex, QuickGraphTest.UndirectedEdge<Vertex>>();
+    public QuickGraph.UndirectedGraph<Vertex, QuickGraph.SEquatableUndirectedEdge<Vertex>> m_graph =
+        new QuickGraph.UndirectedGraph<Vertex, QuickGraph.SEquatableUndirectedEdge<Vertex>>(false);
     public Vertex [,] m_vertices = new Vertex[BoardLength, BoardLength];
 
     public Tile m_freeTile = null;
