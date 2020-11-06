@@ -8,32 +8,92 @@ using QuickGraph.Algorithms;
 namespace QuickGraphTest { 
 public class QuickGraphTest : MonoBehaviour
 {
+    class Dummy
+    {
+        public Dummy(int n)
+        {
+            num = n;
+        }
+        public int num;
+    }
+
+    class MyUndirectedEdge<TVertex> : UndirectedEdge<TVertex>, IEquatable<MyUndirectedEdge<TVertex>>
+    {
+        public MyUndirectedEdge(TVertex source, TVertex target) : base(source, target) {}
+
+        public bool Equals(MyUndirectedEdge<TVertex> other)
+        {
+            if (this == other)
+            {
+                return true;
+            }
+
+            return (Source.Equals(other.Source) && Target.Equals(other.Target)) ||
+                   (Source.Equals(other.Target) && Target.Equals(other.Source));
+        }
+    }
+
+    void DictinaryTest()
+    {
+       var dict = new  Dictionary<Dummy, UndirectedEdge<Dummy>>();
+       dict.Add(new Dummy(0), new MyUndirectedEdge<Dummy>(new Dummy(0), new Dummy(1)));
+
+       var first = new Dummy(0);
+       var second = new Dummy(1);
+
+       var list = new List<MyUndirectedEdge<Dummy>>();
+       list.Add(new MyUndirectedEdge<Dummy>(first, second));
+
+       list.Remove(new MyUndirectedEdge<Dummy>(first, second));
+
+       dict.Remove(new Dummy(0));
+
+       int i = 0;
+
+       var stringDict = new Dictionary<string, Dummy>();
+       stringDict.Add("hell", new Dummy(0));
+       stringDict.Remove("hell");
+
+       int j = 0;
+    }
     // Start is called before the first frame update
     void Start()
     {
+        DictinaryTest();
+        var edge = new UndirectedEdge<int>(1, 3);
         // Create graph
-        var edges = new Edge<int>[]
+        var edges = new UndirectedEdge<int>[]
         {
-            new Edge<int>(0, 1),
-            new Edge<int>(1, 2),
-            new Edge<int>(1, 3),
-            new Edge<int>(3, 1),
+            new UndirectedEdge<int>(0, 1),
+            new UndirectedEdge<int>(1, 2),
+            edge,
+            new UndirectedEdge<int>(3, 1),
             //new Edge<int>(2, 3),
-            new Edge<int>(0, 2)
+            new UndirectedEdge<int>(0, 2)
 
             
         };
 
+        
+
             //graph = edges.ToAdjacencyGraph<int, Edge<int>>();
-        graph = edges.ToBidirectionalGraph<int, Edge<int>>();
-        Func<Edge<int>, double> distances = x => 1.0;
+        graph = edges.ToUndirectedGraph<int, UndirectedEdge<int>>();
+
+        //var comparer = graph.EdgeEqualityComparer;
+        // var re2 = comparer(edge, 1, 3);
+        //var res1 = graph.RemoveEdge(new UndirectedEdge<int>(1, 2));
+        UndirectedEdge<int> edgeres;
+        var result = graph.TryGetEdge(1, 2, out edgeres);
+        var res = graph.RemoveEdge(edgeres);
+
+        Func<UndirectedEdge<int>, double> distances = x => 1.0;
 
         // Find shortest path
         var source = 3;
         var target = 2;
 
         var tryGetPath = graph.ShortestPathsDijkstra(distances, source);
-        IEnumerable<Edge<int>> path;
+        IEnumerable<UndirectedEdge<int>> path;
         if (tryGetPath(target, out path))
         {
             foreach (var e in path)
@@ -49,7 +109,7 @@ public class QuickGraphTest : MonoBehaviour
         
     }
 
-    public BidirectionalGraph<int, Edge<int>> graph = null;
+    public UndirectedGraph<int, UndirectedEdge<int>> graph = null;
 }
 
 } // namespace QuickGraphTest

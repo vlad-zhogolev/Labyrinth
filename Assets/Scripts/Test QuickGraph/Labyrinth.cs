@@ -9,14 +9,6 @@ using QuickGraph.Algorithms;
 namespace QuickGraphTest {
 public class Labyrinth : MonoBehaviour
 {
-    public enum Side
-    {
-        Up,
-        Down,
-        Right,
-        Left
-    }
-
     public static readonly int BoardLength = 7;
     public static readonly int TilesNumber = 49;
     public static readonly int FixedTilesNumber = 16;
@@ -177,7 +169,8 @@ public class Labyrinth : MonoBehaviour
             for (var j = 0; j < BoardLength; ++j)
             {
                 var tile = m_vertices[i, j].tile;
-                InstantiateTile(tile, x, z);
+                m_vertices[i, j].TileInstance = InstantiateTile(tile, x, z);
+
                 Debug.LogFormat("{0}: tile [{1}, {2}] type = {3}, rotation = {4}",
                     GetType().Name, i, j, tile.type, tile.GetRotation());
                 x += step;
@@ -236,6 +229,27 @@ public class Labyrinth : MonoBehaviour
             Tile.Side.Right
         );
 
+        //var shift = new Shift(Shift.Orientation.Horizontal, Shift.Direction.Positive, 1);
+        //UpdateGraphForShift(shift, m_freeTile);
+        Edge<Vertex> edge;
+        var result = m_graph.TryGetEdge(m_vertices[0, 0], m_vertices[1, 0], out edge);
+        if (edge != null)
+        {
+            m_graph.RemoveEdge(edge);
+        }
+
+        var first = new Edge<Vertex>(m_vertices[0, 0], m_vertices[1, 0]);
+        var second = new Edge<Vertex>(m_vertices[0, 0], m_vertices[1, 0]);
+
+        var equal = first == second;
+
+        //result = m_graph.TryGetEdge(m_vertices[0, 0], m_vertices[0, 1], out edge);
+        //if (edge != null)
+        //{
+        //    m_graph.RemoveEdge(edge);
+        //}
+        
+        
         var source = m_vertices[0, 0];
         var startTime = Time.realtimeSinceStartup;
         var tryGetPath = m_graph.ShortestPathsDijkstra(distance => 1.0, source);
@@ -248,13 +262,15 @@ public class Labyrinth : MonoBehaviour
             IEnumerable<Edge<Vertex>> path;
             if (tryGetPath(vertex, out path))
             {
-                Debug.LogFormat("{0}: Shortest path from ({1}, {2}) to ({3}, {4})", GetType().Name, source.Row, source.Сolumn, vertex.Row, vertex.Сolumn);
+                Debug.LogFormat("{0}: Shortest path from ({1}, {2}) to ({3}, {4})", GetType().Name, source.Row, source.Column, vertex.Row, vertex.Column);
                 foreach (var e in path)
                 {
-                    Debug.LogFormat("{0}: {1}, ({2}, {3})->({4}, {5})", GetType().Name, e, e.Source.Row, e.Source.Сolumn, e.Target.Row, e.Target.Сolumn);
+                    Debug.LogFormat("{0}: {1}, ({2}, {3})->({4}, {5})", GetType().Name, e, e.Source.Row, e.Source.Column, e.Target.Row, e.Target.Column);
                 }
             }
         }
+
+        
     }
 
     void Initialize()
@@ -264,6 +280,102 @@ public class Labyrinth : MonoBehaviour
         InstantiateLabyrinth();
     }
 
+    void RemoveEdges(Func<int, Tuple<Vertex, Vertex>> adjacentVerticesProvider)
+    {
+        for (var i = 0; i < BoardLength; ++i)
+        {
+            var vertices = adjacentVerticesProvider(i);
+            var firstVertex = vertices.Item1;
+            var secondVertex = vertices.Item2;
+            m_graph.RemoveEdge(new Edge<Vertex>(firstVertex, secondVertex));
+        }
+    }
+
+    void AddEdges(int line, int neighbourLine, Shift.Orientation orientation)
+    {
+        Tile.Side side;
+        var isLineBefore = line < neighbourLine;
+        if (orientation == Shift.Orientation.Horizontal)
+        {
+            if (isLineBefore)
+            {
+                side = Tile.Side.Up;
+            }
+            else
+            {
+                side = Tile.Side.Down;
+            }
+        }
+        else
+        {
+            if (isLineBefore)
+            {
+                side = Tile.Side.Right;
+            }
+            else
+            {
+                side = Tile.Side.Left;
+            }
+        }
+
+        for (var i = 0; i < BoardLength; ++i)
+        {
+            var firstVertex = m_vertices[line, i];
+            var secondVertex = m_vertices[neighbourLine, i];
+            if (firstVertex.tile.IsConnected(secondVertex.tile, side))
+            {
+                m_graph.AddEdge(new QuickGraph.Edge<Vertex>(firstVertex, secondVertex));
+                m_graph.AddEdge(new QuickGraph.Edge<Vertex>(secondVertex, firstVertex));
+            }
+        }
+    }
+
+    void UpdateGraphForShift(Shift shift, Tile insertedTile)
+    {
+        var line = shift.index;
+        Func<int, Tuple<Vertex, Vertex>> vertexProviderPreviousLine;
+        Func<int, Tuple<Vertex, Vertex>> vertexProviderNextLine;
+        switch (shift.orientation)
+        {
+            case Shift.Orientation.Horizontal:
+            {
+                vertexProviderPreviousLine = (i) => { 
+                    return new Tuple<Vertex, Vertex>(m_vertices[line, i], m_vertices[line - 1, i]);
+                };
+                vertexProviderNextLine = (i) => { 
+                    return new Tuple<Vertex, Vertex>(m_vertices[line, i], m_vertices[line + 1, i]);
+                };
+            }
+            break;
+            case Shift.Orientation.Vertical:
+            {
+                vertexProviderPreviousLine = (i) => { 
+                    return new Tuple<Vertex, Vertex>(m_vertices[i, line], m_vertices[i, line - 1]);
+                };
+                vertexProviderNextLine = (i) => { 
+                    return new Tuple<Vertex, Vertex>(m_vertices[i, line], m_vertices[i, line + 1]);
+                };
+            }
+            break;
+            default:
+            {
+                throw new ArgumentException("Invalid orientation");
+            }
+        }
+        
+        RemoveEdges(vertexProviderPreviousLine);
+        RemoveEdges(vertexProviderNextLine);
+    }
+
+    void ShiftTilesInScene(Shift shift, Tile insertedTile)
+    {
+
+    }
+
+    public void ShiftTiles(Shift shift, Tile insertedTile)
+    {
+        
+    }
 
     // Start is called before the first frame update
     void Start()
