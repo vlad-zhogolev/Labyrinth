@@ -1,7 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using QuickGraph;
+//using QuickGraph;
 using System.Linq;
 using System;
 using QuickGraph.Algorithms;
@@ -199,8 +199,8 @@ public class Labyrinth : MonoBehaviour
                 var secondVertex = adjacentVertices.Item2;
                 if (firstVertex.tile.IsConnected(secondVertex.tile, side))
                 {
-                    m_graph.AddEdge(new QuickGraph.Edge<Vertex>(firstVertex, secondVertex));
-                    m_graph.AddEdge(new QuickGraph.Edge<Vertex>(secondVertex, firstVertex));
+                    m_graph.AddEdge(new QuickGraphTest.UndirectedEdge<Vertex>(firstVertex, secondVertex));
+                    //m_graph.AddEdge(new QuickGraph.Edge<Vertex>(secondVertex, firstVertex));
                 }
             }
         }
@@ -231,17 +231,21 @@ public class Labyrinth : MonoBehaviour
 
         //var shift = new Shift(Shift.Orientation.Horizontal, Shift.Direction.Positive, 1);
         //UpdateGraphForShift(shift, m_freeTile);
-        Edge<Vertex> edge;
-        var result = m_graph.TryGetEdge(m_vertices[0, 0], m_vertices[1, 0], out edge);
-        if (edge != null)
-        {
-            m_graph.RemoveEdge(edge);
-        }
+        //Edge<Vertex> edge;
+        //var result = m_graph.TryGetEdge(m_vertices[0, 0], m_vertices[1, 0], out edge);
+        //if (edge != null)
+        //{
+        //    m_graph.RemoveEdge(edge);
+        //}
 
-        var first = new Edge<Vertex>(m_vertices[0, 0], m_vertices[1, 0]);
-        var second = new Edge<Vertex>(m_vertices[0, 0], m_vertices[1, 0]);
+        var res = m_graph.AddEdge(new QuickGraphTest.UndirectedEdge<Vertex>(m_vertices[0, 0], m_vertices[1, 0]));
 
-        var equal = first == second;
+        res = m_graph.RemoveEdge(new QuickGraphTest.UndirectedEdge<Vertex>(m_vertices[0, 0], m_vertices[1, 0]));
+
+        //var first = new Edge<Vertex>(m_vertices[0, 0], m_vertices[1, 0]);
+        //var second = new Edge<Vertex>(m_vertices[0, 0], m_vertices[1, 0]);
+
+        //var equal = first == second;
 
         //result = m_graph.TryGetEdge(m_vertices[0, 0], m_vertices[0, 1], out edge);
         //if (edge != null)
@@ -249,7 +253,7 @@ public class Labyrinth : MonoBehaviour
         //    m_graph.RemoveEdge(edge);
         //}
         
-        
+        QuickGraph.SEquatableUndirectedEdge
         var source = m_vertices[0, 0];
         var startTime = Time.realtimeSinceStartup;
         var tryGetPath = m_graph.ShortestPathsDijkstra(distance => 1.0, source);
@@ -259,7 +263,7 @@ public class Labyrinth : MonoBehaviour
 
         foreach (var vertex in m_vertices)
         {
-            IEnumerable<Edge<Vertex>> path;
+            IEnumerable<QuickGraphTest.UndirectedEdge<Vertex>> path;
             if (tryGetPath(vertex, out path))
             {
                 Debug.LogFormat("{0}: Shortest path from ({1}, {2}) to ({3}, {4})", GetType().Name, source.Row, source.Column, vertex.Row, vertex.Column);
@@ -287,7 +291,7 @@ public class Labyrinth : MonoBehaviour
             var vertices = adjacentVerticesProvider(i);
             var firstVertex = vertices.Item1;
             var secondVertex = vertices.Item2;
-            m_graph.RemoveEdge(new Edge<Vertex>(firstVertex, secondVertex));
+            m_graph.RemoveEdge(new QuickGraphTest.UndirectedEdge<Vertex>(firstVertex, secondVertex));
         }
     }
 
@@ -324,8 +328,8 @@ public class Labyrinth : MonoBehaviour
             var secondVertex = m_vertices[neighbourLine, i];
             if (firstVertex.tile.IsConnected(secondVertex.tile, side))
             {
-                m_graph.AddEdge(new QuickGraph.Edge<Vertex>(firstVertex, secondVertex));
-                m_graph.AddEdge(new QuickGraph.Edge<Vertex>(secondVertex, firstVertex));
+                m_graph.AddEdge(new QuickGraphTest.UndirectedEdge<Vertex>(firstVertex, secondVertex));
+                //m_graph.AddEdge(new QuickGraph.Edge<Vertex>(secondVertex, firstVertex));
             }
         }
     }
@@ -389,7 +393,8 @@ public class Labyrinth : MonoBehaviour
         
     }
 
-    public AdjacencyGraph<Vertex, Edge<Vertex>> m_graph = new AdjacencyGraph<Vertex, Edge<Vertex>>();
+    public QuickGraph.UndirectedGraph<Vertex, QuickGraphTest.UndirectedEdge<Vertex>> m_graph =
+        new QuickGraph.UndirectedGraph<Vertex, QuickGraphTest.UndirectedEdge<Vertex>>();
     public Vertex [,] m_vertices = new Vertex[BoardLength, BoardLength];
 
     public Tile m_freeTile = null;

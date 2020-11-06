@@ -6,7 +6,7 @@ using QuickGraph;
 using QuickGraph.Algorithms;
 
 namespace QuickGraphTest { 
-public class QuickGraphTest : MonoBehaviour
+public class QuickGraphPlayground : MonoBehaviour
 {
     class Dummy
     {
@@ -56,6 +56,9 @@ public class QuickGraphTest : MonoBehaviour
 
        int j = 0;
     }
+
+   
+
     // Start is called before the first frame update
     void Start()
     {
