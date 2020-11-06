@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace QuickGraphTest {
@@ -19,6 +20,13 @@ public class Tile
         Right,
         Left
     }
+
+    public static HashSet<Side> AllSides = new HashSet<Side>{
+        Side.Up,
+        Side.Down,
+        Side.Right,
+        Side.Left
+    };
 
     private static Tile[] CreateAvailableTiles()
     {
