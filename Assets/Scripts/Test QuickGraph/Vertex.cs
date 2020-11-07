@@ -3,7 +3,7 @@ using System;
 
 namespace QuickGraphTest {
 
-public class Vertex : IEquatable<Vertex>, IComparable<Vertex>
+class Vertex : IEquatable<Vertex>, IComparable<Vertex>
 {
     public Vertex(int row, int column)
     {

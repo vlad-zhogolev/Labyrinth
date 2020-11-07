@@ -4,7 +4,7 @@ using UnityEngine;
 
 namespace QuickGraphTest {
 
-public class Tile
+class Tile
 {
     public enum Type
     {

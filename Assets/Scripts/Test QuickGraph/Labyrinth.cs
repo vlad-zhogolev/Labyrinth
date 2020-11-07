@@ -4,7 +4,9 @@ using UnityEngine;
 //using QuickGraph;
 using System.Linq;
 using System;
-using QuickGraph.Algorithms;
+//using QuickGraph.Algorithms;
+using QuikGraph;
+using QuikGraph.Algorithms;
 
 namespace QuickGraphTest {
 public class Labyrinth : MonoBehaviour
@@ -20,6 +22,24 @@ public class Labyrinth : MonoBehaviour
 
     private static System.Random TilePositionRandomizer = new System.Random(4);
     private static System.Random TileRotationRandomizer = new System.Random(0);
+
+
+    static QuikGraph.EquatableUndirectedEdge<Vertex> CreateEdge(Vertex first, Vertex second)
+    {
+        if (first.CompareTo(second) > 0)
+        {
+            return new QuikGraph.EquatableUndirectedEdge<Vertex>(second, first);
+        }
+        else
+        {
+            return new QuikGraph.EquatableUndirectedEdge<Vertex>(first, second);
+        }
+    }
+
+    static QuikGraph.UndirectedEdge<Vertex> CreateEdge(int x1, int y1, int x2, int y2)
+    {
+        return CreateEdge(new Vertex(x1, y1), new Vertex(x2, y2));
+    }
 
     public static void Shuffle(int[] list)  
     {  
@@ -120,7 +140,7 @@ public class Labyrinth : MonoBehaviour
                 }
 
                 m_vertices[i, j].tile = Tile.MovableTiles[range[counter]].Copy();
-                RotateTileRandomly( m_vertices[i, j].tile);
+                RotateTileRandomly(m_vertices[i, j].tile);
                 ++counter;
             }
         }
@@ -201,7 +221,7 @@ public class Labyrinth : MonoBehaviour
                 var secondVertex = adjacentVertices.Item2;
                 if (firstVertex.tile.IsConnected(secondVertex.tile, side))
                 {
-                    m_graph.AddEdge(new QuickGraph.SEquatableUndirectedEdge<Vertex>(firstVertex, secondVertex));
+                    m_graph.AddEdge(CreateEdge(firstVertex, secondVertex));
                 }
             }
         }
@@ -236,8 +256,8 @@ public class Labyrinth : MonoBehaviour
             Debug.LogFormat("{0}: edge {1}", GetType().Name, edge);
         }
         
-        Debug.Log("Check1 " + m_graph.ContainsEdge(new QuickGraph.SEquatableUndirectedEdge<Vertex>(m_vertices[0, 0], m_vertices[1, 0])));
-        Debug.Log("Check2 " + m_graph.ContainsEdge(new QuickGraph.SEquatableUndirectedEdge<Vertex>(m_vertices[1, 0], m_vertices[0, 0])));
+        Debug.Log("Check1 " + m_graph.ContainsEdge(CreateEdge(m_vertices[0, 0], m_vertices[1, 0])));
+        Debug.Log("Check2 " + m_graph.ContainsEdge(CreateEdge(m_vertices[1, 0], m_vertices[0, 0])));
 
         //QuickGraph.SEquatableUndirectedEdge<Vertex> edge;
         //var result = m_graph.TryGetEdge(m_vertices[0, 0], m_vertices[1, 0], out edge);
@@ -252,18 +272,14 @@ public class Labyrinth : MonoBehaviour
 
         foreach (var vertex in m_vertices)
         {
-            IEnumerable<QuickGraph.SEquatableUndirectedEdge<Vertex>> path;
+            IEnumerable<QuikGraph.EquatableUndirectedEdge<Vertex>> path;
             if (tryGetPath(vertex, out path))
             {
-                Debug.LogFormat("{0}: Shortest path from ({1}, {2}) to ({3}, {4})", GetType().Name, source.Row, source.Column, vertex.Row, vertex.Column);
-                foreach (var e in path)
-                {
-                    Debug.LogFormat("{0}: {1})", GetType().Name, e);
-                }
+                var logPath = path.Aggregate(string.Empty, (log, edge) => log + ":" + edge.ToString());
+                Debug.LogFormat("{0}: Shortest path from {1} to {2} is: {3}", GetType().Name, source, vertex, logPath);
             }
         }
 
-        //UpdateGraphForShift(new Shift(Shift.Orientation.Horizontal, Shift.Direction.Positive, 1));
     }
 
     void Initialize()
@@ -271,6 +287,8 @@ public class Labyrinth : MonoBehaviour
         InitializeVertices();
         InitializeGraph();
         InstantiateLabyrinth();
+
+        UpdateGraphForShift(new Shift(Shift.Orientation.Horizontal, Shift.Direction.Positive, 1));
     }
 
     void RemoveEdges(Func<int, Tuple<Vertex, Vertex>> adjacentVerticesProvider)
@@ -281,7 +299,7 @@ public class Labyrinth : MonoBehaviour
             var firstVertex = vertices.Item1;
             var secondVertex = vertices.Item2;
 
-            var edge = new QuickGraph.SEquatableUndirectedEdge<Vertex>(firstVertex, secondVertex);
+            var edge = CreateEdge(firstVertex, secondVertex);
             var contained = m_graph.ContainsEdge(edge);
             var hasRemoved = m_graph.RemoveEdge(edge);
 
@@ -338,7 +356,7 @@ public class Labyrinth : MonoBehaviour
             var vertices = adjacentVerticesProvider(i);
             var firstVertex = vertices.Item1;
             var secondVertex = vertices.Item2;
-            m_graph.AddEdge(new QuickGraph.SEquatableUndirectedEdge<Vertex>(firstVertex, secondVertex));
+            m_graph.AddEdge(CreateEdge(firstVertex, secondVertex));
         }
     }
 
@@ -367,7 +385,7 @@ public class Labyrinth : MonoBehaviour
         var otherVertex = m_vertices[indices.x, indices.y];
         if (vertex.IsConnected(otherVertex))
         {
-            m_graph.AddEdge(new QuickGraph.SEquatableUndirectedEdge<Vertex>(vertex, otherVertex));
+            m_graph.AddEdge(CreateEdge(vertex, otherVertex));
         }
     }
 
@@ -404,7 +422,7 @@ public class Labyrinth : MonoBehaviour
             var secondVertex = m_vertices[neighbourLine, i];
             if (firstVertex.tile.IsConnected(secondVertex.tile, side))
             {
-                m_graph.AddEdge(new QuickGraph.SEquatableUndirectedEdge<Vertex>(firstVertex, secondVertex));
+                m_graph.AddEdge(CreateEdge(firstVertex, secondVertex));
             }
         }
     }
@@ -417,6 +435,10 @@ public class Labyrinth : MonoBehaviour
             var vertex = adjacentVertices.Item1;
             var nextVertex = adjacentVertices.Item2;
             nextVertex.tile = vertex.tile;
+
+            // For visual debug
+            vertex.TileInstance.position = nextVertex.TileInstance.position;
+            nextVertex.TileInstance = vertex.TileInstance;
         }
     }
 
@@ -481,12 +503,12 @@ public class Labyrinth : MonoBehaviour
 
     }
 
-    void ShiftTilesInScene(Shift shift, Tile insertedTile)
+    void ShiftTilesInScene(Shift shift)
     {
 
     }
 
-    public void ShiftTiles(Shift shift, Tile insertedTile)
+    public void ShiftTiles(Shift shift)
     {
         
     }
@@ -503,14 +525,14 @@ public class Labyrinth : MonoBehaviour
         
     }
 
-    public QuickGraph.UndirectedGraph<Vertex, QuickGraph.SEquatableUndirectedEdge<Vertex>> m_graph =
-        new QuickGraph.UndirectedGraph<Vertex, QuickGraph.SEquatableUndirectedEdge<Vertex>>(false);
-    public Vertex [,] m_vertices = new Vertex[BoardLength, BoardLength];
+    private QuikGraph.UndirectedGraph<Vertex, QuikGraph.EquatableUndirectedEdge<Vertex>> m_graph =
+        new QuikGraph.UndirectedGraph<Vertex, QuikGraph.EquatableUndirectedEdge<Vertex>>(false);
+    
+    private Vertex [,] m_vertices = new Vertex[BoardLength, BoardLength];
 
     public Dictionary<Shift, Tuple<int, int, int, int>> m_shiftsToCoordinates = new Dictionary<Shift, Tuple<int, int, int, int>>();
 
-
-    public Tile m_freeTile = null;
+    private Tile m_freeTile = null;
 
     public float m_tileScale = 0.9f;
 
