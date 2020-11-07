@@ -3,13 +3,8 @@ using System;
 
 namespace QuickGraphTest {
 
-public class Vertex : IEquatable<Vertex>
+public class Vertex : IEquatable<Vertex>, IComparable<Vertex>
 {
-    public Vertex()
-    {
-
-    }
-
     public Vertex(int row, int column)
     {
         Row = row;
@@ -66,9 +61,47 @@ public class Vertex : IEquatable<Vertex>
         return indices.Equals(other.indices);
     }
 
+    public override int GetHashCode()
+    {
+        return indices.GetHashCode();
+    }
+
     public override string ToString()
     {
         return string.Format("({0}, {1})", Row, Column);
+    }
+
+    public int CompareTo(Vertex other)
+    {
+        if (this == other)
+        {
+            return 0;
+        }
+
+        if (indices.x == other.indices.x && indices.y == other.indices.y)
+        {
+            return 0;
+        }
+
+        if (indices.x < other.indices.x)
+        {
+            return -1;
+        }
+        else if (indices.x == other.indices.x)
+        {
+            if (indices.y < other.indices.y)
+            {
+                return -1;
+            }
+            else
+            {
+                return 1;
+            }
+        }
+        else
+        {
+            return 1;
+        }
     }
 
     public Tile tile;

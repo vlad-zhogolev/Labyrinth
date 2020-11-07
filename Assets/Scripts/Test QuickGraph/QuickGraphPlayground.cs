@@ -57,6 +57,20 @@ public class QuickGraphPlayground : MonoBehaviour
        int j = 0;
     }
 
+    void IntTest()
+    {
+        QuickGraph.UndirectedGraph<int, QuickGraph.SEquatableUndirectedEdge<int>> m_graph =
+            new QuickGraph.UndirectedGraph<int, QuickGraph.SEquatableUndirectedEdge<int>>(
+                false,
+                (edge, source, target) => {
+                    return (edge.Source.Equals(source) && edge.Target.Equals(target)) ||
+                           (edge.Source.Equals(target) && edge.Target.Equals(source));
+                }
+            );
+
+        
+    }
+
    
 
     // Start is called before the first frame update
@@ -86,8 +100,10 @@ public class QuickGraphPlayground : MonoBehaviour
         // var re2 = comparer(edge, 1, 3);
         //var res1 = graph.RemoveEdge(new UndirectedEdge<int>(1, 2));
         UndirectedEdge<int> edgeres;
-        var result = graph.TryGetEdge(1, 2, out edgeres);
-        var res = graph.RemoveEdge(edgeres);
+        //var result = graph.TryGetEdge(2, 1, out edgeres);
+        //var res = graph.RemoveEdge(edgeres);
+        var compar1 = Comparer<int>.Default.Compare(2, 1);
+        var compar2 = Comparer<int>.Default.Compare(1, 2);
 
         Func<UndirectedEdge<int>, double> distances = x => 1.0;
 

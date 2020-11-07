@@ -230,28 +230,18 @@ public class Labyrinth : MonoBehaviour
             Tile.Side.Right
         );
 
-        //if (m_graph.ContainsEdge(new QuickGraph.SEquatableUndirectedEdge<Vertex>(m_vertices[0, 0], m_vertices[1, 0])))
-        //{
-        //    Debug.LogFormat("{0}: graph contains edge (0, 0) <-> (1, 0)", GetType().Name);
-        //}
-
-        var res1 = m_graph.AddEdge(new QuickGraph.SEquatableUndirectedEdge<Vertex>(m_vertices[0, 0], m_vertices[1, 0]));
-
-        var res2 = m_graph.RemoveEdge(new QuickGraph.SEquatableUndirectedEdge<Vertex>(m_vertices[1, 0], m_vertices[0, 0]));
-        //var res3 = m_graph.RemoveEdge(new QuickGraph.SEquatableUndirectedEdge<Vertex>(m_vertices[0, 0], m_vertices[1, 0]));
-
-        //foreach (var e in m_graph.AdjacentEdges(m_vertices[0,0]))
-        //{
-        //    Debug.LogFormat("{0}: edge = {1}", GetType().Name, e);
-        //}
-
         // Dump edges
         foreach (var edge in m_graph.Edges)
         {
             Debug.LogFormat("{0}: edge {1}", GetType().Name, edge);
         }
         
-        Debug.Log("Check " + m_graph.ContainsEdge(new QuickGraph.SEquatableUndirectedEdge<Vertex>(m_vertices[0, 0], m_vertices[1, 0])));
+        Debug.Log("Check1 " + m_graph.ContainsEdge(new QuickGraph.SEquatableUndirectedEdge<Vertex>(m_vertices[0, 0], m_vertices[1, 0])));
+        Debug.Log("Check2 " + m_graph.ContainsEdge(new QuickGraph.SEquatableUndirectedEdge<Vertex>(m_vertices[1, 0], m_vertices[0, 0])));
+
+        //QuickGraph.SEquatableUndirectedEdge<Vertex> edge;
+        //var result = m_graph.TryGetEdge(m_vertices[0, 0], m_vertices[1, 0], out edge);
+        //Debug.Log("")
 
         var source = m_vertices[1, 0];
         var startTime = Time.realtimeSinceStartup;
