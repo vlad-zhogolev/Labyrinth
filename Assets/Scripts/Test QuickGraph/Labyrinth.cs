@@ -73,6 +73,14 @@ public class Labyrinth : MonoBehaviour
         }
     }
 
+    void LogEdges()
+    {
+        foreach (var edge in m_graph.Edges)
+        {
+            Debug.LogFormat("{0}: edge {1}", GetType().Name, edge);
+        }
+    }
+
     void InitializeVertices()
     {
         // Create vertices
@@ -250,11 +258,7 @@ public class Labyrinth : MonoBehaviour
             Tile.Side.Right
         );
 
-        // Dump edges
-        foreach (var edge in m_graph.Edges)
-        {
-            Debug.LogFormat("{0}: edge {1}", GetType().Name, edge);
-        }
+        
         
         Debug.Log("Check1 " + m_graph.ContainsEdge(CreateEdge(m_vertices[0, 0], m_vertices[1, 0])));
         Debug.Log("Check2 " + m_graph.ContainsEdge(CreateEdge(m_vertices[1, 0], m_vertices[0, 0])));
@@ -288,7 +292,11 @@ public class Labyrinth : MonoBehaviour
         InitializeGraph();
         InstantiateLabyrinth();
 
-        UpdateGraphForShift(new Shift(Shift.Orientation.Vertical, Shift.Direction.Positive, 3));
+        //LogEdges();
+
+        UpdateGraphForShift(new Shift(Shift.Orientation.Vertical, Shift.Direction.Negative, 1));
+
+        LogEdges();
     }
 
     void RemoveEdges(Func<int, Tuple<Vertex, Vertex>> adjacentVerticesProvider)
@@ -427,7 +435,7 @@ public class Labyrinth : MonoBehaviour
         }
     }
 
-    void MoveTiles(Func<int, Tuple<Vertex, Vertex>> adjacentVerticesProvider, Vertex removePlace)
+    void MoveTiles(Func<int, Tuple<Vertex, Vertex>> adjacentVerticesProvider /*, Vertex removePlace */)
     {
         var lastTileInstancePosition = adjacentVerticesProvider(BoardLength - 2).Item2.TileInstance.position;
         //var lastTileInstancePosition = removePlace.TileInstance.position;
@@ -508,7 +516,7 @@ public class Labyrinth : MonoBehaviour
         var removedTile = removePlace.tile;
         var removedTileInstance = removePlace.TileInstance;
 
-        MoveTiles(vertexProvider, removePlace);
+        MoveTiles(vertexProvider /*, removePlace*/);
 
         removedTileInstance.position = m_freeTileInstance.position;
         insertPlace.tile = m_freeTile;
