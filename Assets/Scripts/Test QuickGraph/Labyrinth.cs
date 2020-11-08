@@ -202,7 +202,7 @@ public class Labyrinth : MonoBehaviour
 
         var freeTileX = 5.0f;
         var freeTileY = 5.0f;
-        InstantiateTile(m_freeTile, freeTileX, freeTileY);
+        m_freeTileInstance = InstantiateTile(m_freeTile, freeTileX, freeTileY);
     }
 
     bool IsVertexIndexValid(int index)
@@ -288,7 +288,7 @@ public class Labyrinth : MonoBehaviour
         InitializeGraph();
         InstantiateLabyrinth();
 
-        UpdateGraphForShift(new Shift(Shift.Orientation.Horizontal, Shift.Direction.Positive, 1));
+        UpdateGraphForShift(new Shift(Shift.Orientation.Vertical, Shift.Direction.Positive, 3));
     }
 
     void RemoveEdges(Func<int, Tuple<Vertex, Vertex>> adjacentVerticesProvider)
@@ -427,19 +427,33 @@ public class Labyrinth : MonoBehaviour
         }
     }
 
-    void MoveTiles(Func<int, Tuple<Vertex, Vertex>> adjacentVerticesProvider)
+    void MoveTiles(Func<int, Tuple<Vertex, Vertex>> adjacentVerticesProvider, Vertex removePlace)
     {
-        for (var i = 0; i < BoardLength - 1; ++i)
+        var lastTileInstancePosition = adjacentVerticesProvider(BoardLength - 2).Item2.TileInstance.position;
+        //var lastTileInstancePosition = removePlace.TileInstance.position;
+   
+        for (var i = BoardLength - 2; i >= 0 ; --i)
         {
             var adjacentVertices = adjacentVerticesProvider(i);
             var vertex = adjacentVertices.Item1;
             var nextVertex = adjacentVertices.Item2;
-            nextVertex.tile = vertex.tile;
 
-            // For visual debug
-            vertex.TileInstance.position = nextVertex.TileInstance.position;
-            nextVertex.TileInstance = vertex.TileInstance;
+            nextVertex.tile = vertex.tile;
+            nextVertex.TileInstance = vertex.TileInstance; // Just for visual debugging
         }
+
+        // Just for visual debugging
+        for (var i = 0; i < BoardLength - 1 ; ++i)
+        {
+            var adjacentVertices = adjacentVerticesProvider(i);
+            var vertex = adjacentVertices.Item1;
+            var nextVertex = adjacentVertices.Item2;
+
+            vertex.TileInstance.position = nextVertex.TileInstance.position;
+        }
+
+        adjacentVerticesProvider(BoardLength - 2).Item2.TileInstance.position = lastTileInstancePosition;
+        //removePlace.TileInstance.position = lastTileInstancePosition;
     }
 
     void MoveTiles(Shift shift)
@@ -459,7 +473,7 @@ public class Labyrinth : MonoBehaviour
                 else
                 {
                     vertexProvider = (i) => { 
-                        return new Tuple<Vertex, Vertex>(m_vertices[line, i], m_vertices[line, i - 1]);
+                        return new Tuple<Vertex, Vertex>(m_vertices[line, BoardLength - i - 1], m_vertices[line, BoardLength - i - 2]);
                     };
                 }
             }
@@ -475,7 +489,7 @@ public class Labyrinth : MonoBehaviour
                 else
                 {
                     vertexProvider = (i) => { 
-                        return new Tuple<Vertex, Vertex>(m_vertices[i, line], m_vertices[i - 1, line]);
+                        return new Tuple<Vertex, Vertex>(m_vertices[BoardLength - i - 1, line], m_vertices[BoardLength - i - 2, line]);
                     };
                 }
             }
@@ -487,12 +501,23 @@ public class Labyrinth : MonoBehaviour
         }
 
         var borderCoordinates = Shift.BorderCoordinates[shift];
-        var removedTile = m_vertices[borderCoordinates.remove.x, borderCoordinates.remove.y].tile;  
-        MoveTiles(vertexProvider);
         var insertPlace = m_vertices[borderCoordinates.insert.x, borderCoordinates.insert.y];
+        var insertTileInstancePosition = insertPlace.TileInstance.position;
+
+        var removePlace = m_vertices[borderCoordinates.remove.x, borderCoordinates.remove.y];
+        var removedTile = removePlace.tile;
+        var removedTileInstance = removePlace.TileInstance;
+
+        MoveTiles(vertexProvider, removePlace);
+
+        removedTileInstance.position = m_freeTileInstance.position;
         insertPlace.tile = m_freeTile;
+        insertPlace.TileInstance = m_freeTileInstance;
+        insertPlace.TileInstance.position = insertTileInstancePosition;
         ConnectInserted(insertPlace, shift);
+
         m_freeTile = removedTile;
+        m_freeTileInstance = removedTileInstance;
     }
 
 
@@ -533,6 +558,7 @@ public class Labyrinth : MonoBehaviour
     public Dictionary<Shift, Tuple<int, int, int, int>> m_shiftsToCoordinates = new Dictionary<Shift, Tuple<int, int, int, int>>();
 
     private Tile m_freeTile = null;
+    private Transform m_freeTileInstance = null;
 
     public float m_tileScale = 0.9f;
 
