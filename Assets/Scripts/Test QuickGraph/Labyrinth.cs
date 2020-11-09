@@ -347,7 +347,7 @@ public class Labyrinth : MonoBehaviour
             }
         }
 
-        var range = GetRange(shift.orientation, shift.direction, shift.index, 0, BoardLength);
+        var range = GetVerticesRange(shift, 0, BoardLength);
 
         foreach (var vertex in range)
         {
@@ -432,7 +432,7 @@ public class Labyrinth : MonoBehaviour
         return null;
     }
 
-    IEnumerable<Vertex> GetRange(Shift shift, int start, int length)
+    IEnumerable<Vertex> GetVerticesRange(Shift shift, int start, int length)
     {
         // TODO: checks of arguments
         Func<int, int> next;
@@ -522,11 +522,11 @@ public class Labyrinth : MonoBehaviour
 
 
 
-        var range = GetRange(shift.orientation, shift.direction, shift.index, 0, BoardLength);
+        var range = GetVerticesRange(shift, 0, BoardLength);
         var sidesToCheck = new Tile.Side[] {Tile.Side.Up, Tile.Side.Down};
         AddEdgesForAdjacentTilesUnsafe(range, sidesToCheck);
 
-        range = GetRange(shift.orientation, shift.direction, shift.index, 0, BoardLength - 1);
+        range = GetVerticesRange(shift, 0, BoardLength - 1);
         sidesToCheck = new Tile.Side[] {Tile.Side.Left};
         AddEdgesForAdjacentTilesUnsafe(range, sidesToCheck);
 
