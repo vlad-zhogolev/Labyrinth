@@ -357,6 +357,62 @@ public class Labyrinth : MonoBehaviour
         m_graph.RemoveAdjacentEdgeIf(m_vertices[remove.x, remove.y], edge => true);
     }
 
+    void AddEdgesBetweenAdjacentLines(Func<int, Tuple<Vertex, Vertex>> adjacentVerticesProvider, Tile.Side side)
+    {
+        for (var i = 0; i < BoardLength; ++i)
+        {
+            var vertices = adjacentVerticesProvider(i);
+            var firstVertex = vertices.Item1;
+            var secondVertex = vertices.Item2;
+            if (firstVertex.tile.IsConnected(secondVertex.tile, side))
+            {
+                m_graph.AddEdge(CreateEdge(firstVertex, secondVertex));
+            }
+        }
+    }
+
+    void AddEdgesForShift(Shift shift)
+    {
+        var line = shift.index;
+        Func<int, Tuple<Vertex, Vertex>> vertexProviderPreviousLine;
+        Func<int, Tuple<Vertex, Vertex>> vertexProviderNextLine;
+        Tile.Side connectionSide;
+        switch (shift.orientation)
+        {
+            case Shift.Orientation.Horizontal:
+            {
+                vertexProviderPreviousLine = (i) => {
+                    return new Tuple<Vertex, Vertex>(m_vertices[line - 1, i], m_vertices[line, i]);
+                };
+                vertexProviderNextLine = (i) => { 
+                    return new Tuple<Vertex, Vertex>(m_vertices[line, i], m_vertices[line + 1, i]);
+                };
+                connectionSide = Tile.Side.Down;
+            }
+            break;
+            case Shift.Orientation.Vertical:
+            {
+                vertexProviderPreviousLine = (i) => { 
+                    return new Tuple<Vertex, Vertex>(m_vertices[i, line - 1], m_vertices[i, line]);
+                };
+                vertexProviderNextLine = (i) => { 
+                    return new Tuple<Vertex, Vertex>(m_vertices[i, line], m_vertices[i, line + 1]);
+                };
+                connectionSide = Tile.Side.Right;
+            }
+            break;
+            default:
+            {
+                throw new ArgumentException("Invalid orientation");
+            }
+        }
+
+        AddEdgesBetweenAdjacentLines(vertexProviderPreviousLine, connectionSide);
+        AddEdgesBetweenAdjacentLines(vertexProviderNextLine, connectionSide);
+
+        ConnectInserted(shift);
+    }
+
     void AddEdgesForLine(Func<int, Tuple<Vertex, Vertex>> adjacentVerticesProvider)
     {
         for (var i = 0; i < BoardLength; ++i)
@@ -368,14 +424,16 @@ public class Labyrinth : MonoBehaviour
         }
     }
 
-    void ConnectInserted(Vertex vertex, Shift shift)
+    void ConnectInserted(Shift shift)
     {
+        var borderCoordinates = Shift.BorderCoordinates[shift];
+        var vertex = m_vertices[borderCoordinates.insert.x, borderCoordinates.insert.y];
         var indices = vertex.indices;
+
         switch (shift.orientation)
         {
             case Shift.Orientation.Horizontal:
             {
-                
                 indices.y += (int)shift.direction;
             }
             break;
@@ -522,7 +580,6 @@ public class Labyrinth : MonoBehaviour
         insertPlace.tile = m_freeTile;
         insertPlace.TileInstance = m_freeTileInstance;
         insertPlace.TileInstance.position = insertTileInstancePosition;
-        ConnectInserted(insertPlace, shift);
 
         m_freeTile = removedTile;
         m_freeTileInstance = removedTileInstance;
