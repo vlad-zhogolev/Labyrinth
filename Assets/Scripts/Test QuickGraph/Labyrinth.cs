@@ -292,9 +292,8 @@ public class Labyrinth : MonoBehaviour
         InitializeGraph();
         InstantiateLabyrinth();
 
-        //LogEdges();
 
-        UpdateGraphForShift(new Shift(Shift.Orientation.Vertical, Shift.Direction.Negative, 1));
+        UpdateGraphForShift(new Shift(Shift.Orientation.Horizontal, Shift.Direction.Negative, 1));
 
         LogEdges();
     }
@@ -347,14 +346,26 @@ public class Labyrinth : MonoBehaviour
                 throw new ArgumentException("Invalid orientation");
             }
         }
+
+        var range = GetRange(shift.orientation, shift.direction, shift.index, 0, BoardLength);
+
+        foreach (var vertex in range)
+        {
+            m_graph.RemoveAdjacentEdgeIf(vertex, edge => true);
+        }
+
+        //for (var i = 0; i < BoardLength; ++i)
+        //{
+        //    m_graph.RemoveAdjacentEdgeIf(m_vertices[line, i], edge => true);
+        //}
         
-        RemoveEdges(vertexProviderPreviousLine);
-        RemoveEdges(vertexProviderNextLine);
+        //RemoveEdges(vertexProviderPreviousLine);
+        //RemoveEdges(vertexProviderNextLine);
 
         // remove all connections for vertex which tile will become free
-        Debug.Log("Count " + Shift.BorderCoordinates.Count);
-        var remove = Shift.BorderCoordinates[shift].remove;
-        m_graph.RemoveAdjacentEdgeIf(m_vertices[remove.x, remove.y], edge => true);
+        //Debug.Log("Count " + Shift.BorderCoordinates.Count);
+        //var remove = Shift.BorderCoordinates[shift].remove;
+        //m_graph.RemoveAdjacentEdgeIf(m_vertices[remove.x, remove.y], edge => true);
     }
 
     void AddEdgesBetweenAdjacentLines(Func<int, Tuple<Vertex, Vertex>> adjacentVerticesProvider, Tile.Side side)
@@ -371,46 +382,184 @@ public class Labyrinth : MonoBehaviour
         }
     }
 
+    
+
+    Vector2Int OffsetForSide(Tile.Side side)
+    {
+        switch (side)
+        {
+            case Tile.Side.Up:
+            {
+                return new Vector2Int(-1, 0);
+            }
+            case Tile.Side.Down:
+            {
+                return new Vector2Int(1, 0);
+            }
+            case Tile.Side.Left:
+            {
+                return new Vector2Int(0, -1);
+            }
+            case Tile.Side.Right:
+            {
+                return new Vector2Int(0, 1);
+            }
+            default:
+            {
+                throw new ArgumentException("Invalid side provided");
+            }
+        }
+    }
+
+    Vertex GetAdjacentVertexUnsafe(Vertex vertex, Tile.Side side)
+    {
+        var indices = vertex.indices + OffsetForSide(side);
+        return m_vertices[indices.x, indices.y];
+    }
+
+    bool IsIndexValid(int index)
+    {
+        return (0 <= index) && (index < BoardLength);
+    }
+
+    Vertex GetAdjacentVertex(Vertex vertex, Tile.Side side)
+    {
+        var indices = vertex.indices + OffsetForSide(side);
+        if (IsIndexValid(indices.x) && IsIndexValid(indices.y))
+        {
+            return m_vertices[indices.x, indices.y];
+        }
+        return null;
+    }
+
+    IEnumerable<Vertex> GetRange(Shift shift, int start, int length)
+    {
+        // TODO: checks of arguments
+        Func<int, int> next;
+        int end;
+        if (shift.direction == Shift.Direction.Positive)
+        {
+            next = i => ++i;
+            end = start + length;
+        }
+        else
+        {
+            next = i => --i;
+            end = BoardLength - start - length - 1;
+            start = BoardLength - start - 1;
+        }
+
+        if (shift.orientation == Shift.Orientation.Horizontal)
+        {
+            for (var i = start; i != end; i = next(i))
+            {
+                yield return m_vertices[shift.index, i];
+            }
+        }
+        else
+        {
+            for (var i = start; i != end; i = next(i))
+            {
+                yield return m_vertices[i, shift.index];
+            }
+        }
+    }
+
+    void AddEdgesForAdjacentTilesUnsafe(IEnumerable<Vertex> vertices, IEnumerable<Tile.Side> sides)
+    {
+        foreach (var vertex in vertices)
+        {
+            foreach (var side in sides)
+            {
+                var adjacentVertex = GetAdjacentVertexUnsafe(vertex, side);
+                if (vertex.tile.IsConnected(adjacentVertex.tile, side))
+                {
+                    m_graph.AddEdge(CreateEdge(vertex, adjacentVertex));
+                }
+            }
+        }
+    }
+    
     void AddEdgesForShift(Shift shift)
     {
         var line = shift.index;
         Func<int, Tuple<Vertex, Vertex>> vertexProviderPreviousLine;
         Func<int, Tuple<Vertex, Vertex>> vertexProviderNextLine;
         Tile.Side connectionSide;
-        switch (shift.orientation)
-        {
-            case Shift.Orientation.Horizontal:
-            {
-                vertexProviderPreviousLine = (i) => {
-                    return new Tuple<Vertex, Vertex>(m_vertices[line - 1, i], m_vertices[line, i]);
-                };
-                vertexProviderNextLine = (i) => { 
-                    return new Tuple<Vertex, Vertex>(m_vertices[line, i], m_vertices[line + 1, i]);
-                };
-                connectionSide = Tile.Side.Down;
-            }
-            break;
-            case Shift.Orientation.Vertical:
-            {
-                vertexProviderPreviousLine = (i) => { 
-                    return new Tuple<Vertex, Vertex>(m_vertices[i, line - 1], m_vertices[i, line]);
-                };
-                vertexProviderNextLine = (i) => { 
-                    return new Tuple<Vertex, Vertex>(m_vertices[i, line], m_vertices[i, line + 1]);
-                };
-                connectionSide = Tile.Side.Right;
-            }
-            break;
-            default:
-            {
-                throw new ArgumentException("Invalid orientation");
-            }
-        }
 
-        AddEdgesBetweenAdjacentLines(vertexProviderPreviousLine, connectionSide);
-        AddEdgesBetweenAdjacentLines(vertexProviderNextLine, connectionSide);
+        //switch (shift.orientation)
+        //{
+        //    case Shift.Orientation.Horizontal:
+        //    {
+        //        vertexProviderPreviousLine = (i) => {
+        //            return new Tuple<Vertex, Vertex>(m_vertices[line - 1, i], m_vertices[line, i]);
+        //        };
+        //        vertexProviderNextLine = (i) => { 
+        //            return new Tuple<Vertex, Vertex>(m_vertices[line, i], m_vertices[line + 1, i]);
+        //        };
+        //        connectionSide = Tile.Side.Down;
+        //    }
+        //    break;
+        //    case Shift.Orientation.Vertical:
+        //    {
+        //        vertexProviderPreviousLine = (i) => { 
+        //            return new Tuple<Vertex, Vertex>(m_vertices[i, line - 1], m_vertices[i, line]);
+        //        };
+        //        vertexProviderNextLine = (i) => { 
+        //            return new Tuple<Vertex, Vertex>(m_vertices[i, line], m_vertices[i, line + 1]);
+        //        };
+        //        connectionSide = Tile.Side.Right;
+        //    }
+        //    break;
+        //    default:
+        //    {
+        //        throw new ArgumentException("Invalid orientation");
+        //    }
+        //}
 
-        ConnectInserted(shift);
+        //AddEdgesBetweenAdjacentLines(vertexProviderPreviousLine, connectionSide);
+        //AddEdgesBetweenAdjacentLines(vertexProviderNextLine, connectionSide);
+
+
+
+        var range = GetRange(shift.orientation, shift.direction, shift.index, 0, BoardLength);
+        var sidesToCheck = new Tile.Side[] {Tile.Side.Up, Tile.Side.Down};
+        AddEdgesForAdjacentTilesUnsafe(range, sidesToCheck);
+
+        range = GetRange(shift.orientation, shift.direction, shift.index, 0, BoardLength - 1);
+        sidesToCheck = new Tile.Side[] {Tile.Side.Left};
+        AddEdgesForAdjacentTilesUnsafe(range, sidesToCheck);
+
+        //var sidesToCheck = new Tile.Side[] {Tile.Side.Up, Tile.Side.Down};
+        //for (var i = 0; i < BoardLength - 1; ++i)
+        //{
+        //    var currentVertex = m_vertices[line, i];
+        //    foreach (var side in sidesToCheck)
+        //    {
+        //        var adjacentVertex = GetAdjacentVertexUnsafe(currentVertex, side);
+        //        if (currentVertex.tile.IsConnected(adjacentVertex.tile, side))
+        //        {
+        //            m_graph.AddEdge(CreateEdge(currentVertex, adjacentVertex));
+        //        }
+        //    }
+        //}
+
+        //sidesToCheck = new Tile.Side[] {Tile.Side.Right};
+        //for (var i = 0; i < BoardLength - 2; ++i)
+        //{
+        //    var currentVertex = m_vertices[line, i];
+        //    foreach (var side in sidesToCheck)
+        //    {
+        //        var adjacentVertex = GetAdjacentVertexUnsafe(currentVertex, side);
+        //        if (currentVertex.tile.IsConnected(adjacentVertex.tile, side))
+        //        {
+        //            m_graph.AddEdge(CreateEdge(currentVertex, adjacentVertex));
+        //        }
+        //    }
+        //}
+
+        
+        //ConnectInserted(shift);
     }
 
     void AddEdgesForLine(Func<int, Tuple<Vertex, Vertex>> adjacentVerticesProvider)
@@ -590,7 +739,7 @@ public class Labyrinth : MonoBehaviour
     {
         RemoveEdgesForShift(shift);
         MoveTiles(shift);
-
+        AddEdgesForShift(shift);
     }
 
     void ShiftTilesInScene(Shift shift)
