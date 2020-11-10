@@ -283,41 +283,6 @@ public class Labyrinth : MonoBehaviour
         InitializeVertices();
         InitializeGraph();
         InstantiateLabyrinth();
-        
-        var graph = m_graph.Clone();
-
-        ShiftTiles(new Shift(Shift.Orientation.Horizontal, Shift.Direction.Positive, 1));
-        ShiftTiles(new Shift(Shift.Orientation.Vertical, Shift.Direction.Positive, 1));
-
-        var newGraph = m_graph.Clone();
-
-        Debug.LogFormat("{0}: is same {1}", GetType().Name, graph.Equals(newGraph));
-
-        var search = newGraph.Edges.ToList();
-        foreach (var edge1 in graph.Edges.ToList())
-        {
-            if (!search.Contains(edge1))
-            {
-                Debug.LogFormat("{0} not found",edge1);
-            }
-        }
-
-        var firstV = graph.Vertices.ToList();
-        firstV.Sort();
-
-        var secondV = graph.Vertices.ToList();
-        secondV.Sort();
-        Debug.LogFormat("{0}: vertices is same {1}", GetType().Name, firstV == secondV);
-
-        var firstE = graph.Edges.ToList();
-
-        var secondE = graph.Edges.ToList();
-
-        var result = firstE.Zip(secondE, (edge1, edge2) => edge1.Equals(edge2)).ToList();
-
-        Debug.LogFormat("{0}: edges is same {1}", GetType().Name, firstE == secondE);
-
-        LogEdges();
     }
 
     void RemoveEdgesForShift(Shift shift)
@@ -473,37 +438,6 @@ public class Labyrinth : MonoBehaviour
         AddEdgesForAdjacentTilesUnsafe(vertices, shiftDirection);
     }
 
-    void ConnectInserted(Shift shift)
-    {
-        var borderCoordinates = Shift.BorderCoordinates[shift];
-        var vertex = m_vertices[borderCoordinates.insert.x, borderCoordinates.insert.y];
-        var indices = vertex.indices;
-
-        switch (shift.orientation)
-        {
-            case Shift.Orientation.Horizontal:
-            {
-                indices.y += (int)shift.direction;
-            }
-            break;
-            case Shift.Orientation.Vertical:
-            {
-                indices.x += (int)shift.direction;
-            }
-            break;
-            default:
-            {
-                throw new ArgumentException("Invalid orientation");
-            }
-        }
-
-        var otherVertex = m_vertices[indices.x, indices.y];
-        if (vertex.IsConnected(otherVertex))
-        {
-            m_graph.AddEdge(CreateEdge(vertex, otherVertex));
-        }
-    }
-
     void MoveTiles(Func<int, Tuple<Vertex, Vertex>> adjacentVerticesProvider /*, Vertex removePlace */)
     {
         var lastTileInstancePosition = adjacentVerticesProvider(BoardLength - 2).Item2.TileInstance.position;
@@ -533,7 +467,7 @@ public class Labyrinth : MonoBehaviour
         //removePlace.TileInstance.position = lastTileInstancePosition;
     }
 
-    void MoveTiles(Shift shift)
+    void MoveTilesForShift(Shift shift)
     {
         var line = shift.index;
         Func<int, Tuple<Vertex, Vertex>> vertexProvider;
@@ -596,11 +530,10 @@ public class Labyrinth : MonoBehaviour
         m_freeTileInstance = removedTileInstance;
     }
 
-
     void ShiftTiles(Shift shift)
     {
         RemoveEdgesForShift(shift);
-        MoveTiles(shift);
+        MoveTilesForShift(shift);
         AddEdgesForShift(shift);
     }
 
