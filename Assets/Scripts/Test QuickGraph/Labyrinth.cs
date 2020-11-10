@@ -1,11 +1,7 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEngine;
-//using QuickGraph;
 using System.Linq;
 using System;
-//using QuickGraph.Algorithms;
-using QuikGraph;
 using QuikGraph.Algorithms;
 
 namespace QuickGraphTest {
@@ -73,6 +69,14 @@ public class Labyrinth : MonoBehaviour
         }
     }
 
+    void LogEdges(IEnumerable<QuikGraph.EquatableUndirectedEdge<Vertex>> edges)
+    {
+        foreach (var edge in edges)
+        {
+            Debug.LogFormat("{0}: edge {1}", GetType().Name, edge);
+        }
+    }
+
     void LogEdges()
     {
         foreach (var edge in m_graph.Edges)
@@ -80,6 +84,7 @@ public class Labyrinth : MonoBehaviour
             Debug.LogFormat("{0}: edge {1}", GetType().Name, edge);
         }
     }
+
 
     void InitializeVertices()
     {
@@ -213,11 +218,6 @@ public class Labyrinth : MonoBehaviour
         m_freeTileInstance = InstantiateTile(m_freeTile, freeTileX, freeTileY);
     }
 
-    bool IsVertexIndexValid(int index)
-    {
-        return (0 <= index) && (index < BoardLength);
-    }
-
     void AddEdges(Func<int, int, Tuple<Vertex, Vertex>> adjacentVerticesProvider, Tile.Side side)
     {
         for (var i = 0; i < BoardLength - 1; ++i)
@@ -245,6 +245,7 @@ public class Labyrinth : MonoBehaviour
             }
         }
 
+        // TODO: use enumerations instead
         AddEdges(
             (i, j) => { 
                 return new Tuple<Vertex, Vertex>(m_vertices[i, j], m_vertices[i + 1, j]);
@@ -257,15 +258,6 @@ public class Labyrinth : MonoBehaviour
             },
             Tile.Side.Right
         );
-
-        
-        
-        Debug.Log("Check1 " + m_graph.ContainsEdge(CreateEdge(m_vertices[0, 0], m_vertices[1, 0])));
-        Debug.Log("Check2 " + m_graph.ContainsEdge(CreateEdge(m_vertices[1, 0], m_vertices[0, 0])));
-
-        //QuickGraph.SEquatableUndirectedEdge<Vertex> edge;
-        //var result = m_graph.TryGetEdge(m_vertices[0, 0], m_vertices[1, 0], out edge);
-        //Debug.Log("")
 
         var source = m_vertices[1, 0];
         var startTime = Time.realtimeSinceStartup;
@@ -291,98 +283,51 @@ public class Labyrinth : MonoBehaviour
         InitializeVertices();
         InitializeGraph();
         InstantiateLabyrinth();
+        
+        var graph = m_graph.Clone();
 
+        ShiftTiles(new Shift(Shift.Orientation.Horizontal, Shift.Direction.Positive, 1));
+        ShiftTiles(new Shift(Shift.Orientation.Vertical, Shift.Direction.Positive, 1));
 
-        UpdateGraphForShift(new Shift(Shift.Orientation.Horizontal, Shift.Direction.Negative, 1));
+        var newGraph = m_graph.Clone();
+
+        Debug.LogFormat("{0}: is same {1}", GetType().Name, graph.Equals(newGraph));
+
+        var search = newGraph.Edges.ToList();
+        foreach (var edge1 in graph.Edges.ToList())
+        {
+            if (!search.Contains(edge1))
+            {
+                Debug.LogFormat("{0} not found",edge1);
+            }
+        }
+
+        var firstV = graph.Vertices.ToList();
+        firstV.Sort();
+
+        var secondV = graph.Vertices.ToList();
+        secondV.Sort();
+        Debug.LogFormat("{0}: vertices is same {1}", GetType().Name, firstV == secondV);
+
+        var firstE = graph.Edges.ToList();
+
+        var secondE = graph.Edges.ToList();
+
+        var result = firstE.Zip(secondE, (edge1, edge2) => edge1.Equals(edge2)).ToList();
+
+        Debug.LogFormat("{0}: edges is same {1}", GetType().Name, firstE == secondE);
 
         LogEdges();
     }
 
-    void RemoveEdges(Func<int, Tuple<Vertex, Vertex>> adjacentVerticesProvider)
-    {
-        for (var i = 0; i < BoardLength; ++i)
-        {
-            var vertices = adjacentVerticesProvider(i);
-            var firstVertex = vertices.Item1;
-            var secondVertex = vertices.Item2;
-
-            var edge = CreateEdge(firstVertex, secondVertex);
-            var contained = m_graph.ContainsEdge(edge);
-            var hasRemoved = m_graph.RemoveEdge(edge);
-
-            Debug.LogFormat("{0}: Removing edge {1}, contained = {2}, hasRemoved = {3}", GetType().Name, edge, contained, hasRemoved);
-        }
-    }
-
     void RemoveEdgesForShift(Shift shift)
     {
-        var line = shift.index;
-        Func<int, Tuple<Vertex, Vertex>> vertexProviderPreviousLine;
-        Func<int, Tuple<Vertex, Vertex>> vertexProviderNextLine;
-        switch (shift.orientation)
-        {
-            case Shift.Orientation.Horizontal:
-            {
-                vertexProviderPreviousLine = (i) => {
-                    return new Tuple<Vertex, Vertex>(m_vertices[line, i], m_vertices[line - 1, i]);
-                };
-                vertexProviderNextLine = (i) => { 
-                    return new Tuple<Vertex, Vertex>(m_vertices[line, i], m_vertices[line + 1, i]);
-                };
-            }
-            break;
-            case Shift.Orientation.Vertical:
-            {
-                vertexProviderPreviousLine = (i) => { 
-                    return new Tuple<Vertex, Vertex>(m_vertices[i, line], m_vertices[i, line - 1]);
-                };
-                vertexProviderNextLine = (i) => { 
-                    return new Tuple<Vertex, Vertex>(m_vertices[i, line], m_vertices[i, line + 1]);
-                };
-            }
-            break;
-            default:
-            {
-                throw new ArgumentException("Invalid orientation");
-            }
-        }
-
-        var range = GetVerticesRange(shift, 0, BoardLength);
-
-        foreach (var vertex in range)
+        var vertices = GetVerticesRange(shift, 0, BoardLength);
+        foreach (var vertex in vertices)
         {
             m_graph.RemoveAdjacentEdgeIf(vertex, edge => true);
         }
-
-        //for (var i = 0; i < BoardLength; ++i)
-        //{
-        //    m_graph.RemoveAdjacentEdgeIf(m_vertices[line, i], edge => true);
-        //}
-        
-        //RemoveEdges(vertexProviderPreviousLine);
-        //RemoveEdges(vertexProviderNextLine);
-
-        // remove all connections for vertex which tile will become free
-        //Debug.Log("Count " + Shift.BorderCoordinates.Count);
-        //var remove = Shift.BorderCoordinates[shift].remove;
-        //m_graph.RemoveAdjacentEdgeIf(m_vertices[remove.x, remove.y], edge => true);
-    }
-
-    void AddEdgesBetweenAdjacentLines(Func<int, Tuple<Vertex, Vertex>> adjacentVerticesProvider, Tile.Side side)
-    {
-        for (var i = 0; i < BoardLength; ++i)
-        {
-            var vertices = adjacentVerticesProvider(i);
-            var firstVertex = vertices.Item1;
-            var secondVertex = vertices.Item2;
-            if (firstVertex.tile.IsConnected(secondVertex.tile, side))
-            {
-                m_graph.AddEdge(CreateEdge(firstVertex, secondVertex));
-            }
-        }
-    }
-
-    
+    }   
 
     Vector2Int OffsetForSide(Tile.Side side)
     {
@@ -479,98 +424,53 @@ public class Labyrinth : MonoBehaviour
             }
         }
     }
-    
+
     void AddEdgesForShift(Shift shift)
     {
-        var line = shift.index;
-        Func<int, Tuple<Vertex, Vertex>> vertexProviderPreviousLine;
-        Func<int, Tuple<Vertex, Vertex>> vertexProviderNextLine;
-        Tile.Side connectionSide;
+        IEnumerable<Tile.Side> orthogonalSides;
+        IEnumerable<Tile.Side> shiftDirection;
 
-        //switch (shift.orientation)
-        //{
-        //    case Shift.Orientation.Horizontal:
-        //    {
-        //        vertexProviderPreviousLine = (i) => {
-        //            return new Tuple<Vertex, Vertex>(m_vertices[line - 1, i], m_vertices[line, i]);
-        //        };
-        //        vertexProviderNextLine = (i) => { 
-        //            return new Tuple<Vertex, Vertex>(m_vertices[line, i], m_vertices[line + 1, i]);
-        //        };
-        //        connectionSide = Tile.Side.Down;
-        //    }
-        //    break;
-        //    case Shift.Orientation.Vertical:
-        //    {
-        //        vertexProviderPreviousLine = (i) => { 
-        //            return new Tuple<Vertex, Vertex>(m_vertices[i, line - 1], m_vertices[i, line]);
-        //        };
-        //        vertexProviderNextLine = (i) => { 
-        //            return new Tuple<Vertex, Vertex>(m_vertices[i, line], m_vertices[i, line + 1]);
-        //        };
-        //        connectionSide = Tile.Side.Right;
-        //    }
-        //    break;
-        //    default:
-        //    {
-        //        throw new ArgumentException("Invalid orientation");
-        //    }
-        //}
-
-        //AddEdgesBetweenAdjacentLines(vertexProviderPreviousLine, connectionSide);
-        //AddEdgesBetweenAdjacentLines(vertexProviderNextLine, connectionSide);
-
-
-
-        var range = GetVerticesRange(shift, 0, BoardLength);
-        var sidesToCheck = new Tile.Side[] {Tile.Side.Up, Tile.Side.Down};
-        AddEdgesForAdjacentTilesUnsafe(range, sidesToCheck);
-
-        range = GetVerticesRange(shift, 0, BoardLength - 1);
-        sidesToCheck = new Tile.Side[] {Tile.Side.Left};
-        AddEdgesForAdjacentTilesUnsafe(range, sidesToCheck);
-
-        //var sidesToCheck = new Tile.Side[] {Tile.Side.Up, Tile.Side.Down};
-        //for (var i = 0; i < BoardLength - 1; ++i)
-        //{
-        //    var currentVertex = m_vertices[line, i];
-        //    foreach (var side in sidesToCheck)
-        //    {
-        //        var adjacentVertex = GetAdjacentVertexUnsafe(currentVertex, side);
-        //        if (currentVertex.tile.IsConnected(adjacentVertex.tile, side))
-        //        {
-        //            m_graph.AddEdge(CreateEdge(currentVertex, adjacentVertex));
-        //        }
-        //    }
-        //}
-
-        //sidesToCheck = new Tile.Side[] {Tile.Side.Right};
-        //for (var i = 0; i < BoardLength - 2; ++i)
-        //{
-        //    var currentVertex = m_vertices[line, i];
-        //    foreach (var side in sidesToCheck)
-        //    {
-        //        var adjacentVertex = GetAdjacentVertexUnsafe(currentVertex, side);
-        //        if (currentVertex.tile.IsConnected(adjacentVertex.tile, side))
-        //        {
-        //            m_graph.AddEdge(CreateEdge(currentVertex, adjacentVertex));
-        //        }
-        //    }
-        //}
-
-        
-        //ConnectInserted(shift);
-    }
-
-    void AddEdgesForLine(Func<int, Tuple<Vertex, Vertex>> adjacentVerticesProvider)
-    {
-        for (var i = 0; i < BoardLength; ++i)
+        switch (shift.orientation)
         {
-            var vertices = adjacentVerticesProvider(i);
-            var firstVertex = vertices.Item1;
-            var secondVertex = vertices.Item2;
-            m_graph.AddEdge(CreateEdge(firstVertex, secondVertex));
+            case Shift.Orientation.Horizontal:
+            {
+                orthogonalSides = new Tile.Side[] {Tile.Side.Up, Tile.Side.Down};
+
+                if (shift.direction == Shift.Direction.Positive)
+                {
+                    shiftDirection = new Tile.Side[] {Tile.Side.Right};
+                }
+                else
+                {
+                    shiftDirection = new Tile.Side[] {Tile.Side.Left};
+                }
+            }
+            break;
+            case Shift.Orientation.Vertical:
+            {
+                orthogonalSides = new Tile.Side[] {Tile.Side.Left, Tile.Side.Right};
+
+                if (shift.direction == Shift.Direction.Positive)
+                {
+                    shiftDirection = new Tile.Side[] {Tile.Side.Down};
+                }
+                else
+                {
+                    shiftDirection = new Tile.Side[] {Tile.Side.Up};
+                }
+            }
+            break;
+            default:
+            {
+                throw new ArgumentException("Invalid orientation");
+            }
         }
+
+        var vertices = GetVerticesRange(shift, 0, BoardLength).ToList();
+        AddEdgesForAdjacentTilesUnsafe(vertices, orthogonalSides);
+
+        vertices.Remove(vertices.Last());
+        AddEdgesForAdjacentTilesUnsafe(vertices, shiftDirection);
     }
 
     void ConnectInserted(Shift shift)
@@ -601,44 +501,6 @@ public class Labyrinth : MonoBehaviour
         if (vertex.IsConnected(otherVertex))
         {
             m_graph.AddEdge(CreateEdge(vertex, otherVertex));
-        }
-    }
-
-    void AddEdgesBetween(int line, int neighbourLine, Shift.Orientation orientation)
-    {
-        Tile.Side side;
-        var isLineBefore = line < neighbourLine;
-        if (orientation == Shift.Orientation.Horizontal)
-        {
-            if (isLineBefore)
-            {
-                side = Tile.Side.Up;
-            }
-            else
-            {
-                side = Tile.Side.Down;
-            }
-        }
-        else
-        {
-            if (isLineBefore)
-            {
-                side = Tile.Side.Right;
-            }
-            else
-            {
-                side = Tile.Side.Left;
-            }
-        }
-
-        for (var i = 0; i < BoardLength; ++i)
-        {
-            var firstVertex = m_vertices[line, i];
-            var secondVertex = m_vertices[neighbourLine, i];
-            if (firstVertex.tile.IsConnected(secondVertex.tile, side))
-            {
-                m_graph.AddEdge(CreateEdge(firstVertex, secondVertex));
-            }
         }
     }
 
@@ -735,33 +597,18 @@ public class Labyrinth : MonoBehaviour
     }
 
 
-    void UpdateGraphForShift(Shift shift)
+    void ShiftTiles(Shift shift)
     {
         RemoveEdgesForShift(shift);
         MoveTiles(shift);
         AddEdgesForShift(shift);
     }
 
-    void ShiftTilesInScene(Shift shift)
-    {
-
-    }
-
-    public void ShiftTiles(Shift shift)
-    {
-        
-    }
 
     // Start is called before the first frame update
     void Start()
     {
         Initialize();
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-        
     }
 
     private QuikGraph.UndirectedGraph<Vertex, QuikGraph.EquatableUndirectedEdge<Vertex>> m_graph =
