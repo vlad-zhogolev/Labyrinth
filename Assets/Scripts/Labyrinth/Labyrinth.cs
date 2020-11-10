@@ -305,7 +305,7 @@ public class Labyrinth : MonoBehaviour
             }
         }
 
-        // TODO: use enumerations instead
+        // TODO: use GetVerticesRange instead
         AddEdges(
             (i, j) => { 
                 return new Tuple<Vertex, Vertex>(m_vertices[i, j], m_vertices[i + 1, j]);
@@ -618,8 +618,6 @@ public class Labyrinth : MonoBehaviour
         new QuikGraph.UndirectedGraph<Vertex, QuikGraph.EquatableUndirectedEdge<Vertex>>(false);
     
     private Vertex [,] m_vertices = new Vertex[BoardLength, BoardLength];
-
-    public Dictionary<Shift, Tuple<int, int, int, int>> m_shiftsToCoordinates = new Dictionary<Shift, Tuple<int, int, int, int>>();
 
     private Tile m_freeTile = null;
     private Transform m_freeTileInstance = null;
