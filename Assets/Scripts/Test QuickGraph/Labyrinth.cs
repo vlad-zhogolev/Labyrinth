@@ -5,6 +5,8 @@ using System;
 using QuikGraph.Algorithms;
 
 namespace QuickGraphTest {
+
+// TODO: Remove inheritance from MonoBehaviour. It needed only for tile instantiation
 public class Labyrinth : MonoBehaviour
 {
     public static readonly int BoardLength = 7;
@@ -19,6 +21,7 @@ public class Labyrinth : MonoBehaviour
     private static System.Random TilePositionRandomizer = new System.Random(4);
     private static System.Random TileRotationRandomizer = new System.Random(0);
 
+    #region Private static methods
 
     static QuikGraph.EquatableUndirectedEdge<Vertex> CreateEdge(Vertex first, Vertex second)
     {
@@ -37,7 +40,7 @@ public class Labyrinth : MonoBehaviour
         return CreateEdge(new Vertex(x1, y1), new Vertex(x2, y2));
     }
 
-    public static void Shuffle(int[] list)  
+    static void Shuffle(int[] list)  
     {  
         int n = list.Length;  
         while (n > 1)
@@ -49,6 +52,63 @@ public class Labyrinth : MonoBehaviour
             list[n] = value;  
         }  
     }
+
+    #endregion
+
+
+
+    #region Public methods
+
+
+
+    /// <summary>
+    /// Moves tiles in labyrinth according to provided shift.
+    /// </summary>
+    /// <param name="shift"></param>
+    /// <exception cref="ArgumentException">If index in provided shift was invalid.</exception>
+    public void ShiftTiles(Shift shift)
+    {
+        if (!IsShiftValid(shift))
+        {
+            throw new ArgumentException("Invalid shift provided");
+        }
+
+        RemoveEdgesForShift(shift);
+        MoveTilesForShift(shift);
+        AddEdgesForShift(shift);
+    }
+
+    /// <summary>
+    /// Checks if there is path between tiles with specified indices for current labyrinth state.
+    /// </summary>
+    /// <param name="source"></param>
+    /// <param name="target"></param>
+    /// <returns>True - if path is present. False - otherwise</returns>
+    /// <exception cref="IndexOutOfRangeException">If index is out of bounds.</exception>
+    public bool IsReachable(Vector2Int source, Vector2Int target)
+    {
+        if (!AreIndicesValid(source) || !AreIndicesValid(target))
+        {
+            throw new IndexOutOfRangeException("Invalid indices were provided");
+        }
+
+        var sourceVertex = m_vertices[source.x, source.y];
+        var tryGetPath = m_graph.ShortestPathsDijkstra(edge => 1.0, sourceVertex);
+        
+        var targetVertex = m_vertices[target.x, target.y];
+        IEnumerable<QuikGraph.EquatableUndirectedEdge<Vertex>> path;
+        return tryGetPath(targetVertex, out path);
+    }
+
+
+
+    #endregion
+
+
+
+    #region Private methods
+
+
 
     bool IsTileFixed(int i, int j)
     {
@@ -168,15 +228,15 @@ public class Labyrinth : MonoBehaviour
         {
             case Tile.Type.Junction:
             {
-                return junctionTilePrefab;
+                return m_junctionTilePrefab;
             }
             case Tile.Type.Turn:
             {
-                return turnTilePrefab;
+                return m_turnTilePrefab;
             }
             case Tile.Type.Straight:
             {
-                return straightTilePrefab;
+                return m_straightTilePrefab;
             }
             default:
             {
@@ -330,6 +390,11 @@ public class Labyrinth : MonoBehaviour
     bool IsIndexValid(int index)
     {
         return (0 <= index) && (index < BoardLength);
+    }
+
+    bool AreIndicesValid(Vector2Int indices)
+    {
+        return IsIndexValid(indices.x) && IsIndexValid(indices.y);
     }
 
     Vertex GetAdjacentVertex(Vertex vertex, Tile.Side side)
@@ -530,19 +595,24 @@ public class Labyrinth : MonoBehaviour
         m_freeTileInstance = removedTileInstance;
     }
 
-    void ShiftTiles(Shift shift)
+    bool IsShiftValid(Shift shift)
     {
-        RemoveEdgesForShift(shift);
-        MoveTilesForShift(shift);
-        AddEdgesForShift(shift);
+        return IsIndexValid(shift.index) && shift.index % 2 == 1;
     }
 
-
-    // Start is called before the first frame update
+    // TODO: Replace with constructor when MonoBehaviour will be removed
     void Start()
     {
         Initialize();
     }
+
+    #endregion
+
+
+
+    #region Private fields
+
+
 
     private QuikGraph.UndirectedGraph<Vertex, QuikGraph.EquatableUndirectedEdge<Vertex>> m_graph =
         new QuikGraph.UndirectedGraph<Vertex, QuikGraph.EquatableUndirectedEdge<Vertex>>(false);
@@ -554,11 +624,21 @@ public class Labyrinth : MonoBehaviour
     private Tile m_freeTile = null;
     private Transform m_freeTileInstance = null;
 
-    public float m_tileScale = 0.9f;
+    [SerializeField]
+    private float m_tileScale = 0.9f;
 
-    public Transform junctionTilePrefab;
-    public Transform turnTilePrefab;
-    public Transform straightTilePrefab;
+    [SerializeField]
+    private Transform m_junctionTilePrefab;
+
+    [SerializeField]
+    private Transform m_turnTilePrefab;
+
+    [SerializeField]
+    private Transform m_straightTilePrefab;
+
+
+
+    #endregion
 }
 
 } // namespace QuickGraphTest
