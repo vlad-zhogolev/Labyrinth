@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace QuickGraphTest {
+namespace Labyrinth {
 
 public class UndirectedEdge<TVertex> : QuickGraph.UndirectedEdge<TVertex>, IEquatable<UndirectedEdge<TVertex>>
 {

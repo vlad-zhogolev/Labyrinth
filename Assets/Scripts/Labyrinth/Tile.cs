@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace QuickGraphTest {
+namespace Labyrinth {
 
 class Tile
 {

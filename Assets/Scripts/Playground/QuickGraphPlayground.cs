@@ -5,7 +5,7 @@ using UnityEngine;
 using QuickGraph;
 using QuickGraph.Algorithms;
 
-namespace QuickGraphTest { 
+namespace Playground { 
 public class QuickGraphPlayground : MonoBehaviour
 {
     class Dummy

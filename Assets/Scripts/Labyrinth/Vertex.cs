@@ -1,7 +1,7 @@
 ﻿using UnityEngine;
 using System;
 
-namespace QuickGraphTest {
+namespace Labyrinth {
 
 class Vertex : IEquatable<Vertex>, IComparable<Vertex>
 {

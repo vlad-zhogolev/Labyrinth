@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using System;
 
-namespace QuickGraphTest {
+namespace Labyrinth {
 public class Shift : IEquatable<Shift>
 {
     public static Dictionary<Shift, Cooridinates> BorderCoordinates = new Dictionary<Shift, Cooridinates>()

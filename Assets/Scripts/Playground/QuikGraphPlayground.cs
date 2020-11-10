@@ -5,10 +5,10 @@ using UnityEngine;
 using QuikGraph.Algorithms;
 using QuikGraph;
 
-namespace QuikGraphTest {
+namespace Playground {
 
-    using Vertex = QuickGraphTest.Vertex;
-    using MyEdge = QuikGraph.EquatableUndirectedEdge<QuickGraphTest.Vertex>;
+    using Vertex = Labyrinth.Vertex;
+    using MyEdge = QuikGraph.EquatableUndirectedEdge<Labyrinth.Vertex>;
 
     //using MyEdge = QuikGraph.EquatableUndirectedEdge<Vertex>;
 
