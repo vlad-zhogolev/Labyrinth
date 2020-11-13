@@ -9,7 +9,8 @@ namespace LabyrinthGame {
 namespace Labyrinth {
 
 // TODO: Remove inheritance from MonoBehaviour. It needed only for tile instantiation
-public class Labyrinth : MonoBehaviour
+
+public class Labyrinth
 {
     public static readonly int BoardLength = 7;
     public static readonly int TilesNumber = 49;
@@ -58,6 +59,11 @@ public class Labyrinth : MonoBehaviour
 
     #region Constructors
 
+    /// <summary>
+    /// Initialized labyrith based on position and rotation seeds.
+    /// </summary>
+    /// <param name="positionSeed"></param>
+    /// <param name="rotationSeed"></param>
     public Labyrinth(int positionSeed, int rotationSeed)
     {
         m_positionSeed = positionSeed;
@@ -113,7 +119,20 @@ public class Labyrinth : MonoBehaviour
         return tryGetPath(targetVertex, out path);
     }
 
+    public (Tile[,], Tile) GetTiles()
+    {
+        var tiles = new Tile[BoardLength, BoardLength];
+        for (var i = 0; i < BoardLength; ++i)
+        {
+            for (var j = 0; j < BoardLength; ++j)
+            {
+                tiles[i, j] = m_vertices[i, j].tile.Copy();
+            }
+        }
+        var freeTile = m_freeTile.Copy();
 
+        return (tiles, freeTile);
+    }
 
     #endregion
 
@@ -265,10 +284,10 @@ public class Labyrinth : MonoBehaviour
     Transform InstantiateTile(Tile tile, float x, float z)
     {
         Transform prefab = GetPrefabByTileType(tile.type);
-        var instance = Instantiate(prefab, new Vector3(x, 0, z), tile.GetRotation());
-        instance.localScale = new Vector3(m_tileScale, m_tileScale, m_tileScale);
-
-        return instance;
+        //var instance = Instantiate(prefab, new Vector3(x, 0, z), tile.GetRotation());
+        //instance.localScale = new Vector3(m_tileScale, m_tileScale, m_tileScale);
+        
+        return null;
     }
 
     void InstantiateLabyrinth()
@@ -361,7 +380,7 @@ public class Labyrinth : MonoBehaviour
     {
         InitializeVertices();
         InitializeGraph();
-        InstantiateLabyrinth();
+        //InstantiateLabyrinth();
     }
 
     void RemoveEdgesForShift(Shift shift)
@@ -620,10 +639,10 @@ public class Labyrinth : MonoBehaviour
     }
 
     // TODO: Replace with constructor when MonoBehaviour will be removed
-    void Start()
-    {
-        Initialize();
-    }
+    //void Start()
+    //{
+    //    Initialize();
+    //}
 
     #endregion
 
