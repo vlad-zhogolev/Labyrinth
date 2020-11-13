@@ -14,7 +14,7 @@ public class GameManager : MonoBehaviour
        
         m_labyrinthView = GetComponent<View.LabyrinthView>();
         (var tiles, var freeTile) = m_labyrinth.GetTiles();
-        m_labyrinthView.Initialize(tiles, freeTile, new Vector2(0, 0));
+        m_labyrinthView.Initialize(tiles, freeTile);
     }
 
     // Start is called before the first frame update

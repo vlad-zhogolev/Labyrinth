@@ -39,11 +39,8 @@ public class LabyrinthView : MonoBehaviour
         return instance;
     }
 
-    public void Initialize(in Labyrinth.Tile[,] tiles, in Labyrinth.Tile freeTile, Vector2 origin)
+    public void Initialize(in Labyrinth.Tile[,] tiles, in Labyrinth.Tile freeTile)
     {
-        // TODO: check that origin is in horizontal plane
-        m_origin = origin;
-
         m_tiles = new Transform[Labyrinth.Labyrinth.BoardLength, Labyrinth.Labyrinth.BoardLength];
         
         var z = 3.0f;
