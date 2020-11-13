@@ -4,6 +4,8 @@ using System.Linq;
 using System;
 using QuikGraph.Algorithms;
 
+namespace LabyrinthGame {
+
 namespace Labyrinth {
 
 // TODO: Remove inheritance from MonoBehaviour. It needed only for tile instantiation
@@ -639,4 +641,6 @@ public class Labyrinth : MonoBehaviour
     #endregion
 }
 
-} // namespace QuickGraphTest
+} // namespace Labyrinth
+
+} // namespace LabyrinthGame

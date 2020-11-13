@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using UnityEngine;
 using System;
 
+namespace LabyrinthGame {
+
 namespace Labyrinth {
 public class Shift : IEquatable<Shift>
 {
@@ -80,3 +82,5 @@ public class Shift : IEquatable<Shift>
 }
 
 } // namespace QuickGraphTest
+
+} // namespace LabyrinthGame

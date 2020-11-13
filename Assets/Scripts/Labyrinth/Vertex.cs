@@ -1,6 +1,8 @@
 ﻿using UnityEngine;
 using System;
 
+namespace LabyrinthGame {
+
 namespace Labyrinth {
 
 class Vertex : IEquatable<Vertex>, IComparable<Vertex>
@@ -114,3 +116,5 @@ class Vertex : IEquatable<Vertex>, IComparable<Vertex>
 }
 
 } // namespace QuickGraphTest
+
+} // namespace LabyrinthGame

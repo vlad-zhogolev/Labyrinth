@@ -48,13 +48,11 @@ public class QuickGraphPlayground : MonoBehaviour
 
        dict.Remove(new Dummy(0));
 
-       int i = 0;
 
        var stringDict = new Dictionary<string, Dummy>();
        stringDict.Add("hell", new Dummy(0));
        stringDict.Remove("hell");
 
-       int j = 0;
     }
 
     void IntTest()
