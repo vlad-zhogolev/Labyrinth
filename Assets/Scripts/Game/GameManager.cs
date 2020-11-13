@@ -8,6 +8,11 @@ namespace GameLogic {
 
 public class GameManager : MonoBehaviour
 {
+    void Initiallize()
+    {
+        m_labyrinth = new Labyrinth.Labyrinth(4, 0);    
+    }
+
     // Start is called before the first frame update
     void Start()
     {
@@ -19,6 +24,8 @@ public class GameManager : MonoBehaviour
     {
         
     }
+
+    private Labyrinth.Labyrinth m_labyrinth;
 }
 
 } // GameLogic

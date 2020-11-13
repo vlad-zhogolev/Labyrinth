@@ -20,9 +20,6 @@ public class Labyrinth : MonoBehaviour
     public static readonly int MovableStraightTilesNumber = 13;
     public static readonly int TileSidesNumber = 4;
 
-    private static System.Random TilePositionRandomizer = new System.Random(4);
-    private static System.Random TileRotationRandomizer = new System.Random(0);
-
     #region Private static methods
 
     static QuikGraph.EquatableUndirectedEdge<Vertex> CreateEdge(Vertex first, Vertex second)
@@ -42,13 +39,13 @@ public class Labyrinth : MonoBehaviour
         return CreateEdge(new Vertex(x1, y1), new Vertex(x2, y2));
     }
 
-    static void Shuffle(int[] list)  
+    static void Shuffle(int[] list, System.Random randomizer)  
     {  
         int n = list.Length;  
         while (n > 1)
         {  
             n--;  
-            int k = TilePositionRandomizer.Next(n + 1);
+            int k = randomizer.Next(n + 1);
             int value = list[k];  
             list[k] = list[n];  
             list[n] = value;  
@@ -56,6 +53,20 @@ public class Labyrinth : MonoBehaviour
     }
 
     #endregion
+
+
+
+    #region Constructors
+
+    public Labyrinth(int positionSeed, int rotationSeed)
+    {
+        m_positionSeed = positionSeed;
+        m_rotationSeed = rotationSeed;
+        Initialize();
+    }
+
+    #endregion
+
 
 
 
@@ -117,14 +128,14 @@ public class Labyrinth : MonoBehaviour
         return (i % 2 == 0) && (j % 2 == 0);
     }
 
-    void RotateTileRandomly(Tile tile)
+    void RotateTileRandomly(Tile tile, System.Random rotationRandomizer)
     {
         if (tile == null)
         {
             return;
         }
 
-        var rotationsNumber = TileRotationRandomizer.Next(TileSidesNumber);
+        var rotationsNumber = rotationRandomizer.Next(TileSidesNumber);
         for (var k = 0; k < rotationsNumber; ++k)
         {
             tile.RotateCW();
@@ -150,6 +161,7 @@ public class Labyrinth : MonoBehaviour
 
     void InitializeVertices()
     {
+        m_vertices = new Vertex[BoardLength, BoardLength];
         // Create vertices
         for (var i = 0; i < m_vertices.GetLength(0); ++i)
         {
@@ -201,8 +213,11 @@ public class Labyrinth : MonoBehaviour
         {
             range[i] = i;
         }
-        Shuffle(range);
 
+        var positionRandomier = new System.Random(m_positionSeed);
+        Shuffle(range, positionRandomier);
+
+        var rotationRandomizer = new System.Random(m_rotationSeed);
         // Movable tiles
         var counter = 0;
         for (var i = 0; i < BoardLength; ++i)
@@ -215,7 +230,7 @@ public class Labyrinth : MonoBehaviour
                 }
 
                 m_vertices[i, j].tile = Tile.MovableTiles[range[counter]].Copy();
-                RotateTileRandomly(m_vertices[i, j].tile);
+                RotateTileRandomly(m_vertices[i, j].tile, rotationRandomizer);
                 ++counter;
             }
         }
@@ -299,6 +314,8 @@ public class Labyrinth : MonoBehaviour
 
     void InitializeGraph()
     {
+        m_graph = new QuikGraph.UndirectedGraph<Vertex, QuikGraph.EquatableUndirectedEdge<Vertex>>(false);
+
         for (var i = 0; i < BoardLength; ++i)
         {
             for (var j = 0; j < BoardLength; ++j)
@@ -616,10 +633,9 @@ public class Labyrinth : MonoBehaviour
 
 
 
-    private QuikGraph.UndirectedGraph<Vertex, QuikGraph.EquatableUndirectedEdge<Vertex>> m_graph =
-        new QuikGraph.UndirectedGraph<Vertex, QuikGraph.EquatableUndirectedEdge<Vertex>>(false);
+    private QuikGraph.UndirectedGraph<Vertex, QuikGraph.EquatableUndirectedEdge<Vertex>> m_graph;
     
-    private Vertex [,] m_vertices = new Vertex[BoardLength, BoardLength];
+    private Vertex [,] m_vertices;
 
     private Tile m_freeTile = null;
     private Transform m_freeTileInstance = null;
@@ -636,7 +652,8 @@ public class Labyrinth : MonoBehaviour
     [SerializeField]
     private Transform m_straightTilePrefab;
 
-
+    private int m_positionSeed;
+    private int m_rotationSeed;
 
     #endregion
 }
