@@ -179,11 +179,11 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_tileScale: 0.9
-  junctionTilePrefab: {fileID: -8679921383154817045, guid: 14f39f714ea2385499b46543287d2e80,
+  m_junctionTilePrefab: {fileID: -8679921383154817045, guid: 14f39f714ea2385499b46543287d2e80,
     type: 3}
-  turnTilePrefab: {fileID: -8679921383154817045, guid: 59279e9981497984fbb7008b7bd3cf5c,
+  m_turnTilePrefab: {fileID: -8679921383154817045, guid: 59279e9981497984fbb7008b7bd3cf5c,
     type: 3}
-  straightTilePrefab: {fileID: -8679921383154817045, guid: 3af1e725e4d11794a9bfebd5cf47d0ff,
+  m_straightTilePrefab: {fileID: -8679921383154817045, guid: 3af1e725e4d11794a9bfebd5cf47d0ff,
     type: 3}
 --- !u!114 &15432046
 MonoBehaviour:
