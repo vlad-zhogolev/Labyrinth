@@ -31,7 +31,7 @@ public class TestControls : MonoBehaviour
 
     void CheckShiftLineNumber()
     {
-        if (Input.GetKeyDown(KeyCode.Alpha0))
+        if (Input.GetKeyDown(KeyCode.Alpha1))
         {
             m_shiftLineNumber = 1;
         }
@@ -96,7 +96,7 @@ public class TestControls : MonoBehaviour
     {
         if (Input.GetKeyDown(KeyCode.M))
         {
-            movePlayerEvent?.Invoke(new Vector2Int(1, 0));
+            movePlayerEvent?.Invoke(new Vector2Int(m_moveToX, m_moveToY));
         }
     }
 
@@ -112,6 +112,11 @@ public class TestControls : MonoBehaviour
 
     [SerializeField]
     private int m_shiftLineNumber = 1;
+
+    [SerializeField]
+    private int m_moveToX = 0;
+    [SerializeField]
+    private int m_moveToY = 0;
 }
 
 } // namespace Controls
