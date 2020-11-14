@@ -13,6 +13,7 @@ public class ShiftEvent : UnityEvent<Labyrinth.Shift> {}
 public class TestControls : MonoBehaviour
 {
     public ShiftEvent shiftEvent;
+    public UnityEvent cancelShift;
     
     // Start is called before the first frame update
     void Start()
@@ -63,11 +64,20 @@ public class TestControls : MonoBehaviour
         }
     }
 
+    void CheckCancelShiftCommand()
+    {
+        if (Input.GetKeyDown(KeyCode.C))
+        {
+            cancelShift?.Invoke();
+        }
+    }
+
     // Update is called once per frame
     void Update()
     {
         CheckShiftLineNumber();
         CheckShiftCommand();
+        CheckCancelShiftCommand();
     }
 
     [SerializeField]

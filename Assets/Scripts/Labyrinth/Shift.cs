@@ -27,7 +27,6 @@ public class Shift : IEquatable<Shift>
         {new Shift(Orientation.Vertical, Direction.Negative, 5),  new Cooridinates(new Vector2Int(6, 5), new Vector2Int(0, 5))},
     };
 
-
     public struct Cooridinates
     {
         public Cooridinates(Vector2Int insert, Vector2Int remove)
@@ -57,6 +56,18 @@ public class Shift : IEquatable<Shift>
         this.orientation = orientation;
         this.direction = direction;
         this.index = index;
+    }
+
+    public Shift Copy()
+    {
+        return new Shift(orientation, direction, index);
+    }
+
+    public Shift GetShiftWithInversedDirection()
+    {
+        var inverseShift = Copy();
+        inverseShift.direction = inverseShift.direction == Direction.Positive ? Direction.Negative : Direction.Positive;
+        return inverseShift;
     }
 
     public Orientation orientation;

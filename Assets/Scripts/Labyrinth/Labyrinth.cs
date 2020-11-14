@@ -8,8 +8,6 @@ namespace LabyrinthGame {
 
 namespace Labyrinth {
 
-// TODO: Remove inheritance from MonoBehaviour. It needed only for tile instantiation
-
 public class Labyrinth
 {
     public static readonly int BoardLength = 7;
@@ -20,6 +18,9 @@ public class Labyrinth
     public static readonly int MovableTurnTilesNumber = 15;
     public static readonly int MovableStraightTilesNumber = 13;
     public static readonly int TileSidesNumber = 4;
+
+    private static readonly string DumpName = "LabyrinthDump {0}.txt";
+    private static readonly string DumpFolder = Application.dataPath + @"\..\Logs\LabyrinthDumps\";
 
     #region Private static methods
 
@@ -77,7 +78,83 @@ public class Labyrinth
 
     #region Public methods
 
+    public void Dump()
+    {   
+        var time = DateTime.UtcNow.ToString();
+        var path = DumpFolder + @"\" + string.Format(DumpName, time).Replace(':','_').Replace(' ','_').Replace('.','_');
+        
+        if (!System.IO.Directory.Exists(DumpFolder))
+        {
+            System.IO.Directory.CreateDirectory(DumpFolder);
+        }
 
+        Debug.LogFormat("{0}: Saving dump {1}", GetType().Name, path);
+        using (System.IO.StreamWriter file = new System.IO.StreamWriter(path))
+        {
+            file.WriteLine("    0     1     2     3     4     5     6  ");
+            for (var i = 0; i < BoardLength; ++i)
+            {
+                var upLine = "  ";
+                for (var j = 0; j < BoardLength; ++j)
+                {
+                    if (m_vertices[i, j].tile.up)
+                    {
+                        upLine += "  |   ";
+                    }
+                    else
+                    {
+                        upLine += "      ";
+                    }
+                }
+                var middleLine = i.ToString() + " ";
+                for (var j = 0; j < BoardLength; ++j)
+                {
+                    if (m_vertices[i, j].tile.left)
+                    {
+                        middleLine += "--";
+                    }
+                    else
+                    {
+                        middleLine += "  ";
+                    }
+                    middleLine += "+";
+                    if (m_vertices[i, j].tile.right)
+                    {
+                        middleLine += "-- ";
+                    }
+                    else
+                    {
+                        middleLine += "   ";
+                    }
+                }
+                var bottomLine = "  ";
+                for (var j = 0; j < BoardLength; ++j)
+                {
+                    if (m_vertices[i, j].tile.down)
+                    {
+                        bottomLine += "  |   ";
+                    }
+                    else
+                    {
+                        bottomLine += "      ";
+                    }
+                }
+                file.WriteLine(upLine);
+                file.WriteLine(middleLine);
+                file.WriteLine(bottomLine);
+            }
+        }
+    }
+
+    public void RotateFreeTileCW()
+    {
+        m_freeTile.RotateCW();
+    }
+
+    public void RotateFreeTileCCW()
+    {
+        m_freeTile.RotateCCW();
+    }
 
     /// <summary>
     /// Moves tiles in labyrinth according to provided shift.
@@ -118,6 +195,10 @@ public class Labyrinth
         return tryGetPath(targetVertex, out path);
     }
 
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <returns> Copies of labyrinth's tiles and free tile</returns>
     public (Tile[,], Tile) GetTiles()
     {
         var tiles = new Tile[BoardLength, BoardLength];
@@ -257,29 +338,6 @@ public class Labyrinth
         m_freeTile = Tile.MovableTiles[range[counter]].Copy();
     }
 
-    private Transform GetPrefabByTileType(Tile.Type type)
-    {
-        switch (type)
-        {
-            case Tile.Type.Junction:
-            {
-                return m_junctionTilePrefab;
-            }
-            case Tile.Type.Turn:
-            {
-                return m_turnTilePrefab;
-            }
-            case Tile.Type.Straight:
-            {
-                return m_straightTilePrefab;
-            }
-            default:
-            {
-                throw new ArgumentException("Invalid type provided");
-            }
-        }
-    }
-
     void AddEdges(Func<int, int, Tuple<Vertex, Vertex>> adjacentVerticesProvider, Tile.Side side)
     {
         for (var i = 0; i < BoardLength - 1; ++i)
@@ -322,24 +380,6 @@ public class Labyrinth
             },
             Tile.Side.Right
         );
-
-        var source = m_vertices[1, 0];
-        var startTime = Time.realtimeSinceStartup;
-        var tryGetPath = m_graph.ShortestPathsDijkstra(distance => 1.0, source);
-        var endTime = Time.realtimeSinceStartup;
-
-        Debug.LogFormat("{0}: Time passed {1}", GetType().Name, endTime - startTime);
-
-        foreach (var vertex in m_vertices)
-        {
-            IEnumerable<QuikGraph.EquatableUndirectedEdge<Vertex>> path;
-            if (tryGetPath(vertex, out path))
-            {
-                var logPath = path.Aggregate(string.Empty, (log, edge) => log + ":" + edge.ToString());
-                Debug.LogFormat("{0}: Shortest path from {1} to {2} is: {3}", GetType().Name, source, vertex, logPath);
-            }
-        }
-
     }
 
     void Initialize()
@@ -578,12 +618,6 @@ public class Labyrinth
         return IsIndexValid(shift.index) && shift.index % 2 == 1;
     }
 
-    // TODO: Replace with constructor when MonoBehaviour will be removed
-    //void Start()
-    //{
-    //    Initialize();
-    //}
-
     #endregion
 
 
@@ -597,19 +631,6 @@ public class Labyrinth
     private Vertex [,] m_vertices;
 
     private Tile m_freeTile = null;
-    //private Transform m_freeTileInstance = null;
-
-    [SerializeField]
-    private float m_tileScale = 0.9f;
-
-    [SerializeField]
-    private Transform m_junctionTilePrefab;
-
-    [SerializeField]
-    private Transform m_turnTilePrefab;
-
-    [SerializeField]
-    private Transform m_straightTilePrefab;
 
     private int m_positionSeed;
     private int m_rotationSeed;
