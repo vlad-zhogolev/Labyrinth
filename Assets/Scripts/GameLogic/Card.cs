@@ -4,15 +4,13 @@ using UnityEngine;
 
 namespace LabyrinthGame {
 
-namespace Labyrinth {
-public enum Item
+namespace GameLogic {
+
+public class Card
 {
-    One,
-    Two,
-    Three,
-    Four,
+    public Labyrinth.Item item;
 }
 
-} // namespace Labyrinth
+} // namespace GameLogic
 
 } // namespace LabyrinthGame

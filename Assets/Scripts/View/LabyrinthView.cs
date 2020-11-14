@@ -11,10 +11,6 @@ public class LabyrinthView : MonoBehaviour
 
     void MoveTiles(Func<int, (Vector2Int, Vector2Int)> tilesIndicesProvider)
     {
-        //(_, var lastTileInstanceIndices) = tilesIndicesProvider(Labyrinth.Labyrinth.BoardLength - 2);
-        //var lastTileInstancePosition = m_tiles[lastTileInstanceIndices.x, lastTileInstanceIndices.y].position;
-
-         // Just for visual debugging
         for (var i = 0; i < Labyrinth.Labyrinth.BoardLength - 1 ; ++i)
         {
             (var current, var next) = tilesIndicesProvider(i);
@@ -27,9 +23,6 @@ public class LabyrinthView : MonoBehaviour
             m_tiles[next.x, next.y] = null;
             m_tiles[next.x, next.y] = m_tiles[current.x, current.y];
         }
-
-        //(_, lastTileInstanceIndices) = tilesIndicesProvider(Labyrinth.Labyrinth.BoardLength - 2);
-        //m_tiles[lastTileInstanceIndices.x, lastTileInstanceIndices.y].position = lastTileInstancePosition;
     }
 
     public void ShiftTiles(Labyrinth.Shift shift)
@@ -125,7 +118,7 @@ public class LabyrinthView : MonoBehaviour
     public void Initialize(in Labyrinth.Tile[,] tiles, in Labyrinth.Tile freeTile)
     {
         m_tiles = new Transform[Labyrinth.Labyrinth.BoardLength, Labyrinth.Labyrinth.BoardLength];
-        
+
         var z = 3.0f;
         var step = 1.0f;
         for (var i = 0; i < Labyrinth.Labyrinth.BoardLength; ++i)
