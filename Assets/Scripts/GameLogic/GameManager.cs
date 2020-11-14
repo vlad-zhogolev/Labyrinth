@@ -8,6 +8,13 @@ namespace GameLogic {
 
 public class GameManager : MonoBehaviour
 {
+    public void ShiftTiles(Labyrinth.Shift shift)
+    {
+        Debug.LogFormat("{0}: Shifting tiles", GetType().Name);
+        m_labyrinth.ShiftTiles(shift);
+        m_labyrinthView.ShiftTiles(shift);
+    }
+    
     void Initiallize()
     {
         m_labyrinth = new Labyrinth.Labyrinth(4, 0);
