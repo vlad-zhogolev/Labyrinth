@@ -16,11 +16,11 @@ public class GameManager : MonoBehaviour
             return;
         }
 
+        Debug.LogFormat("{0}: Moving tiles for shift: {1}", GetType().Name, shift);
         m_availableShifts.Add(m_unavailableShift);
         m_availableShifts.Remove(shift);
         m_unavailableShift = shift;
 
-        Debug.LogFormat("{0}: Shifting tiles", GetType().Name);
         m_labyrinth.ShiftTiles(shift);
         m_labyrinthView.ShiftTiles(shift);
     }

@@ -280,39 +280,6 @@ public class Labyrinth
         }
     }
 
-    Transform InstantiateTile(Tile tile, float x, float z)
-    {
-        Transform prefab = GetPrefabByTileType(tile.type);
-        //var instance = Instantiate(prefab, new Vector3(x, 0, z), tile.GetRotation());
-        //instance.localScale = new Vector3(m_tileScale, m_tileScale, m_tileScale);
-        
-        return null;
-    }
-
-    //void InstantiateLabyrinth()
-    //{
-    //    var z = 3.0f;
-    //    var step = 1.0f;
-    //    for (var i = 0; i < BoardLength; ++i)
-    //    {
-    //        var x = -3.0f;
-    //        for (var j = 0; j < BoardLength; ++j)
-    //        {
-    //            var tile = m_vertices[i, j].tile;
-    //            m_vertices[i, j].TileInstance = InstantiateTile(tile, x, z);
-
-    //            Debug.LogFormat("{0}: tile [{1}, {2}] type = {3}, rotation = {4}",
-    //                GetType().Name, i, j, tile.type, tile.GetRotation());
-    //            x += step;
-    //        }
-    //        z -= step;
-    //    }
-
-    //    var freeTileX = 5.0f;
-    //    var freeTileY = 5.0f;
-    //    m_freeTileInstance = InstantiateTile(m_freeTile, freeTileX, freeTileY);
-    //}
-
     void AddEdges(Func<int, int, Tuple<Vertex, Vertex>> adjacentVerticesProvider, Tile.Side side)
     {
         for (var i = 0; i < BoardLength - 1; ++i)
@@ -379,7 +346,6 @@ public class Labyrinth
     {
         InitializeVertices();
         InitializeGraph();
-        //InstantiateLabyrinth();
     }
 
     void RemoveEdgesForShift(Shift shift)
@@ -542,9 +508,6 @@ public class Labyrinth
 
     void MoveTiles(Func<int, Tuple<Vertex, Vertex>> adjacentVerticesProvider /*, Vertex removePlace */)
     {
-        //var lastTileInstancePosition = adjacentVerticesProvider(BoardLength - 2).Item2.TileInstance.position;
-        //var lastTileInstancePosition = removePlace.TileInstance.position;
-   
         for (var i = BoardLength - 2; i >= 0 ; --i)
         {
             var adjacentVertices = adjacentVerticesProvider(i);
@@ -552,21 +515,7 @@ public class Labyrinth
             var nextVertex = adjacentVertices.Item2;
 
             nextVertex.tile = vertex.tile;
-            //nextVertex.TileInstance = vertex.TileInstance; // Just for visual debugging
         }
-
-        // Just for visual debugging
-        for (var i = 0; i < BoardLength - 1 ; ++i)
-        {
-            var adjacentVertices = adjacentVerticesProvider(i);
-            var vertex = adjacentVertices.Item1;
-            var nextVertex = adjacentVertices.Item2;
-
-            //vertex.TileInstance.position = nextVertex.TileInstance.position;
-        }
-
-        //adjacentVerticesProvider(BoardLength - 2).Item2.TileInstance.position = lastTileInstancePosition;
-        //removePlace.TileInstance.position = lastTileInstancePosition;
     }
 
     void MoveTilesForShift(Shift shift)
@@ -615,21 +564,13 @@ public class Labyrinth
 
         var borderCoordinates = Shift.BorderCoordinates[shift];
         var insertPlace = m_vertices[borderCoordinates.insert.x, borderCoordinates.insert.y];
-        //var insertTileInstancePosition = insertPlace.TileInstance.position;
-
         var removePlace = m_vertices[borderCoordinates.remove.x, borderCoordinates.remove.y];
         var removedTile = removePlace.tile;
-        //var removedTileInstance = removePlace.TileInstance;
 
-        MoveTiles(vertexProvider /*, removePlace*/);
+        MoveTiles(vertexProvider);
 
-        //removedTileInstance.position = m_freeTileInstance.position;
         insertPlace.tile = m_freeTile;
-        //insertPlace.TileInstance = m_freeTileInstance;
-        //insertPlace.TileInstance.position = insertTileInstancePosition;
-
         m_freeTile = removedTile;
-        //m_freeTileInstance = removedTileInstance;
     }
 
     bool IsShiftValid(Shift shift)
