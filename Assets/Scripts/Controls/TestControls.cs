@@ -13,11 +13,15 @@ public class ShiftEvent : UnityEvent<Labyrinth.Shift> {}
 [System.Serializable]
 public class RotateEvent : UnityEvent<Labyrinth.Tile.RotationDirection> {}
 
+[System.Serializable]
+public class MoveEvent : UnityEvent<Vector2Int> {}
+
 public class TestControls : MonoBehaviour
 {
     public ShiftEvent shiftEvent;
     public UnityEvent cancelShift;
     public RotateEvent rotateFreeTile;
+    public MoveEvent movePlayerEvent;
     
     // Start is called before the first frame update
     void Start()
@@ -88,6 +92,14 @@ public class TestControls : MonoBehaviour
         }
     }
 
+    void CheckMakeMoveCommand()
+    {
+        if (Input.GetKeyDown(KeyCode.M))
+        {
+            movePlayerEvent?.Invoke(new Vector2Int(1, 0));
+        }
+    }
+
     // Update is called once per frame
     void Update()
     {
@@ -95,6 +107,7 @@ public class TestControls : MonoBehaviour
         CheckShiftCommand();
         CheckCancelShiftCommand();
         CheckRotationCommand();
+        CheckMakeMoveCommand();
     }
 
     [SerializeField]

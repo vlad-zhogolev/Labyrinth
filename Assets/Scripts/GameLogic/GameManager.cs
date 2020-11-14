@@ -84,6 +84,31 @@ public class GameManager : MonoBehaviour
         m_labyrinth.Dump();
     }
 
+    public void MakeMove(Vector2Int position)
+    {
+        if (!m_isShiftAlreadyDone)
+        {
+            Debug.LogFormat("{0}: Can not move player. Shift must be made first.", GetType().Name, CurrentPlayer.Position, position);
+            return;
+        }
+        if (!m_labyrinth.IsReachable(position, CurrentPlayer.Position))
+        {
+            Debug.LogFormat("{0}: Can not move player from {1} to {2}", GetType().Name, CurrentPlayer.Position, position);
+            return;
+        }
+
+        CurrentPlayer.Position = position;
+        m_labyrinthView.SetPlayerPosition(CurrentPlayer.Color, position);
+        
+        PassTurn();
+    }
+
+    void PassTurn()
+    {
+        SwitchToNextPlayer();
+        m_isShiftAlreadyDone = false;
+    }
+
     void Initiallize()
     {
         m_players = new List<Player>()

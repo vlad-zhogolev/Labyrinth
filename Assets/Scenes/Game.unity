@@ -222,6 +222,20 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
+  movePlayerEvent:
+    m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 15432043}
+        m_MethodName: MakeMove
+        m_Mode: 0
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
   m_shiftLineNumber: 1
 --- !u!114 &15432046
 MonoBehaviour:
@@ -242,6 +256,12 @@ MonoBehaviour:
     type: 3}
   m_straightTilePrefab: {fileID: -8679921383154817045, guid: 3af1e725e4d11794a9bfebd5cf47d0ff,
     type: 3}
+  m_magePrefab: {fileID: 7210460218048237151, guid: 109fd9303d4f9014e964a19e08d1c4a2,
+    type: 3}
+  m_redMaterial: {fileID: 2100000, guid: 8b763a3b2304bc548ad575078275ce49, type: 2}
+  m_blueMaterial: {fileID: 2100000, guid: 505f8db13f40d1340a4e14abc6dc61c8, type: 2}
+  m_greenMaterial: {fileID: 2100000, guid: 83fe3dbb9df586740bc4046e11a96745, type: 2}
+  m_yellowMaterial: {fileID: 2100000, guid: dad5c4e29905b2d4f8c3107ef2ae4932, type: 2}
 --- !u!1 &1176419304
 GameObject:
   m_ObjectHideFlags: 0
