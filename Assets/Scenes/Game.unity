@@ -130,9 +130,9 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 15432044}
-  - component: {fileID: 15432045}
   - component: {fileID: 15432043}
   - component: {fileID: 15432046}
+  - component: {fileID: 15432045}
   m_Layer: 0
   m_Name: GameManager
   m_TagString: Untagged
@@ -147,9 +147,9 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 15432042}
-  m_Enabled: 0
+  m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d020aa12f9d8fff4697a7caa5c886b63, type: 3}
+  m_Script: {fileID: 11500000, guid: 47c0ecdeb8b30b744be87b1ea6e9cd3c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
 --- !u!4 &15432044
@@ -175,16 +175,24 @@ MonoBehaviour:
   m_GameObject: {fileID: 15432042}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 5f6935747b9df6947992efc28fe64277, type: 3}
+  m_Script: {fileID: 11500000, guid: 96927d5566e0036419e7404416f8b2f0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_tileScale: 0.9
-  junctionTilePrefab: {fileID: -8679921383154817045, guid: 14f39f714ea2385499b46543287d2e80,
-    type: 3}
-  turnTilePrefab: {fileID: -8679921383154817045, guid: 59279e9981497984fbb7008b7bd3cf5c,
-    type: 3}
-  straightTilePrefab: {fileID: -8679921383154817045, guid: 3af1e725e4d11794a9bfebd5cf47d0ff,
-    type: 3}
+  shiftEvent:
+    m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 15432043}
+        m_MethodName: ShiftTiles
+        m_Mode: 0
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+  m_shiftLineNumber: 1
 --- !u!114 &15432046
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -192,11 +200,18 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 15432042}
-  m_Enabled: 0
+  m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 8fd0c3263b0bde84295832a2c5a2a82d, type: 3}
+  m_Script: {fileID: 11500000, guid: 237c5b5c937218e498aa23f8002f985e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  m_tileScale: 0.98
+  m_junctionTilePrefab: {fileID: -8679921383154817045, guid: 14f39f714ea2385499b46543287d2e80,
+    type: 3}
+  m_turnTilePrefab: {fileID: -8679921383154817045, guid: 59279e9981497984fbb7008b7bd3cf5c,
+    type: 3}
+  m_straightTilePrefab: {fileID: -8679921383154817045, guid: 3af1e725e4d11794a9bfebd5cf47d0ff,
+    type: 3}
 --- !u!1 &1176419304
 GameObject:
   m_ObjectHideFlags: 0

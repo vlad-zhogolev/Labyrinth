@@ -4,11 +4,12 @@ using System.Collections.Generic;
 using UnityEngine;
 using QuikGraph.Algorithms;
 using QuikGraph;
+using LabyrinthGame;
 
 namespace Playground {
 
-    using Vertex = Labyrinth.Vertex;
-    using MyEdge = QuikGraph.EquatableUndirectedEdge<Labyrinth.Vertex>;
+    using Vertex = LabyrinthGame.Labyrinth.Vertex;
+    using MyEdge = QuikGraph.EquatableUndirectedEdge<LabyrinthGame.Labyrinth.Vertex>;
 
     //using MyEdge = QuikGraph.EquatableUndirectedEdge<Vertex>;
 

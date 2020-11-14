@@ -2,10 +2,14 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+namespace LabyrinthGame {
+
 namespace Labyrinth {
-enum Items
+public enum Items
 {
     
 }
 
-} // namespace QuickGraphTest
+} // namespace Labyrinth
+
+} // namespace LabyrinthGame

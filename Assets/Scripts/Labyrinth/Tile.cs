@@ -2,9 +2,11 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+namespace LabyrinthGame {
+
 namespace Labyrinth {
 
-class Tile
+public class Tile
 {
     public enum Type
     {
@@ -249,4 +251,6 @@ class Tile
     //Also information about connections with adjacent tiles can be added
 }
 
-} // namespace labirynth
+} // namespace Labirynth
+
+} // namespace LabyrinthGame

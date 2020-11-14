@@ -4,10 +4,13 @@ using System.Linq;
 using System;
 using QuikGraph.Algorithms;
 
+namespace LabyrinthGame {
+
 namespace Labyrinth {
 
 // TODO: Remove inheritance from MonoBehaviour. It needed only for tile instantiation
-public class Labyrinth : MonoBehaviour
+
+public class Labyrinth
 {
     public static readonly int BoardLength = 7;
     public static readonly int TilesNumber = 49;
@@ -17,9 +20,6 @@ public class Labyrinth : MonoBehaviour
     public static readonly int MovableTurnTilesNumber = 15;
     public static readonly int MovableStraightTilesNumber = 13;
     public static readonly int TileSidesNumber = 4;
-
-    private static System.Random TilePositionRandomizer = new System.Random(4);
-    private static System.Random TileRotationRandomizer = new System.Random(0);
 
     #region Private static methods
 
@@ -40,17 +40,35 @@ public class Labyrinth : MonoBehaviour
         return CreateEdge(new Vertex(x1, y1), new Vertex(x2, y2));
     }
 
-    static void Shuffle(int[] list)  
+    static void Shuffle(int[] list, System.Random randomizer)  
     {  
         int n = list.Length;  
         while (n > 1)
         {  
             n--;  
-            int k = TilePositionRandomizer.Next(n + 1);
+            int k = randomizer.Next(n + 1);
             int value = list[k];  
             list[k] = list[n];  
             list[n] = value;  
         }  
+    }
+
+    #endregion
+
+
+
+    #region Constructors
+
+    /// <summary>
+    /// Initialized labyrith based on position and rotation seeds.
+    /// </summary>
+    /// <param name="positionSeed"></param>
+    /// <param name="rotationSeed"></param>
+    public Labyrinth(int positionSeed, int rotationSeed)
+    {
+        m_positionSeed = positionSeed;
+        m_rotationSeed = rotationSeed;
+        Initialize();
     }
 
     #endregion
@@ -100,7 +118,20 @@ public class Labyrinth : MonoBehaviour
         return tryGetPath(targetVertex, out path);
     }
 
+    public (Tile[,], Tile) GetTiles()
+    {
+        var tiles = new Tile[BoardLength, BoardLength];
+        for (var i = 0; i < BoardLength; ++i)
+        {
+            for (var j = 0; j < BoardLength; ++j)
+            {
+                tiles[i, j] = m_vertices[i, j].tile.Copy();
+            }
+        }
+        var freeTile = m_freeTile.Copy();
 
+        return (tiles, freeTile);
+    }
 
     #endregion
 
@@ -115,14 +146,14 @@ public class Labyrinth : MonoBehaviour
         return (i % 2 == 0) && (j % 2 == 0);
     }
 
-    void RotateTileRandomly(Tile tile)
+    void RotateTileRandomly(Tile tile, System.Random rotationRandomizer)
     {
         if (tile == null)
         {
             return;
         }
 
-        var rotationsNumber = TileRotationRandomizer.Next(TileSidesNumber);
+        var rotationsNumber = rotationRandomizer.Next(TileSidesNumber);
         for (var k = 0; k < rotationsNumber; ++k)
         {
             tile.RotateCW();
@@ -148,6 +179,7 @@ public class Labyrinth : MonoBehaviour
 
     void InitializeVertices()
     {
+        m_vertices = new Vertex[BoardLength, BoardLength];
         // Create vertices
         for (var i = 0; i < m_vertices.GetLength(0); ++i)
         {
@@ -199,8 +231,11 @@ public class Labyrinth : MonoBehaviour
         {
             range[i] = i;
         }
-        Shuffle(range);
 
+        var positionRandomier = new System.Random(m_positionSeed);
+        Shuffle(range, positionRandomier);
+
+        var rotationRandomizer = new System.Random(m_rotationSeed);
         // Movable tiles
         var counter = 0;
         for (var i = 0; i < BoardLength; ++i)
@@ -213,7 +248,7 @@ public class Labyrinth : MonoBehaviour
                 }
 
                 m_vertices[i, j].tile = Tile.MovableTiles[range[counter]].Copy();
-                RotateTileRandomly(m_vertices[i, j].tile);
+                RotateTileRandomly(m_vertices[i, j].tile, rotationRandomizer);
                 ++counter;
             }
         }
@@ -248,35 +283,35 @@ public class Labyrinth : MonoBehaviour
     Transform InstantiateTile(Tile tile, float x, float z)
     {
         Transform prefab = GetPrefabByTileType(tile.type);
-        var instance = Instantiate(prefab, new Vector3(x, 0, z), tile.GetRotation());
-        instance.localScale = new Vector3(m_tileScale, m_tileScale, m_tileScale);
-
-        return instance;
+        //var instance = Instantiate(prefab, new Vector3(x, 0, z), tile.GetRotation());
+        //instance.localScale = new Vector3(m_tileScale, m_tileScale, m_tileScale);
+        
+        return null;
     }
 
-    void InstantiateLabyrinth()
-    {
-        var z = 3.0f;
-        var step = 1.0f;
-        for (var i = 0; i < BoardLength; ++i)
-        {
-            var x = -3.0f;
-            for (var j = 0; j < BoardLength; ++j)
-            {
-                var tile = m_vertices[i, j].tile;
-                m_vertices[i, j].TileInstance = InstantiateTile(tile, x, z);
+    //void InstantiateLabyrinth()
+    //{
+    //    var z = 3.0f;
+    //    var step = 1.0f;
+    //    for (var i = 0; i < BoardLength; ++i)
+    //    {
+    //        var x = -3.0f;
+    //        for (var j = 0; j < BoardLength; ++j)
+    //        {
+    //            var tile = m_vertices[i, j].tile;
+    //            m_vertices[i, j].TileInstance = InstantiateTile(tile, x, z);
 
-                Debug.LogFormat("{0}: tile [{1}, {2}] type = {3}, rotation = {4}",
-                    GetType().Name, i, j, tile.type, tile.GetRotation());
-                x += step;
-            }
-            z -= step;
-        }
+    //            Debug.LogFormat("{0}: tile [{1}, {2}] type = {3}, rotation = {4}",
+    //                GetType().Name, i, j, tile.type, tile.GetRotation());
+    //            x += step;
+    //        }
+    //        z -= step;
+    //    }
 
-        var freeTileX = 5.0f;
-        var freeTileY = 5.0f;
-        m_freeTileInstance = InstantiateTile(m_freeTile, freeTileX, freeTileY);
-    }
+    //    var freeTileX = 5.0f;
+    //    var freeTileY = 5.0f;
+    //    m_freeTileInstance = InstantiateTile(m_freeTile, freeTileX, freeTileY);
+    //}
 
     void AddEdges(Func<int, int, Tuple<Vertex, Vertex>> adjacentVerticesProvider, Tile.Side side)
     {
@@ -297,6 +332,8 @@ public class Labyrinth : MonoBehaviour
 
     void InitializeGraph()
     {
+        m_graph = new QuikGraph.UndirectedGraph<Vertex, QuikGraph.EquatableUndirectedEdge<Vertex>>(false);
+
         for (var i = 0; i < BoardLength; ++i)
         {
             for (var j = 0; j < BoardLength; ++j)
@@ -342,7 +379,7 @@ public class Labyrinth : MonoBehaviour
     {
         InitializeVertices();
         InitializeGraph();
-        InstantiateLabyrinth();
+        //InstantiateLabyrinth();
     }
 
     void RemoveEdgesForShift(Shift shift)
@@ -505,7 +542,7 @@ public class Labyrinth : MonoBehaviour
 
     void MoveTiles(Func<int, Tuple<Vertex, Vertex>> adjacentVerticesProvider /*, Vertex removePlace */)
     {
-        var lastTileInstancePosition = adjacentVerticesProvider(BoardLength - 2).Item2.TileInstance.position;
+        //var lastTileInstancePosition = adjacentVerticesProvider(BoardLength - 2).Item2.TileInstance.position;
         //var lastTileInstancePosition = removePlace.TileInstance.position;
    
         for (var i = BoardLength - 2; i >= 0 ; --i)
@@ -515,7 +552,7 @@ public class Labyrinth : MonoBehaviour
             var nextVertex = adjacentVertices.Item2;
 
             nextVertex.tile = vertex.tile;
-            nextVertex.TileInstance = vertex.TileInstance; // Just for visual debugging
+            //nextVertex.TileInstance = vertex.TileInstance; // Just for visual debugging
         }
 
         // Just for visual debugging
@@ -525,10 +562,10 @@ public class Labyrinth : MonoBehaviour
             var vertex = adjacentVertices.Item1;
             var nextVertex = adjacentVertices.Item2;
 
-            vertex.TileInstance.position = nextVertex.TileInstance.position;
+            //vertex.TileInstance.position = nextVertex.TileInstance.position;
         }
 
-        adjacentVerticesProvider(BoardLength - 2).Item2.TileInstance.position = lastTileInstancePosition;
+        //adjacentVerticesProvider(BoardLength - 2).Item2.TileInstance.position = lastTileInstancePosition;
         //removePlace.TileInstance.position = lastTileInstancePosition;
     }
 
@@ -578,21 +615,21 @@ public class Labyrinth : MonoBehaviour
 
         var borderCoordinates = Shift.BorderCoordinates[shift];
         var insertPlace = m_vertices[borderCoordinates.insert.x, borderCoordinates.insert.y];
-        var insertTileInstancePosition = insertPlace.TileInstance.position;
+        //var insertTileInstancePosition = insertPlace.TileInstance.position;
 
         var removePlace = m_vertices[borderCoordinates.remove.x, borderCoordinates.remove.y];
         var removedTile = removePlace.tile;
-        var removedTileInstance = removePlace.TileInstance;
+        //var removedTileInstance = removePlace.TileInstance;
 
         MoveTiles(vertexProvider /*, removePlace*/);
 
-        removedTileInstance.position = m_freeTileInstance.position;
+        //removedTileInstance.position = m_freeTileInstance.position;
         insertPlace.tile = m_freeTile;
-        insertPlace.TileInstance = m_freeTileInstance;
-        insertPlace.TileInstance.position = insertTileInstancePosition;
+        //insertPlace.TileInstance = m_freeTileInstance;
+        //insertPlace.TileInstance.position = insertTileInstancePosition;
 
         m_freeTile = removedTile;
-        m_freeTileInstance = removedTileInstance;
+        //m_freeTileInstance = removedTileInstance;
     }
 
     bool IsShiftValid(Shift shift)
@@ -601,10 +638,10 @@ public class Labyrinth : MonoBehaviour
     }
 
     // TODO: Replace with constructor when MonoBehaviour will be removed
-    void Start()
-    {
-        Initialize();
-    }
+    //void Start()
+    //{
+    //    Initialize();
+    //}
 
     #endregion
 
@@ -614,13 +651,12 @@ public class Labyrinth : MonoBehaviour
 
 
 
-    private QuikGraph.UndirectedGraph<Vertex, QuikGraph.EquatableUndirectedEdge<Vertex>> m_graph =
-        new QuikGraph.UndirectedGraph<Vertex, QuikGraph.EquatableUndirectedEdge<Vertex>>(false);
+    private QuikGraph.UndirectedGraph<Vertex, QuikGraph.EquatableUndirectedEdge<Vertex>> m_graph;
     
-    private Vertex [,] m_vertices = new Vertex[BoardLength, BoardLength];
+    private Vertex [,] m_vertices;
 
     private Tile m_freeTile = null;
-    private Transform m_freeTileInstance = null;
+    //private Transform m_freeTileInstance = null;
 
     [SerializeField]
     private float m_tileScale = 0.9f;
@@ -634,9 +670,12 @@ public class Labyrinth : MonoBehaviour
     [SerializeField]
     private Transform m_straightTilePrefab;
 
-
+    private int m_positionSeed;
+    private int m_rotationSeed;
 
     #endregion
 }
 
-} // namespace QuickGraphTest
+} // namespace Labyrinth
+
+} // namespace LabyrinthGame
