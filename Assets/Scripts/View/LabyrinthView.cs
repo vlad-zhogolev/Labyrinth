@@ -8,7 +8,6 @@ namespace View {
 
 public class LabyrinthView : MonoBehaviour
 {
-
     void MoveTiles(Func<int, (Vector2Int, Vector2Int)> tilesIndicesProvider)
     {
         for (var i = 0; i < Labyrinth.Labyrinth.BoardLength - 1 ; ++i)
@@ -81,6 +80,11 @@ public class LabyrinthView : MonoBehaviour
         m_tiles[borderCoordinates.insert.x, borderCoordinates.insert.y].position = insertTileInstancePosition;
 
         m_freeTileInstance = removedTile;
+    }
+
+    public void RotateFreeTile(Quaternion rotation)
+    {
+        m_freeTileInstance.rotation = rotation;
     }
 
     private Transform GetPrefabByTileType(Labyrinth.Tile.Type type)

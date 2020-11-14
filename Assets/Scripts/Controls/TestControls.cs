@@ -10,10 +10,14 @@ namespace Controls {
 [System.Serializable]
 public class ShiftEvent : UnityEvent<Labyrinth.Shift> {}
 
+[System.Serializable]
+public class RotateEvent : UnityEvent<Labyrinth.Tile.RotationDirection> {}
+
 public class TestControls : MonoBehaviour
 {
     public ShiftEvent shiftEvent;
     public UnityEvent cancelShift;
+    public RotateEvent rotateFreeTile;
     
     // Start is called before the first frame update
     void Start()
@@ -72,12 +76,25 @@ public class TestControls : MonoBehaviour
         }
     }
 
+    void CheckRotationCommand()
+    {
+        if (Input.GetKeyDown(KeyCode.LeftArrow))
+        {
+            rotateFreeTile?.Invoke(Labyrinth.Tile.RotationDirection.CounterClockwise);
+        }
+        else if (Input.GetKeyDown(KeyCode.RightArrow))
+        {
+            rotateFreeTile?.Invoke(Labyrinth.Tile.RotationDirection.Clockwise);
+        }
+    }
+
     // Update is called once per frame
     void Update()
     {
         CheckShiftLineNumber();
         CheckShiftCommand();
         CheckCancelShiftCommand();
+        CheckRotationCommand();
     }
 
     [SerializeField]

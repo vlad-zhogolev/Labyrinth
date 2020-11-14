@@ -23,6 +23,12 @@ public class Tile
         Left
     }
 
+    public enum RotationDirection
+    {
+        Clockwise,
+        CounterClockwise,
+    }
+
     public static HashSet<Side> AllSides = new HashSet<Side>{
         Side.Up,
         Side.Down,
@@ -90,6 +96,28 @@ public class Tile
             }
         }
         this.type = type;
+    }
+
+    public Tile Rotate(RotationDirection rotationDirection)
+    {
+        switch (rotationDirection)
+        {
+            case RotationDirection.Clockwise:
+            {
+                RotateCW();
+            }
+            break;
+            case RotationDirection.CounterClockwise:
+            {
+                RotateCCW();
+            }
+            break;
+            default:
+            {
+                throw new ArgumentException("Invalid rotation");
+            }
+        }
+        return this;
     }
 
     public Tile RotateCW()
