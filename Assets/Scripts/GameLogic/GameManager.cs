@@ -1,4 +1,4 @@
-﻿using System.Collections;
+﻿using System;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -34,6 +34,8 @@ public class GameManager : MonoBehaviour
         m_labyrinth.ShiftTiles(shift);
         m_labyrinthView.ShiftTiles(shift);
         m_isShiftAlreadyDone = true;
+
+        m_labyrinth.Dump();
     }
     
     public void CancelShift()
@@ -59,6 +61,51 @@ public class GameManager : MonoBehaviour
         m_unavailableShift = m_previousUnavailableShift;
         m_previousUnavailableShift = null;
 
+        m_isShiftAlreadyDone = false;
+
+        m_labyrinth.Dump();
+    }
+
+    public void RotateFreeTile(Labyrinth.Tile.RotationDirection rotationDirection)
+    {
+        if (m_isShiftAlreadyDone)
+        {
+            Debug.LogFormat("{0}: Can not rotate free tile. Shift already made.", GetType().Name);
+            return;
+        }
+
+        Debug.LogFormat("{0}: Rotate free tile {1}", GetType().Name, rotationDirection);
+
+        m_labyrinth.RotateFreeTile(rotationDirection);
+
+        var freeTileRotation = m_labyrinth.GetFreeTileRotation();
+        m_labyrinthView.RotateFreeTile(freeTileRotation);
+
+        m_labyrinth.Dump();
+    }
+
+    public void MakeMove(Vector2Int position)
+    {
+        if (!m_isShiftAlreadyDone)
+        {
+            Debug.LogFormat("{0}: Can not move player. Shift must be made first.", GetType().Name, CurrentPlayer.Position, position);
+            return;
+        }
+        if (!m_labyrinth.IsReachable(position, CurrentPlayer.Position))
+        {
+            Debug.LogFormat("{0}: Can not move player from {1} to {2}", GetType().Name, CurrentPlayer.Position, position);
+            return;
+        }
+
+        CurrentPlayer.Position = position;
+        m_labyrinthView.SetPlayerPosition(CurrentPlayer.Color, position);
+        
+        PassTurn();
+    }
+
+    void PassTurn()
+    {
+        SwitchToNextPlayer();
         m_isShiftAlreadyDone = false;
     }
 

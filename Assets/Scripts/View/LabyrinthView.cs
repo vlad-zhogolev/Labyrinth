@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using System;
+using System.Collections.Generic;
 
 
 namespace LabyrinthGame {
@@ -8,7 +9,6 @@ namespace View {
 
 public class LabyrinthView : MonoBehaviour
 {
-
     void MoveTiles(Func<int, (Vector2Int, Vector2Int)> tilesIndicesProvider)
     {
         for (var i = 0; i < Labyrinth.Labyrinth.BoardLength - 1 ; ++i)
@@ -83,6 +83,18 @@ public class LabyrinthView : MonoBehaviour
         m_freeTileInstance = removedTile;
     }
 
+    public void RotateFreeTile(Quaternion rotation)
+    {
+        m_freeTileInstance.rotation = rotation;
+    }
+
+    public void SetPlayerPosition(GameLogic.Color playerColor, Vector2Int indices)
+    {
+        var mage = m_mageInstanceForColor[playerColor];
+        var position = m_tiles[indices.x, indices.y].position;
+        mage.position = new Vector3(position.x, 0, position.z);
+    }
+
     private Transform GetPrefabByTileType(Labyrinth.Tile.Type type)
     {
         switch (type)
@@ -115,6 +127,34 @@ public class LabyrinthView : MonoBehaviour
         return instance;
     }
 
+    void InitializeMages()
+    {
+        m_materialForColor = new Dictionary<GameLogic.Color, Material>()
+        {
+            {GameLogic.Color.Yellow, m_yellowMaterial},
+            {GameLogic.Color.Red,    m_redMaterial},
+            {GameLogic.Color.Blue,   m_blueMaterial},
+            {GameLogic.Color.Green,  m_greenMaterial},
+        };
+
+        m_mageInstanceForColor = new Dictionary<GameLogic.Color, Transform>()
+        {
+            {GameLogic.Color.Yellow, Instantiate(m_magePrefab, new Vector3(-3.0f, 0,  3.0f), Quaternion.identity)},
+            {GameLogic.Color.Red,    Instantiate(m_magePrefab, new Vector3( 3.0f, 0,  3.0f), Quaternion.identity)},
+            {GameLogic.Color.Blue,   Instantiate(m_magePrefab, new Vector3( 3.0f, 0, -3.0f), Quaternion.identity)},
+            {GameLogic.Color.Green,  Instantiate(m_magePrefab, new Vector3(-3.0f, 0, -3.0f), Quaternion.identity)},
+        };
+
+        var yellowMage = m_mageInstanceForColor[GameLogic.Color.Yellow];
+        yellowMage.GetComponent<Renderer>().material.color = Color.yellow;
+        var blueMage = m_mageInstanceForColor[GameLogic.Color.Blue];
+        blueMage.GetComponent<Renderer>().material.color = Color.blue;
+        var greenMage = m_mageInstanceForColor[GameLogic.Color.Green];
+        greenMage.GetComponent<Renderer>().material.color = Color.green;
+        var redMage = m_mageInstanceForColor[GameLogic.Color.Red];
+        redMage.GetComponent<Renderer>().material.color = Color.red;
+    }
+
     public void Initialize(in Labyrinth.Tile[,] tiles, in Labyrinth.Tile freeTile)
     {
         m_tiles = new Transform[Labyrinth.Labyrinth.BoardLength, Labyrinth.Labyrinth.BoardLength];
@@ -139,6 +179,8 @@ public class LabyrinthView : MonoBehaviour
         var freeTileX = 5.0f;
         var freeTileY = 5.0f;
         m_freeTileInstance = InstantiateTile(freeTile, freeTileX, freeTileY);
+
+        InitializeMages();
     }
 
     // Start is called before the first frame update
@@ -160,6 +202,8 @@ public class LabyrinthView : MonoBehaviour
 
     private Transform m_freeTileInstance;
 
+    private IDictionary<GameLogic.Color, Transform> m_mageInstanceForColor;
+
     [SerializeField]
     private Transform m_junctionTilePrefab;
 
@@ -168,6 +212,23 @@ public class LabyrinthView : MonoBehaviour
 
     [SerializeField]
     private Transform m_straightTilePrefab;
+
+    [SerializeField]
+    private Transform m_magePrefab;
+
+    [SerializeField]
+    private Material m_redMaterial;
+    
+    [SerializeField]
+    private Material m_blueMaterial;
+
+    [SerializeField]
+    private Material m_greenMaterial;
+
+    [SerializeField]
+    private Material m_yellowMaterial;
+
+    private IDictionary<GameLogic.Color, Material> m_materialForColor;
 }
 
 }

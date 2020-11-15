@@ -19,7 +19,7 @@ public class Labyrinth
     public static readonly int MovableStraightTilesNumber = 13;
     public static readonly int TileSidesNumber = 4;
 
-    private static readonly string DumpName = "LabyrinthDump {0}.txt";
+    private static readonly string DumpName = "LabyrinthDump {0}";
     private static readonly string DumpFolder = Application.dataPath + @"\..\Logs\LabyrinthDumps\";
 
     #region Private static methods
@@ -81,7 +81,7 @@ public class Labyrinth
     public void Dump()
     {   
         var time = DateTime.UtcNow.ToString();
-        var path = DumpFolder + @"\" + string.Format(DumpName, time).Replace(':','_').Replace(' ','_').Replace('.','_');
+        var path = DumpFolder + @"\" + string.Format(DumpName, time).Replace(':','_').Replace(' ','_').Replace('.','_') + ".txt";
         
         if (!System.IO.Directory.Exists(DumpFolder))
         {
@@ -143,17 +143,61 @@ public class Labyrinth
                 file.WriteLine(middleLine);
                 file.WriteLine(bottomLine);
             }
+
+            var freeTileUpLine = "  ";
+            if (m_freeTile.up)
+            {
+                freeTileUpLine += "  |   ";
+            }
+            else
+            {
+                freeTileUpLine += "   ";
+            }
+            var freeTileMiddleLine = "  ";
+            if (m_freeTile.left)
+            {
+                freeTileMiddleLine += "--";
+            }
+            else
+            {
+                freeTileMiddleLine += "  ";
+            }
+            freeTileMiddleLine += "+";
+            if (m_freeTile.right)
+            {
+                freeTileMiddleLine += "-- ";
+            }
+            else
+            {
+                freeTileMiddleLine += "   ";
+            }
+            var freeTileBottomLine = "  ";
+            for (var j = 0; j < BoardLength; ++j)
+            if (m_freeTile.down)
+            {
+                freeTileBottomLine += "  |   ";
+            }
+            else
+            {
+                freeTileBottomLine += "      ";
+            }
+            file.WriteLine("\nfree tile:");
+            file.WriteLine(freeTileUpLine);
+            file.WriteLine(freeTileMiddleLine);
+            file.WriteLine(freeTileBottomLine);
         }
+
+        
     }
 
-    public void RotateFreeTileCW()
+    public Quaternion GetFreeTileRotation()
     {
-        m_freeTile.RotateCW();
+        return m_freeTile.GetRotation();
     }
 
-    public void RotateFreeTileCCW()
+    public void RotateFreeTile(Tile.RotationDirection rotationDirection)
     {
-        m_freeTile.RotateCCW();
+        m_freeTile.Rotate(rotationDirection);
     }
 
     /// <summary>

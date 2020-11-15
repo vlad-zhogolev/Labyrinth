@@ -10,10 +10,18 @@ namespace Controls {
 [System.Serializable]
 public class ShiftEvent : UnityEvent<Labyrinth.Shift> {}
 
+[System.Serializable]
+public class RotateEvent : UnityEvent<Labyrinth.Tile.RotationDirection> {}
+
+[System.Serializable]
+public class MoveEvent : UnityEvent<Vector2Int> {}
+
 public class TestControls : MonoBehaviour
 {
     public ShiftEvent shiftEvent;
     public UnityEvent cancelShift;
+    public RotateEvent rotateFreeTile;
+    public MoveEvent movePlayerEvent;
     
     // Start is called before the first frame update
     void Start()
@@ -23,7 +31,7 @@ public class TestControls : MonoBehaviour
 
     void CheckShiftLineNumber()
     {
-        if (Input.GetKeyDown(KeyCode.Alpha0))
+        if (Input.GetKeyDown(KeyCode.Alpha1))
         {
             m_shiftLineNumber = 1;
         }
@@ -72,16 +80,43 @@ public class TestControls : MonoBehaviour
         }
     }
 
+    void CheckRotationCommand()
+    {
+        if (Input.GetKeyDown(KeyCode.LeftArrow))
+        {
+            rotateFreeTile?.Invoke(Labyrinth.Tile.RotationDirection.CounterClockwise);
+        }
+        else if (Input.GetKeyDown(KeyCode.RightArrow))
+        {
+            rotateFreeTile?.Invoke(Labyrinth.Tile.RotationDirection.Clockwise);
+        }
+    }
+
+    void CheckMakeMoveCommand()
+    {
+        if (Input.GetKeyDown(KeyCode.M))
+        {
+            movePlayerEvent?.Invoke(new Vector2Int(m_moveToX, m_moveToY));
+        }
+    }
+
     // Update is called once per frame
     void Update()
     {
         CheckShiftLineNumber();
         CheckShiftCommand();
         CheckCancelShiftCommand();
+        CheckRotationCommand();
+        CheckMakeMoveCommand();
     }
 
     [SerializeField]
     private int m_shiftLineNumber = 1;
+
+    [SerializeField]
+    private int m_moveToX = 0;
+    [SerializeField]
+    private int m_moveToY = 0;
 }
 
 } // namespace Controls
