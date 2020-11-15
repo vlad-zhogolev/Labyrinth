@@ -237,6 +237,8 @@ MonoBehaviour:
           m_BoolArgument: 0
         m_CallState: 2
   m_shiftLineNumber: 1
+  m_moveToX: 0
+  m_moveToY: 0
 --- !u!114 &15432046
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -250,11 +252,11 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_tileScale: 0.98
-  m_junctionTilePrefab: {fileID: -8679921383154817045, guid: 14f39f714ea2385499b46543287d2e80,
+  m_junctionTilePrefab: {fileID: 1600354593344822604, guid: 9e0247207891b5041b849ecdb626000a,
     type: 3}
-  m_turnTilePrefab: {fileID: -8679921383154817045, guid: 59279e9981497984fbb7008b7bd3cf5c,
+  m_turnTilePrefab: {fileID: 166712216516348862, guid: 73a519bd08711a54aa25dcec99a1a458,
     type: 3}
-  m_straightTilePrefab: {fileID: -8679921383154817045, guid: 3af1e725e4d11794a9bfebd5cf47d0ff,
+  m_straightTilePrefab: {fileID: 3756580392268836139, guid: 84bb41976686d8a4d9e8b57cd8b01fd7,
     type: 3}
   m_magePrefab: {fileID: 7210460218048237151, guid: 109fd9303d4f9014e964a19e08d1c4a2,
     type: 3}
@@ -338,13 +340,13 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1176419304}
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 1, z: -10}
+  m_LocalRotation: {x: 0.38268343, y: 0, z: 0, w: 0.92387956}
+  m_LocalPosition: {x: 0, y: 6, z: -6}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
   m_RootOrder: 0
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_LocalEulerAnglesHint: {x: 45, y: 0, z: 0}
 --- !u!1 &1500189610
 GameObject:
   m_ObjectHideFlags: 0
