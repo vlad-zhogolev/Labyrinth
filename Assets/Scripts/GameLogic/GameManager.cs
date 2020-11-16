@@ -10,6 +10,8 @@ namespace LabyrinthGame
         {
             public void ShiftTiles(Labyrinth.Shift shift)
             {
+                if (m_labyrinthView.AnimationRunning) return;
+
                 if (m_isShiftAlreadyDone)
                 {
                     Debug.LogFormat("{0}: Current player already made shift: {1}", GetType().Name, m_unavailableShift);
@@ -40,6 +42,8 @@ namespace LabyrinthGame
 
             public void CancelShift()
             {
+                if (m_labyrinthView.AnimationRunning) return;
+
                 if (!m_isShiftAlreadyDone)
                 {
                     Debug.LogFormat("{0}: No shift to cancel", GetType().Name);
@@ -68,6 +72,8 @@ namespace LabyrinthGame
 
             public void RotateFreeTile(Labyrinth.Tile.RotationDirection rotationDirection)
             {
+                if (m_labyrinthView.AnimationRunning) return;
+
                 if (m_isShiftAlreadyDone)
                 {
                     Debug.LogFormat("{0}: Can not rotate free tile. Shift already made.", GetType().Name);
@@ -86,6 +92,8 @@ namespace LabyrinthGame
 
             public void MakeMove(Vector2Int position)
             {
+                if (m_labyrinthView.AnimationRunning) return;
+
                 if (!m_isShiftAlreadyDone)
                 {
                     Debug.LogFormat("{0}: Can not move player. Shift must be made first.", GetType().Name, CurrentPlayer.Position, position);
