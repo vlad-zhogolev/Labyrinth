@@ -48,9 +48,9 @@ namespace LabyrinthGame
 
                 Debug.LogFormat("{0}: Cancel shift: {1}", GetType().Name, m_unavailableShift);
 
-                var inverseShift = m_unavailableShift.GetShiftWithInversedDirection();
-                m_labyrinth.ShiftTiles(inverseShift);
-                m_labyrinthView.ShiftTiles(inverseShift);
+                var shiftWithInversedDirection = m_unavailableShift.GetShiftWithInversedDirection();
+                m_labyrinth.ShiftTiles(shiftWithInversedDirection);
+                m_labyrinthView.ShiftTiles(shiftWithInversedDirection);
 
                 m_availableShifts.Add(m_unavailableShift);
                 if (m_previousUnavailableShift != null)
@@ -110,10 +110,10 @@ namespace LabyrinthGame
                 SwitchToNextPlayer();
                 m_isShiftAlreadyDone = false;
 
-                var shiftInverse = m_unavailableShift.GetShiftWithInversedDirection();
+                var shiftWithInversedDirection = m_unavailableShift.GetShiftWithInversedDirection();
                 m_availableShifts.Add(m_unavailableShift);
-                m_availableShifts.Remove(shiftInverse);
-                m_unavailableShift = shiftInverse;
+                m_availableShifts.Remove(shiftWithInversedDirection);
+                m_unavailableShift = shiftWithInversedDirection;
             }
 
             void Initiallize()
