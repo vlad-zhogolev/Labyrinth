@@ -6,10 +6,8 @@ using QuikGraph.Algorithms;
 
 namespace LabyrinthGame
 {
-
     namespace Labyrinth
     {
-
         public class Labyrinth
         {
             public static readonly int BoardLength = 7;
@@ -23,6 +21,8 @@ namespace LabyrinthGame
 
             private static readonly string DumpName = "LabyrinthDump {0}";
             private static readonly string DumpFolder = Application.dataPath + @"\..\Logs\LabyrinthDumps\";
+
+            public static readonly Tile[] MovableTiles = CreateMovableTiles();
 
             #region Private static methods
 
@@ -55,6 +55,62 @@ namespace LabyrinthGame
                     list[n] = value;
                 }
             }
+
+            private static Tile[] CreateMovableTiles()
+            {
+                //Tile[] tiles = new Tile[Labyrinth.MovableTilesNumber];
+                //var endIndex = Labyrinth.MovableStraightTilesNumber;
+                //for (var i = 0; i < endIndex; ++i)
+                //{
+                //    tiles[i] = new Tile(Tile.Type.Straight);
+                //}
+                //var startIndex = endIndex;
+                //endIndex += Labyrinth.MovableTurnTilesNumber;
+                //for (var i = startIndex; i < endIndex; ++i)
+                //{
+                //    tiles[i] = new Tile(Tile.Type.Turn);
+                //}
+                //startIndex = endIndex;
+                //endIndex += Labyrinth.MovableJunctionTilesNumber;
+                //for (var i = startIndex; i < endIndex; ++i)
+                //{
+                //    tiles[i] = new Tile(Tile.Type.Junction);
+                //}
+
+                var straightTiles = new Tile[MovableStraightTilesNumber];
+                for (var i = 0; i < straightTiles.Length; ++i)
+                {
+                    straightTiles[i] = new Tile(Tile.Type.Straight);
+                }
+
+                var turnTiles = new Tile[MovableTurnTilesNumber];
+                for (var i = 0; i < turnTiles.Length; ++i)
+                {
+                    turnTiles[i] = new Tile(Tile.Type.Turn);
+                }
+                turnTiles[0].Item = Item.Item13;
+                turnTiles[1].Item = Item.Item14;
+                turnTiles[2].Item = Item.Item15;
+                turnTiles[3].Item = Item.Item16;
+                turnTiles[4].Item = Item.Item17;
+                turnTiles[5].Item = Item.Item18;
+
+                var junctionTiles = new Tile[MovableJunctionTilesNumber];
+                for (var i = 0; i < junctionTiles.Length; ++i)
+                {
+                    junctionTiles[i] = new Tile(Tile.Type.Junction);
+                }
+                junctionTiles[0].Item = Item.Item19;
+                junctionTiles[1].Item = Item.Item20;
+                junctionTiles[2].Item = Item.Item21;
+                junctionTiles[3].Item = Item.Item22;
+                junctionTiles[4].Item = Item.Item23;
+                junctionTiles[5].Item = Item.Item24;
+
+                return straightTiles.Concat(turnTiles).Concat(junctionTiles).ToArray();
+            }
+
+            
 
             #endregion
 
@@ -99,14 +155,27 @@ namespace LabyrinthGame
                         var upLine = "  ";
                         for (var j = 0; j < BoardLength; ++j)
                         {
-                            if (m_vertices[i, j].tile.up)
+                            var tile = m_vertices[i, j].tile;
+                            string itemNumber;
+                            if (tile.Item == Item.None)
                             {
-                                upLine += "  |   ";
+                                itemNumber = "  ";
                             }
                             else
                             {
-                                upLine += "      ";
+                                itemNumber = tile.Item.ToString();
+                                itemNumber = itemNumber.Remove(0, 4);
+                                itemNumber = itemNumber.Length == 1 ? " " + itemNumber : itemNumber;
+                            }                            
+                            if (m_vertices[i, j].tile.up)
+                            {
+                                upLine += "  |";
                             }
+                            else
+                            {
+                                upLine += "   ";
+                            }
+                            upLine += itemNumber + " ";
                         }
                         var middleLine = i.ToString() + " ";
                         for (var j = 0; j < BoardLength; ++j)
@@ -146,15 +215,28 @@ namespace LabyrinthGame
                         file.WriteLine(bottomLine);
                     }
 
+                    string freeTileItemNumber;
+                    if (m_freeTile.Item == Item.None)
+                    {
+                        freeTileItemNumber = "  ";
+                    }
+                    else
+                    {
+                        freeTileItemNumber = m_freeTile.Item.ToString();
+                        freeTileItemNumber = freeTileItemNumber.Remove(0, 4);
+                        freeTileItemNumber = freeTileItemNumber.Length == 1 ? " " + freeTileItemNumber : freeTileItemNumber;
+                    }
+
                     var freeTileUpLine = "  ";
                     if (m_freeTile.up)
                     {
-                        freeTileUpLine += "  |   ";
+                        freeTileUpLine += "  |";
                     }
                     else
                     {
                         freeTileUpLine += "   ";
                     }
+                    freeTileUpLine += freeTileItemNumber + " ";
                     var freeTileMiddleLine = "  ";
                     if (m_freeTile.left)
                     {
@@ -164,6 +246,7 @@ namespace LabyrinthGame
                     {
                         freeTileMiddleLine += "  ";
                     }
+
                     freeTileMiddleLine += "+";
                     if (m_freeTile.right)
                     {
@@ -173,6 +256,7 @@ namespace LabyrinthGame
                     {
                         freeTileMiddleLine += "   ";
                     }
+
                     var freeTileBottomLine = "  ";
                     for (var j = 0; j < BoardLength; ++j)
                         if (m_freeTile.down)
@@ -327,31 +411,43 @@ namespace LabyrinthGame
                 // Border fixed tiles
                 var junctionTile = new Tile(Tile.Type.Junction).RotateCCW();
                 m_vertices[0, 2].tile = junctionTile.Copy();
+                m_vertices[0, 2].tile.Item = Item.Item1;
                 m_vertices[0, 4].tile = junctionTile.Copy();
+                m_vertices[0, 4].tile.Item = Item.Item2;
 
                 junctionTile.RotateCW();
                 m_vertices[2, 6].tile = junctionTile.Copy();
+                m_vertices[2, 6].tile.Item = Item.Item3;
                 m_vertices[4, 6].tile = junctionTile.Copy();
+                m_vertices[4, 6].tile.Item = Item.Item4;
 
                 junctionTile.RotateCW();
                 m_vertices[6, 2].tile = junctionTile.Copy();
+                m_vertices[6, 2].tile.Item = Item.Item5;
                 m_vertices[6, 4].tile = junctionTile.Copy();
+                m_vertices[6, 4].tile.Item = Item.Item6;
 
                 junctionTile.RotateCW();
                 m_vertices[2, 0].tile = junctionTile.Copy();
+                m_vertices[2, 0].tile.Item = Item.Item7;
                 m_vertices[4, 0].tile = junctionTile.Copy();
+                m_vertices[4, 0].tile.Item = Item.Item8;
 
                 // Inner fixed tiles
                 m_vertices[2, 2].tile = junctionTile.Copy();
+                m_vertices[2, 2].tile.Item = Item.Item9;
 
                 junctionTile.RotateCW();
                 m_vertices[2, 4].tile = junctionTile.Copy();
+                m_vertices[2, 4].tile.Item = Item.Item10;
 
                 junctionTile.RotateCW();
                 m_vertices[4, 4].tile = junctionTile.Copy();
+                m_vertices[4, 4].tile.Item = Item.Item11;
 
                 junctionTile.RotateCW();
                 m_vertices[4, 2].tile = junctionTile.Copy();
+                m_vertices[4, 2].tile.Item = Item.Item12;
 
                 int[] range = new int[MovableTilesNumber];
                 for (var i = 0; i < range.Length; ++i)
@@ -374,14 +470,14 @@ namespace LabyrinthGame
                             continue;
                         }
 
-                        m_vertices[i, j].tile = Tile.MovableTiles[range[counter]].Copy();
+                        m_vertices[i, j].tile = MovableTiles[range[counter]].Copy();
                         RotateTileRandomly(m_vertices[i, j].tile, rotationRandomizer);
                         ++counter;
                     }
                 }
 
                 // Free tile
-                m_freeTile = Tile.MovableTiles[range[counter]].Copy();
+                m_freeTile = MovableTiles[range[counter]].Copy();
             }
 
             void AddEdges(Func<int, int, Tuple<Vertex, Vertex>> adjacentVerticesProvider, Tile.Side side)
