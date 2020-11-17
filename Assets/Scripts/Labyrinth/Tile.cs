@@ -59,6 +59,7 @@ public class Tile
         
         return tiles;
     }
+
     public static readonly Tile[] MovableTiles = CreateAvailableTiles();
     
 
@@ -265,6 +266,8 @@ public class Tile
     }
 
     public Type type;
+
+    public Item Item { get; set;}
 
     // These variables show if the tile has a path going in a certain direction
 
