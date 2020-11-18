@@ -281,6 +281,16 @@ namespace LabyrinthGame
                 return m_freeTile.GetRotation();
             }
 
+            public Item GetTileItem(Vector2Int tileCoordinates)
+            {
+                if (!AreIndicesValid(tileCoordinates))
+                {
+                    throw new IndexOutOfRangeException("Invalid indices were provided");
+                }
+
+                return m_vertices[tileCoordinates.x, tileCoordinates.y].tile.Item;
+            }
+
             public void RotateFreeTile(Tile.RotationDirection rotationDirection)
             {
                 m_freeTile.Rotate(rotationDirection);

@@ -44,8 +44,10 @@ namespace LabyrinthGame
 
             public void CancelShift()
             {
-                if (m_labyrinthView.AnimationRunning) return;
-
+                if (m_labyrinthView.AnimationRunning)
+                {
+                    return;
+                }
                 if (!m_isShiftAlreadyDone)
                 {
                     Debug.LogFormat("{0}: No shift to cancel", GetType().Name);
@@ -113,6 +115,18 @@ namespace LabyrinthGame
                 CurrentPlayer.Position = position;
                 m_labyrinthView.SetPlayerPosition(CurrentPlayer.Color, position);
 
+                if (IsCurrentPlayerFoundItem())
+                {
+                    Debug.LogFormat("{0}: Player {1} found item {2}", GetType().Name, CurrentPlayer.Color, CurrentPlayer.CurrentItemToFind);
+                    CurrentPlayer.SetCurrentItemFound();
+                }
+                if (IsCurrentPlayerFoundAllItems())
+                {
+                    EndGame();
+
+                    return;
+                }
+
                 PassTurn();
             }
 
@@ -125,6 +139,22 @@ namespace LabyrinthGame
 
                 Debug.LogFormat("{0}: Skiping move for player {1}", GetType().Name, CurrentPlayer.Color);
                 PassTurn();
+            }
+
+            void EndGame()
+            {
+                Debug.LogFormat("{0}: GAME OVER", GetType().Name);
+            }
+
+            bool IsCurrentPlayerFoundItem()
+            {
+                var itemOnTile = m_labyrinth.GetTileItem(CurrentPlayer.Position);
+                return CurrentPlayer.CurrentItemToFind == itemOnTile;
+            }
+
+            bool IsCurrentPlayerFoundAllItems()
+            {
+                return CurrentPlayer.CurrentItemToFind == Labyrinth.Item.None;
             }
 
             void ShiftPlayers(Labyrinth.Shift shift)
@@ -198,6 +228,10 @@ namespace LabyrinthGame
 
                 m_itemsDealer = new ItemsDealer(m_itemsSeed);
                 m_itemsDealer.DealItems(m_players);
+
+                var item = m_players[0].ItemsToFind[0];
+                m_players[0].ItemsToFind.Clear();
+                m_players[0].ItemsToFind.Add(item);
 
                 m_availableShifts = new HashSet<Labyrinth.Shift>()
                 {
