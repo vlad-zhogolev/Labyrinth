@@ -109,8 +109,23 @@ namespace LabyrinthGame
                 IsShifted = false;
             }
 
+            public void SetCurrentItemFound()
+            {
+                ++m_currentItemIndex;
+            }
+
             public Color Color { get; set; }
+
             public IList<Labyrinth.Item> ItemsToFind { get; set; } = new List<Labyrinth.Item>();
+            public Labyrinth.Item CurrentItemToFind 
+            { 
+                get 
+                { 
+                    return m_currentItemIndex < ItemsToFind.Count ? ItemsToFind[m_currentItemIndex] : Labyrinth.Item.None;
+                } 
+            }
+
+            private int m_currentItemIndex = 0;
 
             public bool IsShifted { get; set; } = false;
             private Vector2Int m_position;
