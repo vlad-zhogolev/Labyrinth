@@ -117,6 +117,15 @@ namespace LabyrinthGame
                 StartCoroutine(ShiftTilesCoroutine(tiles, positions, insertedTile, insertedTilePosition, removedTile, removedTilePosition));
             }
 
+            public void ShiftPlayers(in IList<GameLogic.Player> players)
+            {
+                foreach (var player in players)
+                {
+                    var position = new Vector3(player.Position.y - 3, 0, 3 - player.Position.x);
+                    m_mageInstanceForColor[player.Color].position = position;
+                }
+            }
+
             IEnumerator ShiftTilesCoroutine(List<AnimatedView> tiles, List<Vector3> positions, AnimatedView insertedTile, Vector3 insertedTilePosition, AnimatedView removedTile, Vector3 removedTilePosition)
             {
                 AnimationRunning = true;
