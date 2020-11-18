@@ -34,7 +34,9 @@ namespace LabyrinthGame
                 m_unavailableShift = shift;
 
                 m_labyrinth.ShiftTiles(shift);
+                ShiftPlayers(shift);
                 m_labyrinthView.ShiftTiles(shift);
+                m_labyrinthView.ShiftPlayers(m_players);
                 m_isShiftAlreadyDone = true;
 
                 m_labyrinth.Dump();
@@ -54,7 +56,9 @@ namespace LabyrinthGame
 
                 var shiftWithInversedDirection = m_unavailableShift.GetShiftWithInversedDirection();
                 m_labyrinth.ShiftTiles(shiftWithInversedDirection);
+                UnshiftPlayers();
                 m_labyrinthView.ShiftTiles(shiftWithInversedDirection);
+                m_labyrinthView.ShiftPlayers(m_players);
 
                 m_availableShifts.Add(m_unavailableShift);
                 if (m_previousUnavailableShift != null)
@@ -72,8 +76,10 @@ namespace LabyrinthGame
 
             public void RotateFreeTile(Labyrinth.Tile.RotationDirection rotationDirection)
             {
-                if (m_labyrinthView.AnimationRunning) return;
-
+                if (m_labyrinthView.AnimationRunning)
+                {
+                    return;
+                }
                 if (m_isShiftAlreadyDone)
                 {
                     Debug.LogFormat("{0}: Can not rotate free tile. Shift already made.", GetType().Name);
@@ -92,11 +98,8 @@ namespace LabyrinthGame
 
             public void MakeMove(Vector2Int position)
             {
-                if (m_labyrinthView.AnimationRunning) return;
-
-                if (!m_isShiftAlreadyDone)
+                if (!CanMakeMove())
                 {
-                    Debug.LogFormat("{0}: Can not move player. Shift must be made first.", GetType().Name, CurrentPlayer.Position, position);
                     return;
                 }
                 if (!m_labyrinth.IsReachable(position, CurrentPlayer.Position))
@@ -113,15 +116,74 @@ namespace LabyrinthGame
                 PassTurn();
             }
 
+            public void SkipMove()
+            {
+                if (!CanMakeMove())
+                {
+                    return;
+                }
+
+                Debug.LogFormat("{0}: Skiping move for player {1}", GetType().Name, CurrentPlayer.Color);
+                PassTurn();
+            }
+
+            void ShiftPlayers(Labyrinth.Shift shift)
+            {
+                foreach (var player in m_players)
+                {
+                    if (player.IsNeedShifting(shift))
+                    {
+                        player.Shift(shift);
+                    }
+                }
+            }
+
+            void UnshiftPlayers()
+            {
+                foreach (var player in m_players)
+                {
+                    if (player.IsShifted)
+                    {
+                        player.Unshift();
+                    }
+                }
+            }
+
+            void ResetShiftedForPlayers()
+            {
+                foreach (var player in m_players)
+                {
+                    player.IsShifted = false;
+                }
+            }
+
+            bool CanMakeMove()
+            {
+                if (m_labyrinthView.AnimationRunning)
+                {
+                    return false;
+                }
+                if (!m_isShiftAlreadyDone)
+                {
+                    Debug.LogFormat("{0}: Can not move player. Shift must be made first.", GetType().Name);
+                    return false;
+                }
+
+                return true;
+            }
+
             void PassTurn()
             {
                 SwitchToNextPlayer();
                 m_isShiftAlreadyDone = false;
+                ResetShiftedForPlayers();
 
                 var shiftWithInversedDirection = m_unavailableShift.GetShiftWithInversedDirection();
                 m_availableShifts.Add(m_unavailableShift);
                 m_availableShifts.Remove(shiftWithInversedDirection);
                 m_unavailableShift = shiftWithInversedDirection;
+
+                Debug.LogFormat("{0}: Turn passed to {1} player.", GetType().Name, CurrentPlayer.Color);
             }
 
             void Initiallize()

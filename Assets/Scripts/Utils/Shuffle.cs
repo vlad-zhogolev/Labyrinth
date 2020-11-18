@@ -22,6 +22,6 @@ namespace LabyrinthGame
             }
         }
 
-    } //namespace GameLogic
+    } //namespace Utils
 
 } //namespace LabyrinthGame
