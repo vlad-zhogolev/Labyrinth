@@ -72,8 +72,10 @@ namespace LabyrinthGame
 
             public void RotateFreeTile(Labyrinth.Tile.RotationDirection rotationDirection)
             {
-                if (m_labyrinthView.AnimationRunning) return;
-
+                if (m_labyrinthView.AnimationRunning)
+                {
+                    return;
+                }
                 if (m_isShiftAlreadyDone)
                 {
                     Debug.LogFormat("{0}: Can not rotate free tile. Shift already made.", GetType().Name);
@@ -92,11 +94,8 @@ namespace LabyrinthGame
 
             public void MakeMove(Vector2Int position)
             {
-                if (m_labyrinthView.AnimationRunning) return;
-
-                if (!m_isShiftAlreadyDone)
+                if (!CanMakeMove())
                 {
-                    Debug.LogFormat("{0}: Can not move player. Shift must be made first.", GetType().Name, CurrentPlayer.Position, position);
                     return;
                 }
                 if (!m_labyrinth.IsReachable(position, CurrentPlayer.Position))
@@ -111,6 +110,32 @@ namespace LabyrinthGame
                 m_labyrinthView.SetPlayerPosition(CurrentPlayer.Color, position);
 
                 PassTurn();
+            }
+
+            public void SkipMove()
+            {
+                if (!CanMakeMove())
+                {
+                    return;
+                }
+
+                Debug.LogFormat("{0}: Skiping move for player {1}", GetType().Name, CurrentPlayer.Color);
+                PassTurn();
+            }
+
+            bool CanMakeMove()
+            {
+                if (m_labyrinthView.AnimationRunning)
+                {
+                    return false;
+                }
+                if (!m_isShiftAlreadyDone)
+                {
+                    Debug.LogFormat("{0}: Can not move player. Shift must be made first.", GetType().Name);
+                    return false;
+                }
+
+                return true;
             }
 
             void PassTurn()
