@@ -24,13 +24,8 @@ public class Player
         {Color.Green,   new Vector2Int(6, 0)},
     };
 
-    public Player(Color color, IList<Labyrinth.Item> cards)
+    public Player(Color color)
     {
-        if (cards == null)
-        {
-            throw new NullReferenceException("Cards can not be null");
-        }
-        Cards = cards;
         Color = color;
         if (!InitialPositionsForColor.TryGetValue(color, out m_position))
         {
@@ -47,7 +42,7 @@ public class Player
         }
     }
     public Color Color { get; set; }
-    public IList<Labyrinth.Item> Cards { get; set; } = new List<Labyrinth.Item>();
+    public IList<Labyrinth.Item> ItemsToFind { get; set; } = new List<Labyrinth.Item>();
 
     private Vector2Int m_position;
 }

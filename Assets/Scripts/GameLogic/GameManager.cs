@@ -128,11 +128,14 @@ namespace LabyrinthGame
             {
                 m_players = new List<Player>()
                 {
-                    new Player(Color.Yellow,    new List<Labyrinth.Item>()),
-                    new Player(Color.Red,       new List<Labyrinth.Item>()),
-                    new Player(Color.Blue,      new List<Labyrinth.Item>()),
-                    new Player(Color.Green,     new List<Labyrinth.Item>()),
+                    new Player(Color.Yellow),
+                    new Player(Color.Red),
+                    new Player(Color.Blue),
+                    new Player(Color.Green),
                 };
+
+                m_itemsDealer = new ItemsDealer(m_itemsSeed);
+                m_itemsDealer.DealItems(m_players);
 
                 m_availableShifts = new HashSet<Labyrinth.Shift>()
                 {
@@ -185,9 +188,18 @@ namespace LabyrinthGame
 
             }
 
+
+            [SerializeField]
+            private int m_positionSeed = 4;
+            [SerializeField]
+            private int m_rotationSeed = 0;
             private Labyrinth.Labyrinth m_labyrinth;
 
             private View.LabyrinthView m_labyrinthView;
+
+            [SerializeField]
+            private int m_itemsSeed = 0;
+            private ItemsDealer m_itemsDealer;         
 
             private IList<Player> m_players;
             private int m_currentPlayerIndex = 0;
@@ -196,12 +208,6 @@ namespace LabyrinthGame
             private Labyrinth.Shift m_unavailableShift;
             private Labyrinth.Shift m_previousUnavailableShift;
             private bool m_isShiftAlreadyDone = false;
-
-            [SerializeField]
-            private int m_positionSeed = 4;
-
-            [SerializeField]
-            private int m_rotationSeed = 0;
         }
 
     } // GameLogic
