@@ -148,7 +148,8 @@ namespace LabyrinthGame
 
             bool IsCurrentPlayerFoundItem()
             {
-                return CurrentPlayer.CurrentItemToFind == m_labyrinth.GetTileItem(CurrentPlayer.Position);
+                var itemOnTile = m_labyrinth.GetTileItem(CurrentPlayer.Position);
+                return CurrentPlayer.CurrentItemToFind == itemOnTile;
             }
 
             bool IsCurrentPlayerFoundAllItems()
