@@ -594,12 +594,12 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 1225635493}
-        m_MethodName: 
+      - m_Target: {fileID: 713093152}
+        m_MethodName: SwitchToLocalGameSettings
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: 
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
           m_IntArgument: 0
           m_FloatArgument: 0
           m_StringArgument: 
@@ -769,7 +769,7 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 1225635497}
+      - m_Target: {fileID: 1962051638}
         m_MethodName: StartLocalGameButtonClickHandler
         m_Mode: 1
         m_Arguments:
@@ -1087,16 +1087,11 @@ MonoBehaviour:
   m_GameObject: {fileID: 713093151}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 361cc3dc2c5acf34187dd869649b3dd4, type: 3}
+  m_Script: {fileID: 11500000, guid: 0a1bd7567541da9459baa2b4b15d936f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_mainMenuPanel: {fileID: 0}
-  m_localGameButton: {fileID: 0}
-  m_onlineMultiplayerButton: {fileID: 0}
-  m_yellowPlayerSettings: {fileID: 0}
-  m_redPlayerSettings: {fileID: 0}
-  m_greenPlayerSettings: {fileID: 0}
-  m_bluePlayerSettings: {fileID: 0}
+  m_mainMenu: {fileID: 1225635493}
+  m_localGameSettings: {fileID: 1962051633}
 --- !u!4 &713093153
 Transform:
   m_ObjectHideFlags: 0
@@ -1778,7 +1773,6 @@ GameObject:
   - component: {fileID: 1225635494}
   - component: {fileID: 1225635496}
   - component: {fileID: 1225635495}
-  - component: {fileID: 1225635497}
   - component: {fileID: 1225635498}
   m_Layer: 5
   m_Name: MainMenu
@@ -1805,7 +1799,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -263, y: -142}
+  m_AnchoredPosition: {x: -4.2, y: -8.1}
   m_SizeDelta: {x: 189.3, y: 115.2}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1225635495
@@ -1845,25 +1839,6 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1225635493}
   m_CullTransparentMesh: 0
---- !u!114 &1225635497
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1225635493}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 361cc3dc2c5acf34187dd869649b3dd4, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  m_mainMenuPanel: {fileID: 1225635493}
-  m_localGameButton: {fileID: 546862868}
-  m_onlineMultiplayerButton: {fileID: 630779884}
-  m_yellowPlayerSettings: {fileID: 48956163}
-  m_redPlayerSettings: {fileID: 1866894343}
-  m_greenPlayerSettings: {fileID: 47957702}
-  m_bluePlayerSettings: {fileID: 1102370558}
 --- !u!114 &1225635498
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2715,6 +2690,7 @@ GameObject:
   - component: {fileID: 1962051636}
   - component: {fileID: 1962051635}
   - component: {fileID: 1962051637}
+  - component: {fileID: 1962051638}
   m_Layer: 5
   m_Name: LocalGameSettings
   m_TagString: Untagged
@@ -2809,6 +2785,24 @@ MonoBehaviour:
   m_ChildControlHeight: 1
   m_ChildScaleWidth: 0
   m_ChildScaleHeight: 0
+--- !u!114 &1962051638
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1962051633}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 361cc3dc2c5acf34187dd869649b3dd4, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_localGameButton: {fileID: 546862868}
+  m_onlineMultiplayerButton: {fileID: 630779884}
+  m_yellowPlayerSettings: {fileID: 48956163}
+  m_redPlayerSettings: {fileID: 1866894343}
+  m_greenPlayerSettings: {fileID: 47957702}
+  m_bluePlayerSettings: {fileID: 1102370558}
 --- !u!1 &2021681202
 GameObject:
   m_ObjectHideFlags: 0
@@ -2890,7 +2884,18 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 2021681205}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 713093152}
+        m_MethodName: SwitchToMainMenu
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!114 &2021681205
 MonoBehaviour:
   m_ObjectHideFlags: 0

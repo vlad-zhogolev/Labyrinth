@@ -8,7 +8,7 @@ namespace LabyrinthGame
 {
     namespace UI
     {
-        public class MainMenu : MonoBehaviour
+        public class LocalGameSettings : MonoBehaviour
         {
             public void LocalGameButtonClickHandler()
             {
@@ -36,8 +36,6 @@ namespace LabyrinthGame
                 m_uiPlayersSettings[GameLogic.Color.Blue] = m_bluePlayerSettings;
             }
 
-            [SerializeField]
-            private GameObject m_mainMenuPanel;
             [SerializeField]
             private Button m_localGameButton;
             [SerializeField]
