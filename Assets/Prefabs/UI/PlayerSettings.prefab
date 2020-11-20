@@ -376,7 +376,7 @@ GameObject:
   - component: {fileID: 4084764085090484735}
   - component: {fileID: 4415692518776968234}
   m_Layer: 5
-  m_Name: IsBotToggle
+  m_Name: lsAiToggle
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

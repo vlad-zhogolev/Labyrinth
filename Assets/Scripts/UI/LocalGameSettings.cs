@@ -26,6 +26,23 @@ namespace LabyrinthGame
 
                 SceneManager.LoadScene("Game");
             }
+
+            public void IsAiToggleValueChangedHandler()
+            {
+                var isAnyHumanPresent = false;
+                foreach (var uiPlayerSettings in m_uiPlayersSettings)
+                {
+                    var settings = m_uiPlayersSettings[uiPlayerSettings.Key].GetComponent<UIPlayerSettings>();
+                    if (!settings.IsAi)
+                    {
+                        isAnyHumanPresent = true;
+                        break;
+                    }
+                }
+
+                m_startLocalGameButton.enabled = isAnyHumanPresent;
+                m_startLocalGameButton.image.color = isAnyHumanPresent ? Color.white : Color.grey;
+            }
             
             // Start is called before the first frame update
             void Start()
@@ -37,9 +54,7 @@ namespace LabyrinthGame
             }
 
             [SerializeField]
-            private Button m_localGameButton;
-            [SerializeField]
-            private Button m_onlineMultiplayerButton;
+            private UnityEngine.UI.Button m_startLocalGameButton;
 
             [SerializeField]
             private GameObject m_yellowPlayerSettings;
