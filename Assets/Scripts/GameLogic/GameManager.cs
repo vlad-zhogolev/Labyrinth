@@ -218,6 +218,11 @@ namespace LabyrinthGame
 
             void Initiallize()
             {
+                foreach (var playerSettings in GameSettings.PlayersSettings)
+                {
+                    Debug.LogFormat("{0}: settings for {1} player: {2}", GetType().Name, playerSettings.Key, playerSettings.Value);
+                }
+
                 m_players = new List<Player>()
                 {
                     new Player(Color.Yellow),
