@@ -10,11 +10,6 @@ namespace LabyrinthGame
     {
         public class LocalGameSettings : MonoBehaviour
         {
-            public void LocalGameButtonClickHandler()
-            {
-                
-            }
-
             public void StartLocalGameButtonClickHandler()
             {
                 foreach (var uiPlayerSettings in m_uiPlayersSettings)
