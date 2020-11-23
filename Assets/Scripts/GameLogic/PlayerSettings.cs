@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 namespace LabyrinthGame
@@ -31,6 +32,16 @@ namespace LabyrinthGame
                 {Color.Green,   null},
                 {Color.Blue,    null},
             };
+
+            public static bool IsMultipleHumanPlayers()
+            {
+                var humanPlayersNumber = 
+                    (from pair in PlayersSettings
+                     where !pair.Value.IsAi
+                     select pair).Count();
+
+                return humanPlayersNumber > 1;
+            }
         }
 
     } // namespace GameLogic
