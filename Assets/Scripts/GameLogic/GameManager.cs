@@ -10,8 +10,6 @@ namespace LabyrinthGame
     {
         public class GameManager : MonoBehaviour
         {
-            public UnityEvent m_turnPassed;
-
             public async void ShiftTiles(Labyrinth.Shift shift)
             {
                 await ShiftTilesAsync(shift);
@@ -124,7 +122,7 @@ namespace LabyrinthGame
                 m_labyrinth.Dump();
             }
 
-            public void MakeMove(Vector2Int position)
+            public async void MakeMove(Vector2Int position)
             {
                 if (!CanMakeMove())
                 {
@@ -153,10 +151,10 @@ namespace LabyrinthGame
                     return;
                 }
 
-                PassTurn();
+                await PassTurn();
             }
 
-            public void SkipMove()
+            public async void SkipMove()
             {
                 if (!CanMakeMove())
                 {
@@ -164,17 +162,7 @@ namespace LabyrinthGame
                 }
 
                 Debug.LogFormat("{0}: Skiping move for player {1}", GetType().Name, CurrentPlayer.Color);
-                PassTurn();
-            }
-
-            public void SkipAiMove()
-            {
-                if (!CurrentPlayer.Settings.IsAi)
-                {
-                    return;
-                }
-                Debug.LogFormat("{0}: Skiping move for Ai player {1}", GetType().Name, CurrentPlayer.Color);
-                PassTurn();
+                await PassTurn();
             }
 
             void EndGame()
@@ -239,7 +227,7 @@ namespace LabyrinthGame
                 return true;
             }
 
-            void PassTurn()
+            async Task PassTurn()
             {
                 SwitchToNextPlayer();
                 m_isShiftAlreadyDone = false;
@@ -250,17 +238,11 @@ namespace LabyrinthGame
                 m_availableShifts.Remove(shiftWithInversedDirection);
                 m_unavailableShift = shiftWithInversedDirection;
 
-                m_turnPassed?.Invoke();
-            }
-
-            public async void TurnPassedHandler()
-            {
                 Debug.LogFormat("{0}: Turn passed to {1} player.", GetType().Name, CurrentPlayer.Color);
 
                 if (CurrentPlayer.Settings.IsAi)
                 {
                     await MakeAiTurn();
-                    PassTurn();
                 }
             }
 
@@ -335,6 +317,7 @@ namespace LabyrinthGame
 
             async Task MakeAiTurn()
             {
+                await Task.Delay(1000);
                 Debug.LogFormat("{0}: Making AI turn for {1} player.", GetType().Name, CurrentPlayer.Color);
                 var enumerator = m_availableShifts.GetEnumerator();
                 enumerator.MoveNext();
