@@ -1,4 +1,4 @@
-﻿using System.Collections;
+﻿using System.Threading.Tasks;
 using UnityEngine;
 
 namespace LabyrinthGame
@@ -13,44 +13,24 @@ namespace LabyrinthGame
 
             const float ROTATION_SPEED = 360;
 
-            public Coroutine MoveTo(Vector3 position, float speed = MOVEMENT_SPEED)
-            {
-                return StartCoroutine(MoveToCoroutine(position, speed));
-            }
-
-            IEnumerator MoveToCoroutine(Vector3 position, float speed)
+            public async Task MoveTo(Vector3 position, float speed = MOVEMENT_SPEED)
             {
                 while (transform.position != position)
                 {
-                    MoveToStep(position, speed);
+                    transform.position = Vector3.MoveTowards(transform.position, position, speed * Time.deltaTime);
 
-                    yield return null;
+                    await Task.Yield();
                 }
             }
 
-            public void MoveToStep(Vector3 position, float speed = MOVEMENT_SPEED)
-            {
-                transform.position = Vector3.MoveTowards(transform.position, position, speed * Time.deltaTime);
-            }
-
-            public Coroutine RotateTo(Quaternion rotation, float speed = ROTATION_SPEED)
-            {
-                return StartCoroutine(RotateToCoroutine(rotation, speed));
-            }
-
-            IEnumerator RotateToCoroutine(Quaternion rotation, float speed)
+            public async Task RotateTo(Quaternion rotation, float speed = ROTATION_SPEED)
             {
                 while (transform.rotation != rotation)
                 {
-                    RotateToStep(rotation, speed);
+                    transform.rotation = Quaternion.RotateTowards(transform.rotation, rotation, speed * Time.deltaTime);
 
-                    yield return null;
+                    await Task.Yield();
                 }
-            }
-
-            public void RotateToStep(Quaternion rotation, float speed = ROTATION_SPEED)
-            {
-                transform.rotation = Quaternion.RotateTowards(transform.rotation, rotation, speed * Time.deltaTime);
             }
 
         }

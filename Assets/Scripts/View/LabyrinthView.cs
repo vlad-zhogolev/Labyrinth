@@ -1,7 +1,7 @@
-﻿using UnityEngine;
-using System;
+﻿using System;
 using System.Collections.Generic;
-using System.Collections;
+using System.Threading.Tasks;
+using UnityEngine;
 
 namespace LabyrinthGame
 {
@@ -11,34 +11,22 @@ namespace LabyrinthGame
 
         public class LabyrinthView : MonoBehaviour
         {
-            Coroutine MoveTiles(List<AnimatedView> tiles, List<Vector3> positions)
+            async Task MoveTiles(List<AnimatedView> tiles, List<Vector3> positions)
             {
-                return StartCoroutine(MoveTilesCoroutine(tiles, positions));
-            }
+                var tasks = new Task[Labyrinth.Labyrinth.BoardLength];
 
-            IEnumerator MoveTilesCoroutine(List<AnimatedView> tiles, List<Vector3> positions)
-            {
-                bool moving = true;
-
-                while (moving)
+                for (int i = 0; i < Labyrinth.Labyrinth.BoardLength; ++i)
                 {
-                    moving = false;
+                    AnimatedView tile = tiles[i];
+                    Vector3 position = positions[i];
 
-                    for (int i = 0; i < Labyrinth.Labyrinth.BoardLength; ++i)
-                    {
-                        AnimatedView tile = tiles[i];
-                        Vector3 position = positions[i];
-
-                        tile.MoveToStep(position);
-
-                        moving = tile.transform.position != position;
-                    }
-
-                    yield return null;
+                    tasks[i] = tile.MoveTo(position);
                 }
+
+                await Task.WhenAll(tasks);
             }
 
-            public void ShiftTiles(Labyrinth.Shift shift)
+            public async Task ShiftTiles(Labyrinth.Shift shift)
             {
                 var line = shift.index;
                 Func<int, (Vector2Int, Vector2Int)> tilesIndicesProvider;
@@ -94,8 +82,8 @@ namespace LabyrinthGame
                 var removedTile = m_tiles[borderCoordinates.remove.x, borderCoordinates.remove.y];
                 var removedTilePosition = m_freeTileInstance.transform.position;
 
-                List<AnimatedView> tiles = new List<AnimatedView>(Labyrinth.Labyrinth.BoardLength);
-                List<Vector3> positions = new List<Vector3>(Labyrinth.Labyrinth.BoardLength);
+                var tiles = new List<AnimatedView>(Labyrinth.Labyrinth.BoardLength);
+                var positions = new List<Vector3>(Labyrinth.Labyrinth.BoardLength);
 
                 for (var i = 0; i < Labyrinth.Labyrinth.BoardLength; ++i)
                 {
@@ -114,7 +102,25 @@ namespace LabyrinthGame
 
                 m_freeTileInstance = removedTile;
 
-                StartCoroutine(ShiftTilesCoroutine(tiles, positions, insertedTile, insertedTilePosition, removedTile, removedTilePosition));
+                await MoveTiles(tiles, positions);
+
+                float speed = 10;
+
+                // Move the inserted tile
+
+                await insertedTile.MoveTo(insertedTile.transform.position + new Vector3(0, 2, 0), speed);
+
+                await insertedTile.MoveTo(insertedTilePosition + new Vector3(0, 2, 0), speed);
+
+                await insertedTile.MoveTo(insertedTilePosition, speed);
+
+                // Move the removed tile
+
+                await removedTile.MoveTo(removedTile.transform.position + new Vector3(0, 2, 0), speed);
+
+                await removedTile.MoveTo(removedTilePosition + new Vector3(0, 2, 0), speed);
+
+                await removedTile.MoveTo(removedTilePosition, speed);
             }
 
             public void ShiftPlayers(in IList<GameLogic.Player> players)
@@ -126,45 +132,9 @@ namespace LabyrinthGame
                 }
             }
 
-            IEnumerator ShiftTilesCoroutine(List<AnimatedView> tiles, List<Vector3> positions, AnimatedView insertedTile, Vector3 insertedTilePosition, AnimatedView removedTile, Vector3 removedTilePosition)
+            public async Task RotateFreeTile(Quaternion rotation)
             {
-                AnimationRunning = true;
-
-                yield return MoveTiles(tiles, positions);
-
-                float speed = 10;
-
-                // Move the inserted tile
-
-                yield return insertedTile.MoveTo(insertedTile.transform.position + new Vector3(0, 2, 0), speed);
-
-                yield return insertedTile.MoveTo(insertedTilePosition + new Vector3(0, 2, 0), speed);
-
-                yield return insertedTile.MoveTo(insertedTilePosition, speed);
-
-                // Move the removed tile
-
-                yield return removedTile.MoveTo(removedTile.transform.position + new Vector3(0, 2, 0), speed);
-
-                yield return removedTile.MoveTo(removedTilePosition + new Vector3(0, 2, 0), speed);
-
-                yield return removedTile.MoveTo(removedTilePosition, speed);
-
-                AnimationRunning = false;
-            }
-
-            public void RotateFreeTile(Quaternion rotation)
-            {
-                StartCoroutine(nameof(RotateFreeTileCoroutine), rotation);
-            }
-
-            IEnumerator RotateFreeTileCoroutine(Quaternion rotation)
-            {
-                AnimationRunning = true;
-
-                yield return m_freeTileInstance.RotateTo(rotation);
-
-                AnimationRunning = false;
+                await m_freeTileInstance.RotateTo(rotation);
             }
 
             public void SetPlayerPosition(GameLogic.Color playerColor, Vector2Int indices)
@@ -261,8 +231,6 @@ namespace LabyrinthGame
 
                 InitializeMages();
             }
-
-            public bool AnimationRunning { get; private set; } = false;
 
             // Start is called before the first frame update
             void Start()

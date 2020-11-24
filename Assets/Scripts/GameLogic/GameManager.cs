@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -9,9 +8,9 @@ namespace LabyrinthGame
     {
         public class GameManager : MonoBehaviour
         {
-            public void ShiftTiles(Labyrinth.Shift shift)
+            public async void ShiftTiles(Labyrinth.Shift shift)
             {
-                if (m_labyrinthView.AnimationRunning) return;
+                m_controls.DisableInput();
 
                 if (m_isShiftAlreadyDone)
                 {
@@ -36,19 +35,19 @@ namespace LabyrinthGame
 
                 m_labyrinth.ShiftTiles(shift);
                 ShiftPlayers(shift);
-                m_labyrinthView.ShiftTiles(shift);
+                await m_labyrinthView.ShiftTiles(shift);
                 m_labyrinthView.ShiftPlayers(m_players);
                 m_isShiftAlreadyDone = true;
 
                 if (m_dumpLabyrinth) m_labyrinth.Dump();
+
+                m_controls.EnableInput();
             }
 
-            public void CancelShift()
+            public async void CancelShift()
             {
-                if (m_labyrinthView.AnimationRunning)
-                {
-                    return;
-                }
+                m_controls.DisableInput();
+
                 if (!m_isShiftAlreadyDone)
                 {
                     Debug.LogFormat("{0}: No shift to cancel", GetType().Name);
@@ -60,7 +59,7 @@ namespace LabyrinthGame
                 var shiftWithInversedDirection = m_unavailableShift.GetShiftWithInversedDirection();
                 m_labyrinth.ShiftTiles(shiftWithInversedDirection);
                 UnshiftPlayers();
-                m_labyrinthView.ShiftTiles(shiftWithInversedDirection);
+                await m_labyrinthView.ShiftTiles(shiftWithInversedDirection);
                 m_labyrinthView.ShiftPlayers(m_players);
 
                 m_availableShifts.Add(m_unavailableShift);
@@ -75,14 +74,14 @@ namespace LabyrinthGame
                 m_isShiftAlreadyDone = false;
 
                 if (m_dumpLabyrinth) m_labyrinth.Dump();
+
+                m_controls.EnableInput();
             }
 
-            public void RotateFreeTile(Labyrinth.Tile.RotationDirection rotationDirection)
+            public async void RotateFreeTile(Labyrinth.Tile.RotationDirection rotationDirection)
             {
-                if (m_labyrinthView.AnimationRunning)
-                {
-                    return;
-                }
+                m_controls.DisableInput();
+
                 if (m_isShiftAlreadyDone)
                 {
                     Debug.LogFormat("{0}: Can not rotate free tile. Shift already made.", GetType().Name);
@@ -94,9 +93,11 @@ namespace LabyrinthGame
                 m_labyrinth.RotateFreeTile(rotationDirection);
 
                 var freeTileRotation = m_labyrinth.GetFreeTileRotation();
-                m_labyrinthView.RotateFreeTile(freeTileRotation);
+                await m_labyrinthView.RotateFreeTile(freeTileRotation);
 
                 if (m_dumpLabyrinth) m_labyrinth.Dump();
+
+                m_controls.EnableInput();
             }
 
             public void MakeMove(Vector2Int position)
@@ -190,10 +191,6 @@ namespace LabyrinthGame
 
             bool CanMakeMove()
             {
-                if (m_labyrinthView.AnimationRunning)
-                {
-                    return false;
-                }
                 if (!m_isShiftAlreadyDone)
                 {
                     Debug.LogFormat("{0}: Can not move player. Shift must be made first.", GetType().Name);
@@ -262,6 +259,8 @@ namespace LabyrinthGame
 
                 m_labyrinth = new Labyrinth.Labyrinth(m_positionSeed, m_rotationSeed);
 
+                m_controls = GetComponent<Controls.TestControls>();
+
                 m_labyrinthView = GetComponent<View.LabyrinthView>();
                 (var tiles, var freeTile) = m_labyrinth.GetTiles();
                 m_labyrinthView.Initialize(tiles, freeTile);
@@ -323,6 +322,8 @@ namespace LabyrinthGame
             private Labyrinth.Shift m_unavailableShift;
             private Labyrinth.Shift m_previousUnavailableShift;
             private bool m_isShiftAlreadyDone = false;
+
+            Controls.TestControls m_controls;
 
             Text m_currentPlayerText;
             Text m_currentPlayerItemText;
