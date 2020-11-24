@@ -14,6 +14,11 @@ namespace LabyrinthGame
 
             public async void ShiftTiles(Labyrinth.Shift shift)
             {
+                await ShiftTilesAsync(shift);
+            }
+
+            async Task ShiftTilesAsync(Labyrinth.Shift shift)
+            {
                 if (m_labyrinthView.AnimationRunning)
                 {
                     return;
@@ -39,14 +44,18 @@ namespace LabyrinthGame
                 m_availableShifts.Remove(shift);
                 m_unavailableShift = shift;
 
-                
+
 
                 m_labyrinth.ShiftTiles(shift);
                 ShiftPlayers(shift);
                 //m_labyrinthView.ShiftTiles(shift);
+                //m_labyrinthView.ShiftPlayers(m_players);
+
                 await m_labyrinthView.ShiftTilesAsync(shift);
+                await m_labyrinthView.ShiftPlayersAsync(m_players);
+
                 Debug.LogFormat("{0}: Shifted tiles async", GetType().Name);
-                m_labyrinthView.ShiftPlayers(m_players);
+
                 m_isShiftAlreadyDone = true;
 
                 m_labyrinth.Dump();
@@ -56,6 +65,7 @@ namespace LabyrinthGame
             {
                 if (m_labyrinthView.AnimationRunning)
                 {
+                    Debug.LogFormat("{0}: Can not cancel shift. Animation is running", GetType().Name);
                     return;
                 }
                 if (!m_isShiftAlreadyDone)
@@ -70,9 +80,13 @@ namespace LabyrinthGame
                 m_labyrinth.ShiftTiles(shiftWithInversedDirection);
                 UnshiftPlayers();
                 //m_labyrinthView.ShiftTiles(shiftWithInversedDirection);
+                //m_labyrinthView.ShiftPlayers(m_players);
+
                 await m_labyrinthView.ShiftTilesAsync(shiftWithInversedDirection);
+                await m_labyrinthView.ShiftPlayersAsync(m_players);
+
                 Debug.LogFormat("{0}: Shifted tiles async", GetType().Name);
-                m_labyrinthView.ShiftPlayers(m_players);
+
 
                 m_availableShifts.Add(m_unavailableShift);
                 if (m_previousUnavailableShift != null)
@@ -239,13 +253,14 @@ namespace LabyrinthGame
                 m_turnPassed?.Invoke();
             }
 
-            public void TurnPassedHandler()
+            public async void TurnPassedHandler()
             {
                 Debug.LogFormat("{0}: Turn passed to {1} player.", GetType().Name, CurrentPlayer.Color);
 
                 if (CurrentPlayer.Settings.IsAi)
                 {
-                    MakeAiTurn();
+                    await MakeAiTurn();
+                    PassTurn();
                 }
             }
 
@@ -318,14 +333,15 @@ namespace LabyrinthGame
                 Initiallize();
             }
 
-            void MakeAiTurn()
+            async Task MakeAiTurn()
             {
                 Debug.LogFormat("{0}: Making AI turn for {1} player.", GetType().Name, CurrentPlayer.Color);
                 var enumerator = m_availableShifts.GetEnumerator();
                 enumerator.MoveNext();
                 var shift = enumerator.Current;
 
-                ShiftTiles(shift);
+                await ShiftTilesAsync(shift);
+                SkipMove();
             }
 
 

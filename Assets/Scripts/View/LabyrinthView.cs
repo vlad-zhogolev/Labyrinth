@@ -62,7 +62,6 @@ namespace LabyrinthGame
                     }
                     await Task.WhenAll(tasks);
                 }
-                return;
             }
 
             public void ShiftTiles(Labyrinth.Shift shift)
@@ -146,6 +145,8 @@ namespace LabyrinthGame
 
             public async Task ShiftTilesAsync(Labyrinth.Shift shift)
             {
+                AnimationRunning = true;
+
                 Debug.LogFormat("{0}: async, shift {1}", GetType().Name, shift);
 
                 var line = shift.index;
@@ -223,6 +224,20 @@ namespace LabyrinthGame
                 m_freeTileInstance = removedTile;
 
                 await MoveTilesAsync(tiles, positions);
+
+                float speed = 10;
+
+                await insertedTile.MoveToAsync(insertedTile.transform.position + new Vector3(0, 2, 0), speed);
+                await insertedTile.MoveToAsync(insertedTilePosition + new Vector3(0, 2, 0), speed);
+                await insertedTile.MoveToAsync(insertedTilePosition, speed);
+
+                // Move the removed tile
+
+                await removedTile.MoveToAsync(removedTile.transform.position + new Vector3(0, 2, 0), speed);
+                await removedTile.MoveToAsync(removedTilePosition + new Vector3(0, 2, 0), speed);
+                await removedTile.MoveToAsync(removedTilePosition, speed);
+
+                AnimationRunning = false;
             }
 
             public void ShiftPlayers(in IList<GameLogic.Player> players)
@@ -231,6 +246,16 @@ namespace LabyrinthGame
                 {
                     var position = new Vector3(player.Position.y - 3, 0, 3 - player.Position.x);
                     m_mageInstanceForColor[player.Color].position = position;
+                }
+            }
+
+            public async Task ShiftPlayersAsync(IList<GameLogic.Player> players)
+            {
+                foreach (var player in players)
+                {
+                    var position = new Vector3(player.Position.y - 3, 0, 3 - player.Position.x);
+                    m_mageInstanceForColor[player.Color].position = position;
+                    await Task.Yield();
                 }
             }
 
