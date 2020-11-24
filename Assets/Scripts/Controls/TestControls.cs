@@ -122,6 +122,61 @@ namespace LabyrinthGame
                 CheckSkipMoveCommand();
             }
 
+            public void RotateTileCW()
+            {
+                rotateFreeTile?.Invoke(Labyrinth.Tile.RotationDirection.Clockwise);
+            }
+
+            public void RotateTileCCW()
+            {
+                rotateFreeTile?.Invoke(Labyrinth.Tile.RotationDirection.CounterClockwise);
+            }
+
+            public void MoveTileCW()
+            {
+                m_shiftIndex++;
+
+                if (m_shiftIndex > m_shifts.Length - 1) m_shiftIndex = 0; 
+            }
+
+            public void MoveTileCCW()
+            {
+                m_shiftIndex--;
+
+                if (m_shiftIndex < 0) m_shiftIndex = m_shifts.Length - 1;
+            }
+
+            public void Shift()
+            {
+                shiftEvent?.Invoke(m_shifts[m_shiftIndex]);
+            }
+
+            public void CancelShift()
+            {
+                cancelShift?.Invoke();
+            }
+
+            Labyrinth.Shift[] m_shifts =
+            {
+                new Labyrinth.Shift(Labyrinth.Shift.Orientation.Vertical,   Labyrinth.Shift.Direction.Positive, 1),
+                new Labyrinth.Shift(Labyrinth.Shift.Orientation.Vertical,   Labyrinth.Shift.Direction.Positive, 3),
+                new Labyrinth.Shift(Labyrinth.Shift.Orientation.Vertical,   Labyrinth.Shift.Direction.Positive, 5),
+
+                new Labyrinth.Shift(Labyrinth.Shift.Orientation.Horizontal, Labyrinth.Shift.Direction.Negative, 1),
+                new Labyrinth.Shift(Labyrinth.Shift.Orientation.Horizontal, Labyrinth.Shift.Direction.Negative, 3),
+                new Labyrinth.Shift(Labyrinth.Shift.Orientation.Horizontal, Labyrinth.Shift.Direction.Negative, 5),
+
+                new Labyrinth.Shift(Labyrinth.Shift.Orientation.Vertical,   Labyrinth.Shift.Direction.Negative, 5),
+                new Labyrinth.Shift(Labyrinth.Shift.Orientation.Vertical,   Labyrinth.Shift.Direction.Negative, 3),
+                new Labyrinth.Shift(Labyrinth.Shift.Orientation.Vertical,   Labyrinth.Shift.Direction.Negative, 1),
+
+                new Labyrinth.Shift(Labyrinth.Shift.Orientation.Horizontal, Labyrinth.Shift.Direction.Positive, 5),
+                new Labyrinth.Shift(Labyrinth.Shift.Orientation.Horizontal, Labyrinth.Shift.Direction.Positive, 3),
+                new Labyrinth.Shift(Labyrinth.Shift.Orientation.Horizontal, Labyrinth.Shift.Direction.Positive, 1),
+            };
+
+            int m_shiftIndex = 0;
+
             [SerializeField]
             private int m_shiftLineNumber = 1;
 

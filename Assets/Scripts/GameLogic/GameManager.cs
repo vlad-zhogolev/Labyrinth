@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 namespace LabyrinthGame
 {
@@ -39,7 +40,7 @@ namespace LabyrinthGame
                 m_labyrinthView.ShiftPlayers(m_players);
                 m_isShiftAlreadyDone = true;
 
-                m_labyrinth.Dump();
+                if (m_dumpLabyrinth) m_labyrinth.Dump();
             }
 
             public void CancelShift()
@@ -73,7 +74,7 @@ namespace LabyrinthGame
 
                 m_isShiftAlreadyDone = false;
 
-                m_labyrinth.Dump();
+                if (m_dumpLabyrinth) m_labyrinth.Dump();
             }
 
             public void RotateFreeTile(Labyrinth.Tile.RotationDirection rotationDirection)
@@ -95,7 +96,7 @@ namespace LabyrinthGame
                 var freeTileRotation = m_labyrinth.GetFreeTileRotation();
                 m_labyrinthView.RotateFreeTile(freeTileRotation);
 
-                m_labyrinth.Dump();
+                if (m_dumpLabyrinth) m_labyrinth.Dump();
             }
 
             public void MakeMove(Vector2Int position)
@@ -213,6 +214,8 @@ namespace LabyrinthGame
                 m_availableShifts.Remove(shiftWithInversedDirection);
                 m_unavailableShift = shiftWithInversedDirection;
 
+                UpdateCurrentPlayerInformation();
+
                 Debug.LogFormat("{0}: Turn passed to {1} player.", GetType().Name, CurrentPlayer.Color);
             }
 
@@ -257,6 +260,16 @@ namespace LabyrinthGame
                 m_labyrinthView = GetComponent<View.LabyrinthView>();
                 (var tiles, var freeTile) = m_labyrinth.GetTiles();
                 m_labyrinthView.Initialize(tiles, freeTile);
+
+                m_currentPlayerText = GameObject.Find("Current Player Text").GetComponent<Text>();
+                m_currentPlayerItemText = GameObject.Find("Current Player Item Text").GetComponent<Text>();
+                UpdateCurrentPlayerInformation();
+            }
+
+            void UpdateCurrentPlayerInformation()
+            {
+                m_currentPlayerText.text = "Current Player: " + m_players[m_currentPlayerIndex].Color;
+                m_currentPlayerItemText.text = "Current Player Item: " + m_players[m_currentPlayerIndex].CurrentItemToFind;
             }
 
             Player CurrentPlayer
@@ -284,7 +297,8 @@ namespace LabyrinthGame
 
             }
 
-
+            [SerializeField]
+            bool m_dumpLabyrinth = true;
             [SerializeField]
             private int m_positionSeed = 4;
             [SerializeField]
@@ -304,6 +318,9 @@ namespace LabyrinthGame
             private Labyrinth.Shift m_unavailableShift;
             private Labyrinth.Shift m_previousUnavailableShift;
             private bool m_isShiftAlreadyDone = false;
+
+            Text m_currentPlayerText;
+            Text m_currentPlayerItemText;
         }
 
     } // GameLogic

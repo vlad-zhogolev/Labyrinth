@@ -19,12 +19,12 @@ namespace LabyrinthGame
         public class Player
         {
             private static IDictionary<Color, Vector2Int> InitialPositionsForColor = new Dictionary<Color, Vector2Int>()
-    {
-        {Color.Yellow,  new Vector2Int(0, 0)},
-        {Color.Red,     new Vector2Int(0, 6)},
-        {Color.Blue,    new Vector2Int(6, 6)},
-        {Color.Green,   new Vector2Int(6, 0)},
-    };
+            {
+                {Color.Yellow,  new Vector2Int(0, 0)},
+                {Color.Red,     new Vector2Int(0, 6)},
+                {Color.Blue,    new Vector2Int(6, 6)},
+                {Color.Green,   new Vector2Int(6, 0)},
+            };
 
             public Player(Color color)
             {

@@ -142,7 +142,7 @@ namespace LabyrinthGame
 
                 yield return insertedTile.MoveTo(insertedTilePosition, speed);
 
-                // Movethe removed tile
+                // Move the removed tile
 
                 yield return removedTile.MoveTo(removedTile.transform.position + new Vector3(0, 2, 0), speed);
 
