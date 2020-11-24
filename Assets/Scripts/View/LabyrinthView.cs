@@ -2,15 +2,19 @@
 using System;
 using System.Collections.Generic;
 using System.Collections;
+using System.Threading.Tasks;
+using UnityEngine.Events;
 
 namespace LabyrinthGame
 {
 
     namespace View
     {
-
+       
         public class LabyrinthView : MonoBehaviour
         {
+            public UnityEvent moveTilesAnimationFinished;
+
             Coroutine MoveTiles(List<AnimatedView> tiles, List<Vector3> positions)
             {
                 return StartCoroutine(MoveTilesCoroutine(tiles, positions));
@@ -36,6 +40,29 @@ namespace LabyrinthGame
 
                     yield return null;
                 }
+            }
+
+            public async Task MoveTilesAsync(List<AnimatedView> tiles, List<Vector3> positions)
+            {
+                bool moving = true;
+
+                while (moving)
+                {
+                    moving = false;
+
+                    var tasks = new Task[Labyrinth.Labyrinth.BoardLength];
+                    for (int i = 0; i < Labyrinth.Labyrinth.BoardLength; ++i)
+                    {
+                        AnimatedView tile = tiles[i];
+                        Vector3 position = positions[i];
+
+                        tasks[i] = tile.MoveToAsync(position);
+
+                        moving = tile.transform.position != position;
+                    }
+                    await Task.WhenAll(tasks);
+                }
+                return;
             }
 
             public void ShiftTiles(Labyrinth.Shift shift)
@@ -117,6 +144,87 @@ namespace LabyrinthGame
                 StartCoroutine(ShiftTilesCoroutine(tiles, positions, insertedTile, insertedTilePosition, removedTile, removedTilePosition));
             }
 
+            public async Task ShiftTilesAsync(Labyrinth.Shift shift)
+            {
+                Debug.LogFormat("{0}: async, shift {1}", GetType().Name, shift);
+
+                var line = shift.index;
+                Func<int, (Vector2Int, Vector2Int)> tilesIndicesProvider;
+                switch (shift.orientation)
+                {
+                    case Labyrinth.Shift.Orientation.Horizontal:
+                    {
+                        if (shift.direction == Labyrinth.Shift.Direction.Positive)
+                        {
+                            tilesIndicesProvider = (i) =>
+                            {
+                                return (new Vector2Int(line, i), new Vector2Int(line, i + 1));
+                            };
+                        }
+                        else
+                        {
+                            tilesIndicesProvider = (i) =>
+                            {
+                                return (new Vector2Int(line, Labyrinth.Labyrinth.BoardLength - i - 1), new Vector2Int(line, Labyrinth.Labyrinth.BoardLength - i - 2));
+                            };
+                        }
+                    }
+                    break;
+                    case Labyrinth.Shift.Orientation.Vertical:
+                    {
+                        if (shift.direction == Labyrinth.Shift.Direction.Positive)
+                        {
+                            tilesIndicesProvider = (i) =>
+                            {
+                                return (new Vector2Int(i, line), new Vector2Int(i + 1, line));
+                            };
+                        }
+                        else
+                        {
+                            tilesIndicesProvider = (i) =>
+                            {
+                                return (new Vector2Int(Labyrinth.Labyrinth.BoardLength - i - 1, line), new Vector2Int(Labyrinth.Labyrinth.BoardLength - i - 2, line));
+                            };
+                        }
+                    }
+                    break;
+                    default:
+                    {
+                        throw new ArgumentException("Invalid orientation");
+                    }
+                }
+
+                var borderCoordinates = Labyrinth.Shift.BorderCoordinates[shift];
+
+                var insertedTile = m_freeTileInstance;
+                var insertedTilePosition = m_tiles[borderCoordinates.insert.x, borderCoordinates.insert.y].transform.position;
+
+                var removedTile = m_tiles[borderCoordinates.remove.x, borderCoordinates.remove.y];
+                var removedTilePosition = m_freeTileInstance.transform.position;
+
+                List<AnimatedView> tiles = new List<AnimatedView>(Labyrinth.Labyrinth.BoardLength);
+                List<Vector3> positions = new List<Vector3>(Labyrinth.Labyrinth.BoardLength);
+
+                for (var i = 0; i < Labyrinth.Labyrinth.BoardLength; ++i)
+                {
+                    (var current, var next) = tilesIndicesProvider(i);
+                    tiles.Add(m_tiles[current.x, current.y]);
+                    positions.Add(m_tiles[current.x, current.y].transform.position + new Vector3(next.y - current.y, 0, current.x - next.x));
+                }
+
+                for (var i = Labyrinth.Labyrinth.BoardLength - 2; i >= 0; --i)
+                {
+                    (var current, var next) = tilesIndicesProvider(i);
+                    m_tiles[next.x, next.y] = m_tiles[current.x, current.y];
+                }
+
+                m_tiles[borderCoordinates.insert.x, borderCoordinates.insert.y] = m_freeTileInstance;
+
+                m_freeTileInstance = removedTile;
+
+                await MoveTilesAsync(tiles, positions);
+            }
+
             public void ShiftPlayers(in IList<GameLogic.Player> players)
             {
                 foreach (var player in players)
@@ -151,6 +259,8 @@ namespace LabyrinthGame
                 yield return removedTile.MoveTo(removedTilePosition, speed);
 
                 AnimationRunning = false;
+
+                moveTilesAnimationFinished?.Invoke();
             }
 
             public void RotateFreeTile(Quaternion rotation)
@@ -258,7 +368,7 @@ namespace LabyrinthGame
                 var freeTileX = 5.0f;
                 var freeTileY = 5.0f;
                 m_freeTileInstance = InstantiateTile(freeTile, freeTileX, freeTileY);
-
+                
                 InitializeMages();
             }
 

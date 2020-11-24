@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using UnityEngine;
+using System.Threading.Tasks;
 
 namespace LabyrinthGame
 {
@@ -33,7 +34,23 @@ namespace LabyrinthGame
                 transform.position = Vector3.MoveTowards(transform.position, position, speed * Time.deltaTime);
             }
 
-            public Coroutine RotateTo(Quaternion rotation, float speed = ROTATION_SPEED)
+            public async Task MoveToAsync(Vector3 position, float speed = MOVEMENT_SPEED)
+            {
+                while (transform.position != position)
+                {
+                    await MoveToStepAsync(position, speed);
+                }
+                return;
+            }
+
+            public async Task MoveToStepAsync(Vector3 position, float speed = MOVEMENT_SPEED)
+            {
+                transform.position = Vector3.MoveTowards(transform.position, position, speed* Time.deltaTime);
+                await Task.Yield();
+                return;
+            }
+
+        public Coroutine RotateTo(Quaternion rotation, float speed = ROTATION_SPEED)
             {
                 return StartCoroutine(RotateToCoroutine(rotation, speed));
             }

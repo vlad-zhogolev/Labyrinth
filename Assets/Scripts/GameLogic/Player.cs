@@ -19,16 +19,17 @@ namespace LabyrinthGame
         public class Player
         {
             private static IDictionary<Color, Vector2Int> InitialPositionsForColor = new Dictionary<Color, Vector2Int>()
-    {
-        {Color.Yellow,  new Vector2Int(0, 0)},
-        {Color.Red,     new Vector2Int(0, 6)},
-        {Color.Blue,    new Vector2Int(6, 6)},
-        {Color.Green,   new Vector2Int(6, 0)},
-    };
+            {
+                {Color.Yellow,  new Vector2Int(0, 0)},
+                {Color.Red,     new Vector2Int(0, 6)},
+                {Color.Blue,    new Vector2Int(6, 6)},
+                {Color.Green,   new Vector2Int(6, 0)},
+            };
 
-            public Player(Color color)
+            public Player(Color color, PlayerSettings playerSettings)
             {
                 Color = color;
+                Settings = playerSettings;
                 if (!InitialPositionsForColor.TryGetValue(color, out m_position))
                 {
                     throw new ArgumentException("Can not provide initial position for specified color");
@@ -115,6 +116,7 @@ namespace LabyrinthGame
             }
 
             public Color Color { get; set; }
+            public PlayerSettings Settings{ get; set;}
 
             public IList<Labyrinth.Item> ItemsToFind { get; set; } = new List<Labyrinth.Item>();
             public Labyrinth.Item CurrentItemToFind 

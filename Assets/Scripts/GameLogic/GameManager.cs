@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Events;
+using System.Threading.Tasks;
 
 namespace LabyrinthGame
 {
@@ -8,10 +10,14 @@ namespace LabyrinthGame
     {
         public class GameManager : MonoBehaviour
         {
-            public void ShiftTiles(Labyrinth.Shift shift)
-            {
-                if (m_labyrinthView.AnimationRunning) return;
+            public UnityEvent m_turnPassed;
 
+            public async void ShiftTiles(Labyrinth.Shift shift)
+            {
+                if (m_labyrinthView.AnimationRunning)
+                {
+                    return;
+                }
                 if (m_isShiftAlreadyDone)
                 {
                     Debug.LogFormat("{0}: Current player already made shift: {1}", GetType().Name, m_unavailableShift);
@@ -33,16 +39,20 @@ namespace LabyrinthGame
                 m_availableShifts.Remove(shift);
                 m_unavailableShift = shift;
 
+                
+
                 m_labyrinth.ShiftTiles(shift);
                 ShiftPlayers(shift);
-                m_labyrinthView.ShiftTiles(shift);
+                //m_labyrinthView.ShiftTiles(shift);
+                await m_labyrinthView.ShiftTilesAsync(shift);
+                Debug.LogFormat("{0}: Shifted tiles async", GetType().Name);
                 m_labyrinthView.ShiftPlayers(m_players);
                 m_isShiftAlreadyDone = true;
 
                 m_labyrinth.Dump();
             }
 
-            public void CancelShift()
+            public async void CancelShift()
             {
                 if (m_labyrinthView.AnimationRunning)
                 {
@@ -59,7 +69,9 @@ namespace LabyrinthGame
                 var shiftWithInversedDirection = m_unavailableShift.GetShiftWithInversedDirection();
                 m_labyrinth.ShiftTiles(shiftWithInversedDirection);
                 UnshiftPlayers();
-                m_labyrinthView.ShiftTiles(shiftWithInversedDirection);
+                //m_labyrinthView.ShiftTiles(shiftWithInversedDirection);
+                await m_labyrinthView.ShiftTilesAsync(shiftWithInversedDirection);
+                Debug.LogFormat("{0}: Shifted tiles async", GetType().Name);
                 m_labyrinthView.ShiftPlayers(m_players);
 
                 m_availableShifts.Add(m_unavailableShift);
@@ -141,6 +153,16 @@ namespace LabyrinthGame
                 PassTurn();
             }
 
+            public void SkipAiMove()
+            {
+                if (!CurrentPlayer.Settings.IsAi)
+                {
+                    return;
+                }
+                Debug.LogFormat("{0}: Skiping move for Ai player {1}", GetType().Name, CurrentPlayer.Color);
+                PassTurn();
+            }
+
             void EndGame()
             {
                 Debug.LogFormat("{0}: GAME OVER", GetType().Name);
@@ -191,6 +213,7 @@ namespace LabyrinthGame
             {
                 if (m_labyrinthView.AnimationRunning)
                 {
+                    Debug.LogFormat("{0}: Can not move player. Animation is running.", GetType().Name);
                     return false;
                 }
                 if (!m_isShiftAlreadyDone)
@@ -213,7 +236,17 @@ namespace LabyrinthGame
                 m_availableShifts.Remove(shiftWithInversedDirection);
                 m_unavailableShift = shiftWithInversedDirection;
 
+                m_turnPassed?.Invoke();
+            }
+
+            public void TurnPassedHandler()
+            {
                 Debug.LogFormat("{0}: Turn passed to {1} player.", GetType().Name, CurrentPlayer.Color);
+
+                if (CurrentPlayer.Settings.IsAi)
+                {
+                    MakeAiTurn();
+                }
             }
 
             void Initiallize()
@@ -225,10 +258,10 @@ namespace LabyrinthGame
 
                 m_players = new List<Player>()
                 {
-                    new Player(Color.Yellow),
-                    new Player(Color.Red),
-                    new Player(Color.Blue),
-                    new Player(Color.Green),
+                    new Player(Color.Yellow, GameSettings.PlayersSettings[Color.Yellow]),
+                    new Player(Color.Red, GameSettings.PlayersSettings[Color.Red]),
+                    new Player(Color.Blue, GameSettings.PlayersSettings[Color.Blue]),
+                    new Player(Color.Green, GameSettings.PlayersSettings[Color.Green]),
                 };
 
                 m_itemsDealer = new ItemsDealer(m_itemsSeed);
@@ -262,6 +295,8 @@ namespace LabyrinthGame
                 m_labyrinthView = GetComponent<View.LabyrinthView>();
                 (var tiles, var freeTile) = m_labyrinth.GetTiles();
                 m_labyrinthView.Initialize(tiles, freeTile);
+
+
             }
 
             Player CurrentPlayer
@@ -283,10 +318,14 @@ namespace LabyrinthGame
                 Initiallize();
             }
 
-            // Update is called once per frame
-            void Update()
+            void MakeAiTurn()
             {
+                Debug.LogFormat("{0}: Making AI turn for {1} player.", GetType().Name, CurrentPlayer.Color);
+                var enumerator = m_availableShifts.GetEnumerator();
+                enumerator.MoveNext();
+                var shift = enumerator.Current;
 
+                ShiftTiles(shift);
             }
 
 
