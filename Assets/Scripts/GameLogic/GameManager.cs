@@ -244,7 +244,7 @@ namespace LabyrinthGame
                 }
             }
 
-            void Initiallize()
+            async Task Initiallize()
             {
                 foreach (var playerSettings in GameSettings.PlayersSettings)
                 {
@@ -296,6 +296,11 @@ namespace LabyrinthGame
                 m_currentPlayerText = GameObject.Find("Current Player Text").GetComponent<Text>();
                 m_currentPlayerItemText = GameObject.Find("Current Player Item Text").GetComponent<Text>();
                 UpdateCurrentPlayerInformation();
+
+                if (CurrentPlayer.Settings.IsAi)
+                {
+                    await MakeAiTurnAsync();
+                }
             }
 
             void UpdateCurrentPlayerInformation()
@@ -318,9 +323,9 @@ namespace LabyrinthGame
             }
 
             // Start is called before the first frame update
-            void Start()
+            async Task Start()
             {
-                Initiallize();
+                await Initiallize();
             }
 
             async Task MakeAiTurnAsync()
