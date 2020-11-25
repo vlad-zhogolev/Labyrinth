@@ -1,15 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Collections;
 using System.Threading.Tasks;
 using UnityEngine;
 
 namespace LabyrinthGame
 {
-
     namespace View
     {
-       
         public class LabyrinthView : MonoBehaviour
         {
             async Task MoveTiles(List<AnimatedView> tiles, List<Vector3> positions)
@@ -229,7 +226,7 @@ namespace LabyrinthGame
                 var freeTileX = 5.0f;
                 var freeTileY = 5.0f;
                 m_freeTileInstance = InstantiateTile(freeTile, freeTileX, freeTileY);
-                
+
                 InitializeMages();
             }
 
