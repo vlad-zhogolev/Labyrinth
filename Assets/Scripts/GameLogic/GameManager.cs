@@ -169,6 +169,10 @@ namespace LabyrinthGame
             void EndGame()
             {
                 Debug.LogFormat("{0}: Player {1, -10} GAME OVER", GetType().Name, CurrentPlayer.Color);
+
+                m_gameOverPanel.SetActive(true);
+                var text = GameObject.Find("PlayerWinText").GetComponent<Text>();
+                text.text = CurrentPlayer.Color + " player wins!";
             }
 
             bool IsCurrentPlayerFoundItem()
@@ -246,6 +250,8 @@ namespace LabyrinthGame
 
             async Task Initiallize()
             {
+                m_gameOverPanel.SetActive(false);
+
                 foreach (var playerSettings in GameSettings.PlayersSettings)
                 {
                     Debug.LogFormat("{0}: settings for {1} player: {2}", GetType().Name, playerSettings.Key, playerSettings.Value);
@@ -323,7 +329,7 @@ namespace LabyrinthGame
             }
 
             // Start is called before the first frame update
-            async Task Start()
+            async void Start()
             {
                 await Initiallize();
             }
@@ -367,6 +373,9 @@ namespace LabyrinthGame
 
             Text m_currentPlayerText;
             Text m_currentPlayerItemText;
+
+            [SerializeField]
+            private GameObject m_gameOverPanel;
         }
 
     } // GameLogic
