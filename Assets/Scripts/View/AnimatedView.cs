@@ -1,10 +1,9 @@
-﻿using System.Collections;
+﻿using System.Threading.Tasks;
 using UnityEngine;
 using System.Threading.Tasks;
 
 namespace LabyrinthGame
 {
-
     namespace View
     {
         public class AnimatedView : MonoBehaviour
@@ -14,55 +13,25 @@ namespace LabyrinthGame
 
             const float ROTATION_SPEED = 360;
 
-            public Coroutine MoveTo(Vector3 position, float speed = MOVEMENT_SPEED)
-            {
-                return StartCoroutine(MoveToCoroutine(position, speed));
-            }
-
-            IEnumerator MoveToCoroutine(Vector3 position, float speed)
+            public async Task MoveTo(Vector3 position, float speed = MOVEMENT_SPEED)
             {
                 while (transform.position != position)
                 {
-                    MoveToStep(position, speed);
+                    transform.position = Vector3.MoveTowards(transform.position, position, speed * Time.deltaTime);
 
-                    yield return null;
-                }
-            }
-
-            public void MoveToStep(Vector3 position, float speed = MOVEMENT_SPEED)
-            {
-                transform.position = Vector3.MoveTowards(transform.position, position, speed * Time.deltaTime);
-            }
-
-            public async Task MoveToAsync(Vector3 position, float speed = MOVEMENT_SPEED)
-            {
-                while (transform.position != position)
-                {
-                    transform.position = Vector3.MoveTowards(transform.position, position, speed* Time.deltaTime);
                     await Task.Yield();
                 }
             }
 
-            public Coroutine RotateTo(Quaternion rotation, float speed = ROTATION_SPEED)
-            {
-                return StartCoroutine(RotateToCoroutine(rotation, speed));
-            }
-
-            IEnumerator RotateToCoroutine(Quaternion rotation, float speed)
+            public async Task RotateTo(Quaternion rotation, float speed = ROTATION_SPEED)
             {
                 while (transform.rotation != rotation)
                 {
-                    RotateToStep(rotation, speed);
+                    transform.rotation = Quaternion.RotateTowards(transform.rotation, rotation, speed * Time.deltaTime);
 
-                    yield return null;
+                    await Task.Yield();
                 }
             }
-
-            public void RotateToStep(Quaternion rotation, float speed = ROTATION_SPEED)
-            {
-                transform.rotation = Quaternion.RotateTowards(transform.rotation, rotation, speed * Time.deltaTime);
-            }
-
         }
-    }
-}
+    } // namespace View
+} // namespace LabyrinthGame

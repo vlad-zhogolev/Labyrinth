@@ -32,11 +32,11 @@ namespace LabyrinthGame
             }
 
             public static HashSet<Side> AllSides = new HashSet<Side>{
-        Side.Up,
-        Side.Down,
-        Side.Right,
-        Side.Left
-    };
+                Side.Up,
+                Side.Down,
+                Side.Right,
+                Side.Left
+            };
 
             public Tile(Type type)
             {

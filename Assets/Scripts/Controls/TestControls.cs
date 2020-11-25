@@ -1,6 +1,4 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEngine.Events;
 
 namespace LabyrinthGame
@@ -114,13 +112,90 @@ namespace LabyrinthGame
             // Update is called once per frame
             void Update()
             {
-                CheckShiftLineNumber();
-                CheckShiftCommand();
-                CheckCancelShiftCommand();
-                CheckRotationCommand();
-                CheckMakeMoveCommand();
-                CheckSkipMoveCommand();
+                if (m_inputInabled)
+                {
+                    CheckShiftLineNumber();
+                    CheckShiftCommand();
+                    CheckCancelShiftCommand();
+                    CheckRotationCommand();
+                    CheckMakeMoveCommand();
+                    CheckSkipMoveCommand();
+                }
             }
+
+            public void RotateTileCW()
+            {
+                if (m_inputInabled) rotateFreeTile?.Invoke(Labyrinth.Tile.RotationDirection.Clockwise);
+            }
+
+            public void RotateTileCCW()
+            {
+                if (m_inputInabled) rotateFreeTile?.Invoke(Labyrinth.Tile.RotationDirection.CounterClockwise);
+            }
+
+            public void MoveTileCW()
+            {
+                if (m_inputInabled)
+                {
+                    m_shiftIndex++;
+
+                    if (m_shiftIndex > m_shifts.Length - 1) m_shiftIndex = 0;
+                }
+            }
+
+            public void MoveTileCCW()
+            {
+                if (m_inputInabled)
+                {
+                    m_shiftIndex--;
+
+                    if (m_shiftIndex < 0) m_shiftIndex = m_shifts.Length - 1;
+                }
+            }
+
+            public void Shift()
+            {
+                if (m_inputInabled) shiftEvent?.Invoke(m_shifts[m_shiftIndex]);
+            }
+
+            public void CancelShift()
+            {
+                if (m_inputInabled) cancelShift?.Invoke();
+            }
+
+            public void EnableInput()
+            {
+                m_inputInabled = true;
+            }
+
+            public void DisableInput()
+            {
+                m_inputInabled = false;
+            }
+
+            [SerializeField]
+            bool m_inputInabled = true;
+
+            Labyrinth.Shift[] m_shifts =
+            {
+                new Labyrinth.Shift(Labyrinth.Shift.Orientation.Vertical,   Labyrinth.Shift.Direction.Positive, 1),
+                new Labyrinth.Shift(Labyrinth.Shift.Orientation.Vertical,   Labyrinth.Shift.Direction.Positive, 3),
+                new Labyrinth.Shift(Labyrinth.Shift.Orientation.Vertical,   Labyrinth.Shift.Direction.Positive, 5),
+
+                new Labyrinth.Shift(Labyrinth.Shift.Orientation.Horizontal, Labyrinth.Shift.Direction.Negative, 1),
+                new Labyrinth.Shift(Labyrinth.Shift.Orientation.Horizontal, Labyrinth.Shift.Direction.Negative, 3),
+                new Labyrinth.Shift(Labyrinth.Shift.Orientation.Horizontal, Labyrinth.Shift.Direction.Negative, 5),
+
+                new Labyrinth.Shift(Labyrinth.Shift.Orientation.Vertical,   Labyrinth.Shift.Direction.Negative, 5),
+                new Labyrinth.Shift(Labyrinth.Shift.Orientation.Vertical,   Labyrinth.Shift.Direction.Negative, 3),
+                new Labyrinth.Shift(Labyrinth.Shift.Orientation.Vertical,   Labyrinth.Shift.Direction.Negative, 1),
+
+                new Labyrinth.Shift(Labyrinth.Shift.Orientation.Horizontal, Labyrinth.Shift.Direction.Positive, 5),
+                new Labyrinth.Shift(Labyrinth.Shift.Orientation.Horizontal, Labyrinth.Shift.Direction.Positive, 3),
+                new Labyrinth.Shift(Labyrinth.Shift.Orientation.Horizontal, Labyrinth.Shift.Direction.Positive, 1),
+            };
+
+            int m_shiftIndex = 0;
 
             [SerializeField]
             private int m_shiftLineNumber = 1;
