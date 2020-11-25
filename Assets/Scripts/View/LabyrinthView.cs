@@ -5,10 +5,8 @@ using UnityEngine;
 
 namespace LabyrinthGame
 {
-
     namespace View
     {
-
         public class LabyrinthView : MonoBehaviour
         {
             async Task MoveTiles(List<AnimatedView> tiles, List<Vector3> positions)

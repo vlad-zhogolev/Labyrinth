@@ -26,9 +26,10 @@ namespace LabyrinthGame
                 {Color.Green,   new Vector2Int(6, 0)},
             };
 
-            public Player(Color color)
+            public Player(Color color, PlayerSettings playerSettings)
             {
                 Color = color;
+                Settings = playerSettings;
                 if (!InitialPositionsForColor.TryGetValue(color, out m_position))
                 {
                     throw new ArgumentException("Can not provide initial position for specified color");
@@ -115,6 +116,7 @@ namespace LabyrinthGame
             }
 
             public Color Color { get; set; }
+            public PlayerSettings Settings{ get; set;}
 
             public IList<Labyrinth.Item> ItemsToFind { get; set; } = new List<Labyrinth.Item>();
             public Labyrinth.Item CurrentItemToFind 

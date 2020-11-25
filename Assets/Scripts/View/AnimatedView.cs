@@ -1,9 +1,9 @@
 ﻿using System.Threading.Tasks;
 using UnityEngine;
+using System.Threading.Tasks;
 
 namespace LabyrinthGame
 {
-
     namespace View
     {
         public class AnimatedView : MonoBehaviour
@@ -32,7 +32,6 @@ namespace LabyrinthGame
                     await Task.Yield();
                 }
             }
-
         }
-    }
-}
+    } // namespace View
+} // namespace LabyrinthGame

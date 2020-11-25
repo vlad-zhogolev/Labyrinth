@@ -58,25 +58,6 @@ namespace LabyrinthGame
 
             private static Tile[] CreateMovableTiles()
             {
-                //Tile[] tiles = new Tile[Labyrinth.MovableTilesNumber];
-                //var endIndex = Labyrinth.MovableStraightTilesNumber;
-                //for (var i = 0; i < endIndex; ++i)
-                //{
-                //    tiles[i] = new Tile(Tile.Type.Straight);
-                //}
-                //var startIndex = endIndex;
-                //endIndex += Labyrinth.MovableTurnTilesNumber;
-                //for (var i = startIndex; i < endIndex; ++i)
-                //{
-                //    tiles[i] = new Tile(Tile.Type.Turn);
-                //}
-                //startIndex = endIndex;
-                //endIndex += Labyrinth.MovableJunctionTilesNumber;
-                //for (var i = startIndex; i < endIndex; ++i)
-                //{
-                //    tiles[i] = new Tile(Tile.Type.Junction);
-                //}
-
                 var straightTiles = new Tile[MovableStraightTilesNumber];
                 for (var i = 0; i < straightTiles.Length; ++i)
                 {
@@ -258,15 +239,14 @@ namespace LabyrinthGame
                     }
 
                     var freeTileBottomLine = "  ";
-                    for (var j = 0; j < BoardLength; ++j)
-                        if (m_freeTile.down)
-                        {
-                            freeTileBottomLine += "  |   ";
-                        }
-                        else
-                        {
-                            freeTileBottomLine += "      ";
-                        }
+                    if (m_freeTile.down)
+                    {
+                        freeTileBottomLine += "  |   ";
+                    }
+                    else
+                    {
+                        freeTileBottomLine += "      ";
+                    }
                     file.WriteLine("\nfree tile:");
                     file.WriteLine(freeTileUpLine);
                     file.WriteLine(freeTileMiddleLine);

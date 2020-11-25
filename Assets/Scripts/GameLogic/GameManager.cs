@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using UnityEngine;
+using System.Threading.Tasks;
 using UnityEngine.UI;
 
 namespace LabyrinthGame
@@ -10,20 +11,27 @@ namespace LabyrinthGame
         {
             public async void ShiftTiles(Labyrinth.Shift shift)
             {
+                await ShiftTilesAsync(shift);
+            }
+
+            async Task ShiftTilesAsync(Labyrinth.Shift shift)
+            {
                 m_controls.DisableInput();
 
                 if (m_isShiftAlreadyDone)
                 {
-                    Debug.LogFormat("{0}: Current player already made shift: {1}", GetType().Name, m_unavailableShift);
+                    Debug.LogFormat("{0}: Player {1, -10} Already made shift: {2}", GetType().Name, CurrentPlayer.Color, shift);
+                    m_controls.EnableInput();
                     return;
                 }
                 if (!m_availableShifts.Contains(shift))
                 {
-                    Debug.LogFormat("{0}: Attempt to make unavailable shift: {1}", GetType().Name, shift);
+                    Debug.LogFormat("{0}: Player {1, -10} Attempt to make unavailable shift: {2}", GetType().Name, CurrentPlayer.Color, shift);
+                    m_controls.EnableInput();
                     return;
                 }
 
-                Debug.LogFormat("{0}: Moving tiles for shift: {1}", GetType().Name, shift);
+                Debug.LogFormat("{0}: Player {1, -10} Makes shift: {2}", GetType().Name, CurrentPlayer.Color, shift);
 
                 if (m_unavailableShift != null)
                 {
@@ -35,11 +43,16 @@ namespace LabyrinthGame
 
                 m_labyrinth.ShiftTiles(shift);
                 ShiftPlayers(shift);
+
                 await m_labyrinthView.ShiftTiles(shift);
                 m_labyrinthView.ShiftPlayers(m_players);
                 m_isShiftAlreadyDone = true;
+                Debug.LogFormat("{0}: Player {1, -10} Shift completed", GetType().Name, CurrentPlayer.Color);
 
-                if (m_dumpLabyrinth) m_labyrinth.Dump();
+                if (m_dumpLabyrinth)
+                {
+                    m_labyrinth.Dump();
+                }
 
                 m_controls.EnableInput();
             }
@@ -50,15 +63,17 @@ namespace LabyrinthGame
 
                 if (!m_isShiftAlreadyDone)
                 {
-                    Debug.LogFormat("{0}: No shift to cancel", GetType().Name);
+                    Debug.LogFormat("{0}: Player {1, -10} No shift to cancel", GetType().Name, CurrentPlayer.Color);
+                    m_controls.EnableInput();
                     return;
                 }
 
-                Debug.LogFormat("{0}: Cancel shift: {1}", GetType().Name, m_unavailableShift);
+                Debug.LogFormat("{0}: Player {1, -10} Cancel shift: {2}", GetType().Name, CurrentPlayer.Color, m_unavailableShift);
 
                 var shiftWithInversedDirection = m_unavailableShift.GetShiftWithInversedDirection();
                 m_labyrinth.ShiftTiles(shiftWithInversedDirection);
                 UnshiftPlayers();
+
                 await m_labyrinthView.ShiftTiles(shiftWithInversedDirection);
                 m_labyrinthView.ShiftPlayers(m_players);
 
@@ -67,13 +82,17 @@ namespace LabyrinthGame
                 {
                     m_availableShifts.Remove(m_previousUnavailableShift);
                 }
-
                 m_unavailableShift = m_previousUnavailableShift;
                 m_previousUnavailableShift = null;
 
                 m_isShiftAlreadyDone = false;
 
-                if (m_dumpLabyrinth) m_labyrinth.Dump();
+                Debug.LogFormat("{0}: Player {1, -10} Cancel shift completed", GetType().Name, CurrentPlayer.Color);
+
+                if (m_dumpLabyrinth)
+                {
+                    m_labyrinth.Dump();
+                }
 
                 m_controls.EnableInput();
             }
@@ -84,23 +103,27 @@ namespace LabyrinthGame
 
                 if (m_isShiftAlreadyDone)
                 {
-                    Debug.LogFormat("{0}: Can not rotate free tile. Shift already made.", GetType().Name);
+                    Debug.LogFormat("{0}: Player {1, -10} Can not rotate free tile. Shift already made.", GetType().Name, CurrentPlayer.Color);
+                    m_controls.EnableInput();
                     return;
                 }
 
-                Debug.LogFormat("{0}: Rotate free tile {1}", GetType().Name, rotationDirection);
+                Debug.LogFormat("{0}: Player {1, -10} Rotate free tile {2}", GetType().Name, CurrentPlayer.Color, rotationDirection);
 
                 m_labyrinth.RotateFreeTile(rotationDirection);
 
                 var freeTileRotation = m_labyrinth.GetFreeTileRotation();
                 await m_labyrinthView.RotateFreeTile(freeTileRotation);
 
-                if (m_dumpLabyrinth) m_labyrinth.Dump();
+                if (m_dumpLabyrinth)
+                {
+                    m_labyrinth.Dump();
+                }
 
                 m_controls.EnableInput();
             }
 
-            public void MakeMove(Vector2Int position)
+            public async void MakeMove(Vector2Int position)
             {
                 if (!CanMakeMove())
                 {
@@ -108,18 +131,18 @@ namespace LabyrinthGame
                 }
                 if (!m_labyrinth.IsReachable(position, CurrentPlayer.Position))
                 {
-                    Debug.LogFormat("{0}: Can not move player from {1} to {2}", GetType().Name, CurrentPlayer.Position, position);
+                    Debug.LogFormat("{0}: Player {1, -10} Can not move from {2} to {3}", GetType().Name, CurrentPlayer.Color, CurrentPlayer.Position, position);
                     return;
                 }
 
-                Debug.LogFormat("{0}: Move player from {1} to {2}", GetType().Name, CurrentPlayer.Position, position);
+                Debug.LogFormat("{0}: Player {1, -10} Move from {2} to {3}", GetType().Name, CurrentPlayer.Color, CurrentPlayer.Position, position);
 
                 CurrentPlayer.Position = position;
                 m_labyrinthView.SetPlayerPosition(CurrentPlayer.Color, position);
 
                 if (IsCurrentPlayerFoundItem())
                 {
-                    Debug.LogFormat("{0}: Player {1} found item {2}", GetType().Name, CurrentPlayer.Color, CurrentPlayer.CurrentItemToFind);
+                    Debug.LogFormat("{0}: Player {1, -10} Found item {2}", GetType().Name, CurrentPlayer.Color, CurrentPlayer.CurrentItemToFind);
                     CurrentPlayer.SetCurrentItemFound();
                 }
                 if (IsCurrentPlayerFoundAllItems())
@@ -129,23 +152,23 @@ namespace LabyrinthGame
                     return;
                 }
 
-                PassTurn();
+                await PassTurn();
             }
 
-            public void SkipMove()
+            public async void SkipMove()
             {
                 if (!CanMakeMove())
                 {
                     return;
                 }
 
-                Debug.LogFormat("{0}: Skiping move for player {1}", GetType().Name, CurrentPlayer.Color);
-                PassTurn();
+                Debug.LogFormat("{0}: Player {1, -10} Skiping move", GetType().Name, CurrentPlayer.Color);
+                await PassTurn();
             }
 
             void EndGame()
             {
-                Debug.LogFormat("{0}: GAME OVER", GetType().Name);
+                Debug.LogFormat("{0}: Player {1, -10} GAME OVER", GetType().Name, CurrentPlayer.Color);
             }
 
             bool IsCurrentPlayerFoundItem()
@@ -193,14 +216,14 @@ namespace LabyrinthGame
             {
                 if (!m_isShiftAlreadyDone)
                 {
-                    Debug.LogFormat("{0}: Can not move player. Shift must be made first.", GetType().Name);
+                    Debug.LogFormat("{0}: Player {1, -10} Can not move. Shift must be made first.", GetType().Name, CurrentPlayer.Color);
                     return false;
                 }
 
                 return true;
             }
 
-            void PassTurn()
+            async Task PassTurn()
             {
                 SwitchToNextPlayer();
                 m_isShiftAlreadyDone = false;
@@ -213,7 +236,12 @@ namespace LabyrinthGame
 
                 UpdateCurrentPlayerInformation();
 
-                Debug.LogFormat("{0}: Turn passed to {1} player.", GetType().Name, CurrentPlayer.Color);
+                Debug.LogFormat("{0}: Player {1, -10} It is your turn now.", GetType().Name, CurrentPlayer.Color);
+
+                if (CurrentPlayer.Settings.IsAi)
+                {
+                    await MakeAiTurnAsync();
+                }
             }
 
             void Initiallize()
@@ -225,10 +253,10 @@ namespace LabyrinthGame
 
                 m_players = new List<Player>()
                 {
-                    new Player(Color.Yellow),
-                    new Player(Color.Red),
-                    new Player(Color.Blue),
-                    new Player(Color.Green),
+                    new Player(Color.Yellow, GameSettings.PlayersSettings[Color.Yellow]),
+                    new Player(Color.Red, GameSettings.PlayersSettings[Color.Red]),
+                    new Player(Color.Blue, GameSettings.PlayersSettings[Color.Blue]),
+                    new Player(Color.Green, GameSettings.PlayersSettings[Color.Green]),
                 };
 
                 m_itemsDealer = new ItemsDealer(m_itemsSeed);
@@ -295,10 +323,17 @@ namespace LabyrinthGame
                 Initiallize();
             }
 
-            // Update is called once per frame
-            void Update()
+            async Task MakeAiTurnAsync()
             {
+                await Task.Delay(1000);
+                Debug.LogFormat("{0}: AI Player {1, -10} Makes turn", GetType().Name, CurrentPlayer.Color);
 
+                var enumerator = m_availableShifts.GetEnumerator();
+                enumerator.MoveNext();
+                var shift = enumerator.Current;
+
+                await ShiftTilesAsync(shift);
+                SkipMove();
             }
 
             [SerializeField]

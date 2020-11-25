@@ -173,6 +173,7 @@ namespace LabyrinthGame
                 m_inputInabled = false;
             }
 
+            [SerializeField]
             bool m_inputInabled = true;
 
             Labyrinth.Shift[] m_shifts =
