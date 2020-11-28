@@ -7,13 +7,19 @@ namespace LabyrinthGame
 {
     namespace View
     {
+
+        public enum TileMovement
+        {
+            NORMAL, HORIZONTAL_TO_VERTICAL, VERTICAL_TO_HORIZONTAL
+        }
+
         public class LabyrinthView : MonoBehaviour
         {
             async Task MoveTiles(List<AnimatedView> tiles, List<Vector3> positions)
             {
-                var tasks = new Task[Labyrinth.Labyrinth.BoardLength];
+                var tasks = new Task[tiles.Count];
 
-                for (int i = 0; i < Labyrinth.Labyrinth.BoardLength; ++i)
+                for (int i = 0; i < tiles.Count; ++i)
                 {
                     AnimatedView tile = tiles[i];
                     Vector3 position = positions[i];
@@ -24,7 +30,7 @@ namespace LabyrinthGame
                 await Task.WhenAll(tasks);
             }
 
-            public async Task ShiftTiles(Labyrinth.Shift shift)
+            public async Task ShiftTiles(int shiftIndex, Labyrinth.Shift shift)
             {
                 var line = shift.index;
                 Func<int, (Vector2Int, Vector2Int)> tilesIndicesProvider;
@@ -78,10 +84,12 @@ namespace LabyrinthGame
                 var insertedTilePosition = m_tiles[borderCoordinates.insert.x, borderCoordinates.insert.y].transform.position;
 
                 var removedTile = m_tiles[borderCoordinates.remove.x, borderCoordinates.remove.y];
-                var removedTilePosition = m_freeTileInstance.transform.position;
 
                 var tiles = new List<AnimatedView>(Labyrinth.Labyrinth.BoardLength);
                 var positions = new List<Vector3>(Labyrinth.Labyrinth.BoardLength);
+
+                tiles.Add(insertedTile);
+                positions.Add(insertedTilePosition);
 
                 for (var i = 0; i < Labyrinth.Labyrinth.BoardLength; ++i)
                 {
@@ -100,34 +108,21 @@ namespace LabyrinthGame
 
                 m_freeTileInstance = removedTile;
 
+                await insertedTile.MoveTo((insertedTile.transform.position + insertedTilePosition) / 2);
+
                 await MoveTiles(tiles, positions);
 
-                float speed = 10;
-
-                // Move the inserted tile
-
-                await insertedTile.MoveTo(insertedTile.transform.position + new Vector3(0, 2, 0), speed);
-
-                await insertedTile.MoveTo(insertedTilePosition + new Vector3(0, 2, 0), speed);
-
-                await insertedTile.MoveTo(insertedTilePosition, speed);
-
-                // Move the removed tile
-
-                await removedTile.MoveTo(removedTile.transform.position + new Vector3(0, 2, 0), speed);
-
-                await removedTile.MoveTo(removedTilePosition + new Vector3(0, 2, 0), speed);
-
-                await removedTile.MoveTo(removedTilePosition, speed);
-            }
-
-            public void ShiftPlayers(in IList<GameLogic.Player> players)
-            {
-                foreach (var player in players)
+                foreach (var mage in m_mageInstanceForColor.Values)
                 {
-                    var position = new Vector3(player.Position.y - 3, 0, 3 - player.Position.x);
-                    m_mageInstanceForColor[player.Color].position = position;
+                    if (mage.transform.parent == removedTile.transform)
+                    {
+                        mage.transform.SetParent(null);
+                        await mage.CarryTo(insertedTilePosition, 1, 10);
+                        mage.transform.SetParent(insertedTile.transform);
+                    }
                 }
+
+                await removedTile.MoveTo(m_freeTilePositions[GameLogic.ShiftIndex.Inverse(shiftIndex)]);
             }
 
             public async Task RotateFreeTile(Quaternion rotation)
@@ -135,11 +130,34 @@ namespace LabyrinthGame
                 await m_freeTileInstance.RotateTo(rotation);
             }
 
-            public void SetPlayerPosition(GameLogic.Color playerColor, Vector2Int indices)
+            public async Task MoveFreeTile(int shiftIndex, Quaternion rotation, TileMovement tileMovement)
+            {
+                float speed = 8;
+
+                var position = m_freeTilePositions[shiftIndex];
+
+                if (tileMovement == TileMovement.HORIZONTAL_TO_VERTICAL)
+                {
+                    await m_freeTileInstance.MoveTo(new Vector3(position.x, 0, m_freeTileInstance.transform.position.z), speed);
+                }
+                else if (tileMovement == TileMovement.VERTICAL_TO_HORIZONTAL)
+                {
+                    await m_freeTileInstance.MoveTo(new Vector3(m_freeTileInstance.transform.position.x, 0, position.z), speed);
+                }
+
+                if (tileMovement != TileMovement.NORMAL) await m_freeTileInstance.RotateTo(rotation);
+
+                await m_freeTileInstance.MoveTo(position, speed);
+            }
+
+            public async Task SetPlayerPosition(GameLogic.Color playerColor, Vector2Int indices)
             {
                 var mage = m_mageInstanceForColor[playerColor];
-                var position = m_tiles[indices.x, indices.y].transform.position;
-                mage.position = new Vector3(position.x, 0, position.z);
+                var tile = m_tiles[indices.x, indices.y];
+                var position = tile.transform.position;
+                mage.transform.SetParent(null);
+                await mage.CarryTo(new Vector3(position.x, 0, position.z), 1, 10);
+                mage.transform.SetParent(tile.transform);
             }
 
             private AnimatedView GetPrefabByTileType(Labyrinth.Tile.Type type)
@@ -184,7 +202,7 @@ namespace LabyrinthGame
                     {GameLogic.Color.Green,  m_greenMaterial},
                 };
 
-                m_mageInstanceForColor = new Dictionary<GameLogic.Color, Transform>()
+                m_mageInstanceForColor = new Dictionary<GameLogic.Color, AnimatedView>()
                 {
                     {GameLogic.Color.Yellow, Instantiate(m_magePrefab, new Vector3(-3.0f, 0,  3.0f), Quaternion.identity)},
                     {GameLogic.Color.Red,    Instantiate(m_magePrefab, new Vector3( 3.0f, 0,  3.0f), Quaternion.identity)},
@@ -194,12 +212,19 @@ namespace LabyrinthGame
 
                 var yellowMage = m_mageInstanceForColor[GameLogic.Color.Yellow];
                 yellowMage.GetComponent<Renderer>().material.color = Color.yellow;
+                yellowMage.transform.SetParent(m_tiles[0, 0].transform);
+
                 var blueMage = m_mageInstanceForColor[GameLogic.Color.Blue];
                 blueMage.GetComponent<Renderer>().material.color = Color.blue;
+                blueMage.transform.SetParent(m_tiles[6, 6].transform);
+
                 var greenMage = m_mageInstanceForColor[GameLogic.Color.Green];
                 greenMage.GetComponent<Renderer>().material.color = Color.green;
+                greenMage.transform.SetParent(m_tiles[6, 0].transform);
+
                 var redMage = m_mageInstanceForColor[GameLogic.Color.Red];
                 redMage.GetComponent<Renderer>().material.color = Color.red;
+                redMage.transform.SetParent(m_tiles[0, 6].transform);
             }
 
             public void Initialize(in Labyrinth.Tile[,] tiles, in Labyrinth.Tile freeTile)
@@ -223,9 +248,9 @@ namespace LabyrinthGame
                     z -= step;
                 }
 
-                var freeTileX = 5.0f;
-                var freeTileY = 5.0f;
-                m_freeTileInstance = InstantiateTile(freeTile, freeTileX, freeTileY);
+                var freeTileX = m_freeTilePositions[0].x;
+                var freeTileZ = m_freeTilePositions[0].z;
+                m_freeTileInstance = InstantiateTile(freeTile, freeTileX, freeTileZ);
 
                 InitializeMages();
             }
@@ -242,6 +267,25 @@ namespace LabyrinthGame
 
             }
 
+            Vector3[] m_freeTilePositions = new Vector3[]
+            {
+                new Vector3(-2, 0, 5),
+                new Vector3(0, 0, 5),
+                new Vector3(2, 0, 5),
+
+                new Vector3(5, 0, 2),
+                new Vector3(5, 0, 0),
+                new Vector3(5, 0, -2),
+
+                new Vector3(2, 0, -5),
+                new Vector3(0, 0, -5),
+                new Vector3(-2, 0, -5),
+
+                new Vector3(-5, 0, -2),
+                new Vector3(-5, 0, 0),
+                new Vector3(-5, 0, 2)
+            };
+
             [SerializeField]
             private float m_tileScale = 0.95f;
 
@@ -249,7 +293,7 @@ namespace LabyrinthGame
 
             private AnimatedView m_freeTileInstance;
 
-            private IDictionary<GameLogic.Color, Transform> m_mageInstanceForColor;
+            private IDictionary<GameLogic.Color, AnimatedView> m_mageInstanceForColor;
 
             [SerializeField]
             private AnimatedView m_junctionTilePrefab;
@@ -261,7 +305,7 @@ namespace LabyrinthGame
             private AnimatedView m_straightTilePrefab;
 
             [SerializeField]
-            private Transform m_magePrefab;
+            private AnimatedView m_magePrefab;
 
             [SerializeField]
             private Material m_redMaterial;
@@ -278,6 +322,6 @@ namespace LabyrinthGame
             private IDictionary<GameLogic.Color, Material> m_materialForColor;
         }
 
-    }
+    } // namespace View
 
 } // namespace LabyrinthGame
