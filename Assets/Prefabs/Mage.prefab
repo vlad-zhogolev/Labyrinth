@@ -12,6 +12,7 @@ GameObject:
   - component: {fileID: 7178594014081273651}
   - component: {fileID: 3847345891930939249}
   - component: {fileID: 8715829669111035421}
+  - component: {fileID: 904579488513359549}
   m_Layer: 0
   m_Name: Mage
   m_TagString: Untagged
@@ -95,6 +96,18 @@ CapsuleCollider:
   m_Height: 2
   m_Direction: 1
   m_Center: {x: 0.000000059604645, y: 0, z: -0.00000008940697}
+--- !u!114 &904579488513359549
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3191519976949809649}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ea70f222dc435a646a7c16eef215ff51, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &5151002280655185729
 GameObject:
   m_ObjectHideFlags: 0

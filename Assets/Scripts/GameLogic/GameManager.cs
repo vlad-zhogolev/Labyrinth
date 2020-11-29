@@ -1,6 +1,7 @@
-﻿using System.Collections.Generic;
-using UnityEngine;
+﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
+using UnityEngine;
 using UnityEngine.UI;
 
 namespace LabyrinthGame
@@ -9,25 +10,23 @@ namespace LabyrinthGame
     {
         public class GameManager : MonoBehaviour
         {
-            public async void ShiftTiles(Labyrinth.Shift shift)
+            public async void ShiftTiles()
             {
-                await ShiftTilesAsync(shift);
+                await ShiftTilesAsync();
             }
 
-            async Task ShiftTilesAsync(Labyrinth.Shift shift)
+            async Task ShiftTilesAsync()
             {
-                m_controls.DisableInput();
+                var shift = m_shifts[m_shiftIndex];
 
                 if (m_isShiftAlreadyDone)
                 {
                     Debug.LogFormat("{0}: Player {1, -10} Already made shift: {2}", GetType().Name, CurrentPlayer.Color, shift);
-                    m_controls.EnableInput();
                     return;
                 }
                 if (!m_availableShifts.Contains(shift))
                 {
                     Debug.LogFormat("{0}: Player {1, -10} Attempt to make unavailable shift: {2}", GetType().Name, CurrentPlayer.Color, shift);
-                    m_controls.EnableInput();
                     return;
                 }
 
@@ -44,27 +43,21 @@ namespace LabyrinthGame
                 m_labyrinth.ShiftTiles(shift);
                 ShiftPlayers(shift);
 
-                await m_labyrinthView.ShiftTiles(shift);
-                m_labyrinthView.ShiftPlayers(m_players);
+                await WaitForAnimation(m_labyrinthView.ShiftTiles(m_shiftIndex, shift));
+
+                m_shiftIndex = ShiftIndex.Inverse(m_shiftIndex);
+
                 m_isShiftAlreadyDone = true;
                 Debug.LogFormat("{0}: Player {1, -10} Shift completed", GetType().Name, CurrentPlayer.Color);
 
-                if (m_dumpLabyrinth)
-                {
-                    m_labyrinth.Dump();
-                }
-
-                m_controls.EnableInput();
+                if (m_dumpLabyrinth) m_labyrinth.Dump();
             }
 
             public async void CancelShift()
             {
-                m_controls.DisableInput();
-
                 if (!m_isShiftAlreadyDone)
                 {
                     Debug.LogFormat("{0}: Player {1, -10} No shift to cancel", GetType().Name, CurrentPlayer.Color);
-                    m_controls.EnableInput();
                     return;
                 }
 
@@ -74,8 +67,9 @@ namespace LabyrinthGame
                 m_labyrinth.ShiftTiles(shiftWithInversedDirection);
                 UnshiftPlayers();
 
-                await m_labyrinthView.ShiftTiles(shiftWithInversedDirection);
-                m_labyrinthView.ShiftPlayers(m_players);
+                await WaitForAnimation(m_labyrinthView.ShiftTiles(m_shiftIndex, shiftWithInversedDirection));
+
+                m_shiftIndex = ShiftIndex.Inverse(m_shiftIndex);
 
                 m_availableShifts.Add(m_unavailableShift);
                 if (m_previousUnavailableShift != null)
@@ -89,22 +83,14 @@ namespace LabyrinthGame
 
                 Debug.LogFormat("{0}: Player {1, -10} Cancel shift completed", GetType().Name, CurrentPlayer.Color);
 
-                if (m_dumpLabyrinth)
-                {
-                    m_labyrinth.Dump();
-                }
-
-                m_controls.EnableInput();
+                if (m_dumpLabyrinth) m_labyrinth.Dump();
             }
 
             public async void RotateFreeTile(Labyrinth.Tile.RotationDirection rotationDirection)
             {
-                m_controls.DisableInput();
-
                 if (m_isShiftAlreadyDone)
                 {
                     Debug.LogFormat("{0}: Player {1, -10} Can not rotate free tile. Shift already made.", GetType().Name, CurrentPlayer.Color);
-                    m_controls.EnableInput();
                     return;
                 }
 
@@ -113,14 +99,43 @@ namespace LabyrinthGame
                 m_labyrinth.RotateFreeTile(rotationDirection);
 
                 var freeTileRotation = m_labyrinth.GetFreeTileRotation();
-                await m_labyrinthView.RotateFreeTile(freeTileRotation);
 
-                if (m_dumpLabyrinth)
+                await WaitForAnimation(m_labyrinthView.RotateFreeTile(freeTileRotation));
+
+                if (m_dumpLabyrinth) m_labyrinth.Dump();
+            }
+
+            public async void MoveFreeTile(Labyrinth.Tile.RotationDirection movementDirection)
+            {
+                await MoveFreeTileAsync(movementDirection);
+            }
+
+            public async Task MoveFreeTileAsync(Labyrinth.Tile.RotationDirection movementDirection)
+            {
+                if (m_isShiftAlreadyDone)
                 {
-                    m_labyrinth.Dump();
+                    Debug.LogFormat("{0}: Can not move free tile. Shift already made.", GetType().Name);
+                    return;
                 }
 
-                m_controls.EnableInput();
+                int newShiftIndex = m_shiftIndex;
+
+                if (movementDirection == Labyrinth.Tile.RotationDirection.Clockwise) newShiftIndex = ShiftIndex.Next(m_shiftIndex);
+                else if (movementDirection == Labyrinth.Tile.RotationDirection.CounterClockwise) newShiftIndex = ShiftIndex.Prev(m_shiftIndex);
+
+                View.TileMovement tileMovement = View.TileMovement.NORMAL;
+
+                if (ShiftIndex.AtCorner(m_shiftIndex) && ShiftIndex.AtCorner(newShiftIndex))
+                {
+                    if (ShiftIndex.AtHorizontalSide(m_shiftIndex)) tileMovement = View.TileMovement.HORIZONTAL_TO_VERTICAL;
+                    else if (ShiftIndex.AtVerticalSide(m_shiftIndex)) tileMovement = View.TileMovement.VERTICAL_TO_HORIZONTAL;
+
+                    m_labyrinth.RotateFreeTile(movementDirection);
+                }
+
+                m_shiftIndex = newShiftIndex;
+
+                await WaitForAnimation(m_labyrinthView.MoveFreeTile(m_shiftIndex, m_labyrinth.GetFreeTileRotation(), tileMovement));
             }
 
             public async void MakeMove(Vector2Int position)
@@ -138,7 +153,8 @@ namespace LabyrinthGame
                 Debug.LogFormat("{0}: Player {1, -10} Move from {2} to {3}", GetType().Name, CurrentPlayer.Color, CurrentPlayer.Position, position);
 
                 CurrentPlayer.Position = position;
-                m_labyrinthView.SetPlayerPosition(CurrentPlayer.Color, position);
+
+                await WaitForAnimation(m_labyrinthView.SetPlayerPosition(CurrentPlayer.Color, position));
 
                 if (IsCurrentPlayerFoundItem())
                 {
@@ -328,6 +344,15 @@ namespace LabyrinthGame
                 m_currentPlayerIndex = ++m_currentPlayerIndex % m_players.Count;
             }
 
+            async Task WaitForAnimation(Task task)
+            {
+                m_controls.InputEnabled = false;
+
+                await task;
+
+                m_controls.InputEnabled = true;
+            }
+
             // Start is called before the first frame update
             async void Start()
             {
@@ -343,9 +368,64 @@ namespace LabyrinthGame
                 enumerator.MoveNext();
                 var shift = enumerator.Current;
 
-                await ShiftTilesAsync(shift);
+                var newShiftIndex = Array.IndexOf(m_shifts, shift);
+
+                if (newShiftIndex != m_shiftIndex)
+                {
+                    int index;
+
+                    int countCW = 0;
+
+                    index = m_shiftIndex;
+
+                    while (index != newShiftIndex)
+                    {
+                        index = ShiftIndex.Next(index);
+                        countCW++;
+                    }
+
+                    int countCCW = 0;
+
+                    index = m_shiftIndex;
+
+                    while (index != newShiftIndex)
+                    {
+                        index = ShiftIndex.Prev(index);
+                        countCCW++;
+                    }
+
+                    Labyrinth.Tile.RotationDirection movementDirection;
+
+                    if (countCW <= countCCW) movementDirection = Labyrinth.Tile.RotationDirection.Clockwise;
+                    else movementDirection = Labyrinth.Tile.RotationDirection.CounterClockwise;
+
+                    while (m_shiftIndex != newShiftIndex) await MoveFreeTileAsync(movementDirection);
+                }
+
+                await ShiftTilesAsync();
                 SkipMove();
             }
+
+            Labyrinth.Shift[] m_shifts =
+            {
+                new Labyrinth.Shift(Labyrinth.Shift.Orientation.Vertical,   Labyrinth.Shift.Direction.Positive, 1),
+                new Labyrinth.Shift(Labyrinth.Shift.Orientation.Vertical,   Labyrinth.Shift.Direction.Positive, 3),
+                new Labyrinth.Shift(Labyrinth.Shift.Orientation.Vertical,   Labyrinth.Shift.Direction.Positive, 5),
+
+                new Labyrinth.Shift(Labyrinth.Shift.Orientation.Horizontal, Labyrinth.Shift.Direction.Negative, 1),
+                new Labyrinth.Shift(Labyrinth.Shift.Orientation.Horizontal, Labyrinth.Shift.Direction.Negative, 3),
+                new Labyrinth.Shift(Labyrinth.Shift.Orientation.Horizontal, Labyrinth.Shift.Direction.Negative, 5),
+
+                new Labyrinth.Shift(Labyrinth.Shift.Orientation.Vertical,   Labyrinth.Shift.Direction.Negative, 5),
+                new Labyrinth.Shift(Labyrinth.Shift.Orientation.Vertical,   Labyrinth.Shift.Direction.Negative, 3),
+                new Labyrinth.Shift(Labyrinth.Shift.Orientation.Vertical,   Labyrinth.Shift.Direction.Negative, 1),
+
+                new Labyrinth.Shift(Labyrinth.Shift.Orientation.Horizontal, Labyrinth.Shift.Direction.Positive, 5),
+                new Labyrinth.Shift(Labyrinth.Shift.Orientation.Horizontal, Labyrinth.Shift.Direction.Positive, 3),
+                new Labyrinth.Shift(Labyrinth.Shift.Orientation.Horizontal, Labyrinth.Shift.Direction.Positive, 1)
+            };
+
+            int m_shiftIndex = 0;
 
             [SerializeField]
             bool m_dumpLabyrinth = true;
@@ -359,7 +439,7 @@ namespace LabyrinthGame
 
             [SerializeField]
             private int m_itemsSeed = 0;
-            private ItemsDealer m_itemsDealer;         
+            private ItemsDealer m_itemsDealer;
 
             private IList<Player> m_players;
             private int m_currentPlayerIndex = 0;
@@ -378,6 +458,6 @@ namespace LabyrinthGame
             private GameObject m_gameOverPanel;
         }
 
-    } // GameLogic
+    } // namespace GameLogic
 
-} // LabyrinthGame
+} // namespace LabyrinthGame

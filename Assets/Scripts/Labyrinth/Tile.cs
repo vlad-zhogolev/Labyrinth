@@ -105,6 +105,10 @@ namespace LabyrinthGame
                 down = right;
                 right = tmp;
 
+                rotation += 90;
+
+                if (rotation == 360) rotation = 0;
+
                 return this;
             }
 
@@ -117,6 +121,10 @@ namespace LabyrinthGame
                 down = left;
                 left = tmp;
 
+                rotation -= 90;
+
+                if (rotation == -90) rotation = 270;
+
                 return this;
             }
 
@@ -128,90 +136,15 @@ namespace LabyrinthGame
                 result.down = down;
                 result.right = right;
                 result.left = left;
+                result.rotation = rotation;
                 result.Item = Item;
 
                 return result;
             }
 
-            private Quaternion GetRotationForStraight()
-            {
-                if (up)
-                {
-                    return Quaternion.identity;
-                }
-                else
-                {
-                    return Quaternion.Euler(0, 90, 0);
-                }
-            }
-
-            private Quaternion GetRotationForTurn()
-            {
-                if (down)
-                {
-                    if (left)
-                    {
-                        return Quaternion.identity;
-                    }
-                    else
-                    {
-                        return Quaternion.Euler(0, -90, 0);
-                    }
-                }
-                else
-                {
-                    if (left)
-                    {
-                        return Quaternion.Euler(0, 90, 0);
-                    }
-                    else
-                    {
-                        return Quaternion.Euler(0, 180, 0);
-                    }
-                }
-            }
-
-            private Quaternion GetRotationForJunction()
-            {
-                if (!right)
-                {
-                    return Quaternion.identity;
-                }
-                else if (!left)
-                {
-                    return Quaternion.Euler(0, 180, 0);
-                }
-                else if (!up)
-                {
-                    return Quaternion.Euler(0, -90, 0);
-                }
-                else
-                {
-                    return Quaternion.Euler(0, 90, 0);
-                }
-            }
-
             public Quaternion GetRotation()
             {
-                switch (type)
-                {
-                    case Type.Straight:
-                    {
-                        return GetRotationForStraight();
-                    }
-                    case Type.Turn:
-                    {
-                        return GetRotationForTurn();
-                    }
-                    case Type.Junction:
-                    {
-                        return GetRotationForJunction();
-                    }
-                    default:
-                    {
-                        throw new ArgumentException("Invalid tile type");
-                    }
-                }
+                return Quaternion.Euler(0, rotation, 0);
             }
 
             public bool IsConnected(Tile other, Side side)
@@ -254,6 +187,8 @@ namespace LabyrinthGame
             public bool down;
 
             public bool up;
+
+            int rotation = 0;
         }
 
     } // namespace Labirynth
