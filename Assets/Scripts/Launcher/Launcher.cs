@@ -70,9 +70,28 @@ namespace LabyrinthGame {
                 if (PhotonNetwork.IsConnectedAndReady)
                 {
                     PhotonNetwork.Disconnect();
+                    m_joinRoomButton.GetComponentInChildren<UnityEngine.UI.Text>().text = "Join room";
                 }
             }
 
+            
+            public void JoinRoom()
+            {
+                if (PhotonNetwork.IsMasterClient)
+                {
+                    PhotonNetwork.LoadLevel("Game");
+                }
+                else
+                {
+                    var roomName = m_roomNameInputField.text;
+
+                    RoomOptions roomOptions = new RoomOptions();
+                    roomOptions.IsVisible = m_isRoomPrivateToggle.isOn;
+                    roomOptions.MaxPlayers = 4;
+
+                    PhotonNetwork.JoinOrCreateRoom(roomName, roomOptions, TypedLobby.Default);
+                }
+            }
 
             #endregion
 
@@ -83,7 +102,6 @@ namespace LabyrinthGame {
             public override void OnConnectedToMaster()
             {
                 Debug.LogFormat("{0}: OnConnectedToMaster() was called by PUN", GetType().Name);
-                //PhotonNetwork.JoinRandomRoom();
             }
 
             public override void OnDisconnected(DisconnectCause cause)
@@ -102,9 +120,32 @@ namespace LabyrinthGame {
             public override void OnJoinedRoom()
             {
                 Debug.LogFormat("{0}: OnJoinedRoom() called by PUN. Now this client is in a room.", GetType().Name);
+
+                Debug.LogFormat("{0}: Is client master: {1}", GetType().Name, PhotonNetwork.IsMasterClient);
+                if (PhotonNetwork.IsMasterClient)
+                {
+                    var text = m_joinRoomButton.GetComponentInChildren<UnityEngine.UI.Text>();
+                    text.text = "Start game";
+                }
+                else
+                {
+                    m_joinRoomButton.interactable = false;
+                }
             }
 
             #endregion
+
+            [SerializeField]
+            private UnityEngine.UI.InputField m_playerNameInputField;
+
+            [SerializeField]
+            private UnityEngine.UI.InputField m_roomNameInputField;
+
+            [SerializeField]
+            private UnityEngine.UI.Toggle m_isRoomPrivateToggle;
+
+            [SerializeField]
+            private UnityEngine.UI.Button m_joinRoomButton;
         }
 
     } // namespace Launcher
