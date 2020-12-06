@@ -61,8 +61,6 @@ namespace LabyrinthGame {
                     PhotonNetwork.ConnectUsingSettings();
                     PhotonNetwork.GameVersion = gameVersion;
                 }
-
-                Debug.LogFormat("{0}: Is connected {1}", GetType().Name, PhotonNetwork.IsConnectedAndReady);
             }
 
             public void Disconnect()
@@ -73,8 +71,6 @@ namespace LabyrinthGame {
                 {
                     PhotonNetwork.Disconnect();
                 }
-
-                Debug.LogFormat("{0}: Is connected {1}", GetType().Name, PhotonNetwork.IsConnectedAndReady);
             }
 
 
