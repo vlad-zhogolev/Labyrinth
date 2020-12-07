@@ -79,7 +79,7 @@ namespace LabyrinthGame {
             {
                 if (PhotonNetwork.IsMasterClient)
                 {
-                    PhotonNetwork.LoadLevel("Game");
+                    PhotonNetwork.LoadLevel("OnlineGame");
                 }
                 else
                 {

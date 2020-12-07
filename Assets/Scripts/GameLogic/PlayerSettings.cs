@@ -17,6 +17,8 @@ namespace LabyrinthGame
             public string Name { get; set; } = string.Empty;
             public bool IsAi { get; set; } = true;
 
+            public int ActorId { get; set; } = -1;
+
             public override string ToString()
             {
                 return string.Format("IsAi: {0}, Name: '{1}'", IsAi, Name);
