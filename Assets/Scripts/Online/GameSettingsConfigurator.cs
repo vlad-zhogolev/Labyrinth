@@ -16,7 +16,9 @@ namespace LabyrinthGame
         {
             public const byte ConfigureGameSettingsEventCode = 1;
 
-            private void Awake()
+            private static string AiName = "Bot";
+
+            private void Start()
             {
                 if (PhotonNetwork.IsMasterClient)
                 {
@@ -35,8 +37,49 @@ namespace LabyrinthGame
                         actorNumbers[players.Length + i] = -1; // Ai players
                     }
 
+                    var playerSettings = new GameLogic.PlayerSettings(false, players[0].NickName);
+                    GameLogic.GameSettings.PlayersSettings[Color.Yellow] = playerSettings;
+
+                    if (players.Length > 1)
+                    {
+                        playerSettings = new GameLogic.PlayerSettings(false, players[1].NickName);
+                    }
+                    else
+                    {
+                        playerSettings = new GameLogic.PlayerSettings(true, AiName);
+                    }
+                    GameLogic.GameSettings.PlayersSettings[Color.Red] = playerSettings;
+
+                    if (players.Length > 2)
+                    {
+                        playerSettings = new GameLogic.PlayerSettings(false, players[2].NickName);
+                    }
+                    else
+                    {
+                        playerSettings = new GameLogic.PlayerSettings(true, AiName);
+                    }
+                    GameLogic.GameSettings.PlayersSettings[Color.Blue] = playerSettings;
+
+                    if (players.Length > 3)
+                    {
+                        playerSettings = new GameLogic.PlayerSettings(false, players[3].NickName);
+                    }
+                    else
+                    {
+                        playerSettings = new GameLogic.PlayerSettings(true, AiName);
+                    }
+                    GameLogic.GameSettings.PlayersSettings[Color.Green] = playerSettings;
+
                     var raiseEventOptions = new RaiseEventOptions { Receivers = ReceiverGroup.All };
-                    PhotonNetwork.RaiseEvent(ConfigureGameSettingsEventCode, actorNumbers, raiseEventOptions, SendOptions.SendReliable);
+                    string name = "name";
+                    var color = GameLogic.Color.Yellow;
+
+                    IDictionary<byte, object> dict = new Dictionary<byte, object>();
+                    dict.Add((byte) Color.Yellow, new GameLogic.PlayerSettings(true, "h"));
+
+                    var settings = new GameLogic.PlayerSettings(true, "h");
+
+                    PhotonNetwork.RaiseEvent(ConfigureGameSettingsEventCode, settings, raiseEventOptions, SendOptions.SendReliable);
                     Debug.LogFormat("{0}: Send {1}", GetType().Name, actorNumbers);
                 }
             }
@@ -46,8 +89,11 @@ namespace LabyrinthGame
                 byte eventCode = photonEvent.Code;
                 if (eventCode == ConfigureGameSettingsEventCode)
                 {
-                    var actorNumbers = (int[])photonEvent.CustomData;
-                    Debug.LogFormat("{0}: Received {1}", GetType().Name, actorNumbers);
+                    //var playersSettings = (IDictionary<byte, object>)photonEvent.CustomData;               
+                    //Debug.LogFormat("{0}: Received players settings {1}", GetType().Name, ((PlayerSettings)playersSettings[(byte)Color.Yellow]).Name);
+
+                    var playersSettings = (PlayerSettings)photonEvent.CustomData;
+                    Debug.LogFormat("{0}: Received players settings {1}", GetType().Name, ((PlayerSettings)playersSettings).Name);
                 }
             }
 

@@ -1,12 +1,14 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System;
 using UnityEngine;
 
 namespace LabyrinthGame
 {
     namespace GameLogic
     {
+        [Serializable]
         public class PlayerSettings
         {
             public PlayerSettings(bool isAi, string name)
