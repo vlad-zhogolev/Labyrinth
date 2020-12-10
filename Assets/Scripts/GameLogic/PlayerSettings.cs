@@ -37,6 +37,34 @@ namespace LabyrinthGame
                 {Color.Blue,    null},
             };
 
+            public static Dictionary<byte, object> GetPhotonCompatibleSettings()
+            {
+                var settings = new Dictionary<byte, object>();
+                foreach (var pair in PlayersSettings)
+                {
+                    settings.Add((byte)pair.Key, (object)pair.Value);
+                }
+
+                return settings;
+            }
+
+            public static void SetPhotonCompatibleSettings(Dictionary<byte, object> settings)
+            {
+                PlayersSettings.Clear();
+                foreach (var pair in settings)
+                {
+                    PlayersSettings.Add((GameLogic.Color)pair.Key, (PlayerSettings)pair.Value);
+                }
+            }
+
+            public static void Trace()
+            {
+                foreach (var pair in PlayersSettings)
+                {
+                    Debug.LogFormat("GameSettings: Settings for {0} are IsAi: {1}, Name: {2}, ActorId: {3}", pair.Key, pair.Value.IsAi, pair.Value.Name, pair.Value.ActorId);
+                }
+            }
+
             public static bool IsMultipleHumanPlayers()
             {
                 var humanPlayersNumber = 

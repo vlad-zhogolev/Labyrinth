@@ -53,8 +53,8 @@ namespace LabyrinthGame
             void Awake()
             {
                 // See this for reserved codes: https://forum.photonengine.com/discussion/9314/explain-how-to-use-byte-code-on-photonpeer-registertype
-                PhotonPeer.RegisterType(typeof(GameLogic.Color),          1, GameLogicColorSerialize,           GameLogicColorDeserialize);
-                PhotonPeer.RegisterType(typeof(GameLogic.PlayerSettings), 2, GameLogicPlayerSettingsSerialize,  GameLogicPlayerSettingsDeserialize);
+                PhotonPeer.RegisterType(typeof(GameLogic.Color),                                1, GameLogicColorSerialize,             GameLogicColorDeserialize);
+                PhotonPeer.RegisterType(typeof(GameLogic.PlayerSettings),                       2, GameLogicPlayerSettingsSerialize,    GameLogicPlayerSettingsDeserialize);
             }
         }
     }

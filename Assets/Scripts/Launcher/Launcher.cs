@@ -77,6 +77,7 @@ namespace LabyrinthGame {
             
             public void JoinRoom()
             {
+                PhotonNetwork.NickName = m_playerNameInputField.text;
                 if (PhotonNetwork.IsMasterClient)
                 {
                     PhotonNetwork.LoadLevel("OnlineGame");

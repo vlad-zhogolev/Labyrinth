@@ -15,8 +15,10 @@ namespace LabyrinthGame
         public class GameSettingsConfigurator : MonoBehaviour, IOnEventCallback
         {
             public const byte ConfigureGameSettingsEventCode = 1;
+            public const byte GameSettingsConfiguredEventCode = 2;
 
             private static string AiName = "Bot";
+            private static int PlayersConfiguredCounter = 0;
 
             private void Start()
             {
@@ -38,11 +40,13 @@ namespace LabyrinthGame
                     }
 
                     var playerSettings = new GameLogic.PlayerSettings(false, players[0].NickName);
+                    playerSettings.ActorId = players[0].ActorNumber;
                     GameLogic.GameSettings.PlayersSettings[Color.Yellow] = playerSettings;
 
                     if (players.Length > 1)
                     {
                         playerSettings = new GameLogic.PlayerSettings(false, players[1].NickName);
+                        playerSettings.ActorId = players[1].ActorNumber;
                     }
                     else
                     {
@@ -53,6 +57,7 @@ namespace LabyrinthGame
                     if (players.Length > 2)
                     {
                         playerSettings = new GameLogic.PlayerSettings(false, players[2].NickName);
+                        playerSettings.ActorId = players[2].ActorNumber;
                     }
                     else
                     {
@@ -63,6 +68,7 @@ namespace LabyrinthGame
                     if (players.Length > 3)
                     {
                         playerSettings = new GameLogic.PlayerSettings(false, players[3].NickName);
+                        playerSettings.ActorId = players[3].ActorNumber;
                     }
                     else
                     {
@@ -71,16 +77,9 @@ namespace LabyrinthGame
                     GameLogic.GameSettings.PlayersSettings[Color.Green] = playerSettings;
 
                     var raiseEventOptions = new RaiseEventOptions { Receivers = ReceiverGroup.All };
-                    string name = "name";
-                    var color = GameLogic.Color.Yellow;
-
-                    IDictionary<byte, object> dict = new Dictionary<byte, object>();
-                    dict.Add((byte) Color.Yellow, new GameLogic.PlayerSettings(true, "h"));
-
-                    var settings = new GameLogic.PlayerSettings(true, "h");
-
-                    PhotonNetwork.RaiseEvent(ConfigureGameSettingsEventCode, settings, raiseEventOptions, SendOptions.SendReliable);
-                    Debug.LogFormat("{0}: Send {1}", GetType().Name, actorNumbers);
+                   
+                    PhotonNetwork.RaiseEvent(ConfigureGameSettingsEventCode, GameSettings.GetPhotonCompatibleSettings(), raiseEventOptions, SendOptions.SendReliable);
+                    Debug.LogFormat("{0}: Send game settings", GetType().Name);
                 }
             }
 
@@ -89,11 +88,24 @@ namespace LabyrinthGame
                 byte eventCode = photonEvent.Code;
                 if (eventCode == ConfigureGameSettingsEventCode)
                 {
-                    //var playersSettings = (IDictionary<byte, object>)photonEvent.CustomData;               
-                    //Debug.LogFormat("{0}: Received players settings {1}", GetType().Name, ((PlayerSettings)playersSettings[(byte)Color.Yellow]).Name);
+                    var playersSettings = (Dictionary<byte, object>)photonEvent.CustomData;
+                    GameSettings.SetPhotonCompatibleSettings(playersSettings);
+                    Debug.LogFormat("{0}: Received game settings", GetType().Name);
 
-                    var playersSettings = (PlayerSettings)photonEvent.CustomData;
-                    Debug.LogFormat("{0}: Received players settings {1}", GetType().Name, ((PlayerSettings)playersSettings).Name);
+                    GameSettings.Trace();
+
+                    var raiseEventOptions = new RaiseEventOptions { Receivers = ReceiverGroup.MasterClient };
+                    PhotonNetwork.RaiseEvent(GameSettingsConfiguredEventCode, null, raiseEventOptions, SendOptions.SendReliable);
+                    Debug.LogFormat("{0}: Send game settings received approve", GetType().Name);
+                }
+                if (eventCode == GameSettingsConfiguredEventCode && PhotonNetwork.IsMasterClient)
+                {
+                    Debug.LogFormat("{0}: Received approval", GetType().Name);
+                    ++PlayersConfiguredCounter;
+                    if (PlayersConfiguredCounter == PhotonNetwork.PlayerList.Length)
+                    {
+                        Debug.LogFormat("{0}: Everyone set game settings, number of players: {1}", GetType().Name, PlayersConfiguredCounter);
+                    }
                 }
             }
 
