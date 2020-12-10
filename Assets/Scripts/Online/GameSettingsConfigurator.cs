@@ -4,6 +4,7 @@ using UnityEngine;
 using Photon.Pun;
 using Photon.Realtime;
 using ExitGames.Client.Photon;
+using UnityEngine.Events;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -14,6 +15,8 @@ namespace LabyrinthGame
     {
         public class GameSettingsConfigurator : MonoBehaviour, IOnEventCallback
         {
+            public UnityEvent startGame;
+
             public const byte ConfigureGameSettingsEventCode = 1;
             public const byte GameSettingsConfiguredEventCode = 2;
 
@@ -105,6 +108,7 @@ namespace LabyrinthGame
                     if (PlayersConfiguredCounter == PhotonNetwork.PlayerList.Length)
                     {
                         Debug.LogFormat("{0}: Everyone set game settings, number of players: {1}", GetType().Name, PlayersConfiguredCounter);
+                        startGame?.Invoke();
                     }
                 }
             }

@@ -3,13 +3,63 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.UI;
+using Photon.Pun;
+using Photon.Realtime;
+using ExitGames.Client.Photon;
 
 namespace LabyrinthGame
 {
     namespace GameLogic
     {
-        public class OnlineGameManager : MonoBehaviour
+        public class OnlineGameManager : MonoBehaviour, IOnEventCallback
         {
+            public const byte InitializeEventCode = 199;
+            public const byte InitializationCompeteEventCode = 198;
+            public const byte MakeTurnEventCode = 197;
+
+            public void StartGame()
+            {
+                var raiseEventOptions = new RaiseEventOptions { Receivers = ReceiverGroup.All };
+                PhotonNetwork.RaiseEvent(InitializeEventCode, null, raiseEventOptions, SendOptions.SendReliable);
+                Debug.LogFormat("{0}: Send game settings received approve", GetType().Name);
+            }
+
+            public void OnEvent(EventData photonEvent)
+            {
+                byte eventCode = photonEvent.Code;
+                if (eventCode == InitializeEventCode)
+                {
+                    Debug.LogFormat("{0}: Received initialization event", GetType().Name);
+                    Initialize();
+                }
+                if (eventCode == InitializationCompeteEventCode)
+                {
+                    Debug.LogFormat("{0}: Received approval of game initialization", GetType().Name);
+                    ++PlayersInitializedCounter;
+                    if (PlayersInitializedCounter == PhotonNetwork.PlayerList.Length)
+                    {
+                        Debug.LogFormat("{0}: Everyone initialized game, number of players: {1}", GetType().Name, PlayersInitializedCounter);
+                        var raiseEventOptions = new RaiseEventOptions { Receivers = ReceiverGroup.MasterClient };
+                        PhotonNetwork.RaiseEvent(InitializationCompeteEventCode, null, raiseEventOptions, SendOptions.SendReliable);
+                    }
+                }
+                if (eventCode == MakeTurnEventCode)
+                {
+                    Debug.LogFormat("{0}: Received make turn request", GetType().Name);
+                }
+
+            }
+
+            private void OnEnable()
+            {
+                PhotonNetwork.AddCallbackTarget(this);
+            }
+
+            private void OnDisable()
+            {
+                PhotonNetwork.RemoveCallbackTarget(this);
+            }
+
             public async void ShiftTiles()
             {
                 await ShiftTilesAsync();
@@ -264,7 +314,8 @@ namespace LabyrinthGame
                 }
             }
 
-            async Task Initiallize()
+
+            void Initialize()
             {
                 m_gameOverPanel.SetActive(false);
 
@@ -319,10 +370,10 @@ namespace LabyrinthGame
                 m_currentPlayerItemText = GameObject.Find("Current Player Item Text").GetComponent<Text>();
                 UpdateCurrentPlayerInformation();
 
-                if (CurrentPlayer.Settings.IsAi)
-                {
-                    await MakeAiTurnAsync();
-                }
+                //if (CurrentPlayer.Settings.IsAi)
+                //{
+                //    await MakeAiTurnAsync();
+                //}
             }
 
             void UpdateCurrentPlayerInformation()
@@ -351,12 +402,6 @@ namespace LabyrinthGame
                 await task;
 
                 m_controls.InputEnabled = true;
-            }
-
-            // Start is called before the first frame update
-            async void Start()
-            {
-                await Initiallize();
             }
 
             async Task MakeAiTurnAsync()
@@ -448,6 +493,8 @@ namespace LabyrinthGame
             private Labyrinth.Shift m_unavailableShift;
             private Labyrinth.Shift m_previousUnavailableShift;
             private bool m_isShiftAlreadyDone = false;
+
+            private static int PlayersInitializedCounter = 0;
 
             Controls.TestControls m_controls;
 
