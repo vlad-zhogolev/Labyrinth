@@ -1,6 +1,4 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 using Photon.Pun;
 using Photon.Realtime;
 using ExitGames.Client.Photon;
@@ -50,11 +48,36 @@ namespace LabyrinthGame
                 }
             }
 
+            public static byte[] LabyrinthShiftSerialize(object obj)
+            {
+                var settings = (Labyrinth.Shift)obj;
+                using (var memoryStream = new MemoryStream())
+                {
+                    var formatter = new BinaryFormatter();
+                    formatter.Serialize(memoryStream, settings);
+
+                    return memoryStream.ToArray();
+                }
+            }
+
+            public static object LabyrinthShiftDeserialize(byte[] data)
+            {
+                using (var memoryStream = new MemoryStream())
+                {
+                    var formatter = new BinaryFormatter();
+                    memoryStream.Write(data, 0, data.Length);
+                    memoryStream.Seek(0, SeekOrigin.Begin);
+
+                    return (Labyrinth.Shift)formatter.Deserialize(memoryStream);
+                }
+            }
+
             void Awake()
             {
                 // See this for reserved codes: https://forum.photonengine.com/discussion/9314/explain-how-to-use-byte-code-on-photonpeer-registertype
-                PhotonPeer.RegisterType(typeof(GameLogic.Color),                                1, GameLogicColorSerialize,             GameLogicColorDeserialize);
-                PhotonPeer.RegisterType(typeof(GameLogic.PlayerSettings),                       2, GameLogicPlayerSettingsSerialize,    GameLogicPlayerSettingsDeserialize);
+                PhotonPeer.RegisterType(typeof(GameLogic.Color),            1, GameLogicColorSerialize,             GameLogicColorDeserialize);
+                PhotonPeer.RegisterType(typeof(GameLogic.PlayerSettings),   2, GameLogicPlayerSettingsSerialize,    GameLogicPlayerSettingsDeserialize);
+                PhotonPeer.RegisterType(typeof(Labyrinth.Shift),            3, LabyrinthShiftSerialize,             LabyrinthShiftSerialize);
             }
         }
     }

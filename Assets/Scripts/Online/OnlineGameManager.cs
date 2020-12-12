@@ -16,6 +16,8 @@ namespace LabyrinthGame
             public const byte InitializeEventCode = 199;
             public const byte InitializationCompleteEventCode = 198;
             public const byte MakeTurnEventCode = 197;
+            public const byte SynchronizeGameStateEventCode = 196;
+            public const byte GameStateSynchronizedEventCode = 195;
 
             public void InitializeGame()
             {
@@ -29,7 +31,7 @@ namespace LabyrinthGame
                 byte eventCode = photonEvent.Code;
                 if (eventCode == InitializeEventCode)
                 {
-                    Debug.LogFormat("{0}: Received initialization event", GetType().Name);
+                    Debug.LogFormat("{0}: Received InitializeEvent", GetType().Name);
 
                     Initialize();
 
@@ -38,42 +40,101 @@ namespace LabyrinthGame
                 }
                 if (eventCode == InitializationCompleteEventCode)
                 {
-                    Debug.LogFormat("{0}: Received approval of game initialization", GetType().Name);
+                    Debug.LogFormat("{0}: Received InitializationCompleteEvent", GetType().Name);
 
                     ++PlayersInitializedCounter;
                     if (PlayersInitializedCounter == PhotonNetwork.PlayerList.Length)
                     {
                         Debug.LogFormat("{0}: Everyone initialized game, number of players: {1}", GetType().Name, PlayersInitializedCounter);
-                        SendMakeTurnEvent(CurrentPlayer.Settings.ActorId);
+                        SendMakeTurnEvent(true, CurrentPlayer.Settings.ActorId);
                     }
                 }
                 if (eventCode == MakeTurnEventCode)
                 {
-                    Debug.LogFormat("{0}: Received make turn request", GetType().Name);
+                    Debug.LogFormat("{0}: Received MakeTurnEvent", GetType().Name);
 
-                    var actorId = (int)photonEvent.CustomData;
-                    HandleMakeTurnEvent(actorId);
+                    var data = (object[])photonEvent.CustomData;
+
+                    var isFirst = (bool)data[0];
+                    var actorId = (int)data[1];
+                    HandleMakeTurnEvent(isFirst, actorId);
+                }
+                if (eventCode == SynchronizeGameStateEventCode)
+                {
+                    Debug.LogFormat("{0}: Received SynchronizeGameStateEvent", GetType().Name);
+                    HandleSyncronizeGameState(photonEvent);
+                }
+                if (eventCode == GameStateSynchronizedEventCode)
+                {
+                    Debug.LogFormat("{0}: Received GameStateSynchronizedEventCode", GetType().Name);
+
+                    ++PlayersSynchronizedGameStateCounter;
+                    if (PlayersSynchronizedGameStateCounter == PhotonNetwork.PlayerList.Length)
+                    {
+                        Debug.LogFormat("{0}: Everyone synchronized game, number of players: {1}", GetType().Name, PlayersSynchronizedGameStateCounter);
+                        PlayersSynchronizedGameStateCounter = 0;
+                        SendMakeTurnEvent(false, NextPlayer.Settings.ActorId);
+                    }
+                }
+            }
+
+            void SendMakeTurnEvent(bool isFirst, int actorId)
+            {
+                Debug.LogFormat("{0}: Send MakeTurnEvent", GetType().Name);
+                var raiseEventOptions = new RaiseEventOptions { Receivers = ReceiverGroup.All };
+                var data = new object[] { isFirst, actorId };
+                PhotonNetwork.RaiseEvent(MakeTurnEventCode, data, raiseEventOptions, SendOptions.SendReliable);
+            }
+
+            void HandleMakeTurnEvent(bool isFirst, int actorId)
+            {
+                Debug.LogFormat("{0}: Handling MakeTurnEvent", GetType().Name);
+                if (!isFirst)
+                {
+                    SwitchToNextPlayer();
                 }
 
-            }
-
-            void SendMakeTurnEvent(int actorId)
-            {
-                var raiseEventOptions = new RaiseEventOptions { Receivers = ReceiverGroup.All };
-                PhotonNetwork.RaiseEvent(MakeTurnEventCode, actorId, raiseEventOptions, SendOptions.SendReliable);
-            }
-
-            void HandleMakeTurnEvent(int actorId)
-            {
-                // TODO: think how to handle player switching (do not need to do this on 1st turn)
-                Debug.LogFormat("{0}: Handling make turn request", GetType().Name);
+                Debug.LogFormat("{0}: Current player - {1}", GetType().Name, CurrentPlayer.Color);
 
                 if (actorId == PhotonNetwork.LocalPlayer.ActorNumber)
                 {
-                    Debug.LogFormat("{0}: This player maks turn", GetType().Name);
+                    Debug.LogFormat("{0}: This player makes turn", GetType().Name);
 
                     m_controls.InputEnabled = true;
                 }
+            }
+
+            void SendSyncronizeGameState()
+            {
+                var raiseEventOptions = new RaiseEventOptions { Receivers = ReceiverGroup.All };
+                var shiftIndex = ShiftIndex.Inverse(m_shiftIndex); // m_shiftIndex contains index of inverse shift after ShiftTiles(). Maybe need to split it to two fields for simplicity?
+                var data = new object[] { shiftIndex, CurrentPlayer.Position.x, CurrentPlayer.Position.y, CurrentPlayer.Settings.ActorId };
+                
+                Debug.LogFormat("{0}: Send SyncronizeGameState, shiftIndex = {1}, CurrentPlayer position = {2}", GetType().Name, shiftIndex, CurrentPlayer.Position);
+                PhotonNetwork.RaiseEvent(SynchronizeGameStateEventCode, data, raiseEventOptions, SendOptions.SendReliable);
+            }
+
+            async void HandleSyncronizeGameState(EventData photonEvent)
+            {
+                Debug.LogFormat("{0}: Handling SyncronizeGameState from actorId = {1}", GetType().Name, photonEvent.Sender);
+                var data = (object[])photonEvent.CustomData;
+                var actorId = (int)data[3];
+
+                if (actorId != PhotonNetwork.LocalPlayer.ActorNumber)
+                {
+                    Debug.LogFormat("{0}: Syncronizing state", GetType().Name);
+                   
+                    var shiftIndex = (int)data[0];
+                    var x = (int)data[1];
+                    var y = (int)data[2];
+                    
+                    await SynchronizeShiftTiles(shiftIndex);
+                    await SynchronizeMakeMove(new Vector2Int(x, y));
+                }
+
+                Debug.LogFormat("{0}: Send GameStateSynchronizedEventCode", GetType().Name, photonEvent.Sender);
+                var raiseEventOptions = new RaiseEventOptions { TargetActors = new int[] { photonEvent.Sender } };
+                PhotonNetwork.RaiseEvent(GameStateSynchronizedEventCode, null, raiseEventOptions, SendOptions.SendReliable);
             }
 
             private void OnEnable()
@@ -127,6 +188,28 @@ namespace LabyrinthGame
                 Debug.LogFormat("{0}: Player {1, -10} Shift completed", GetType().Name, CurrentPlayer.Color);
 
                 if (m_dumpLabyrinth) m_labyrinth.Dump();
+            }
+
+            async Task SynchronizeShiftTiles(int shiftIndex)
+            {
+                Debug.LogFormat("{0}: Synchronizing shift for index:  {1} ", GetType().Name, shiftIndex);
+                var shift = m_shifts[shiftIndex];
+                if (m_unavailableShift != null)
+                {
+                    m_availableShifts.Add(m_unavailableShift);
+                    m_previousUnavailableShift = m_unavailableShift;
+                }
+                m_availableShifts.Remove(shift);
+                m_unavailableShift = shift;
+
+                m_labyrinth.ShiftTiles(shift);
+                ShiftPlayers(shift);
+
+                m_shiftIndex = ShiftIndex.Inverse(m_shiftIndex);
+
+                await m_labyrinthView.ShiftTiles(shiftIndex, shift);
+
+                //m_shiftIndex = ShiftIndex.Inverse(shiftIndex);
             }
 
             public async void CancelShift()
@@ -244,7 +327,28 @@ namespace LabyrinthGame
                     return;
                 }
 
+                SendSyncronizeGameState();
+
                 await PassTurn();
+            }
+
+            async Task SynchronizeMakeMove(Vector2Int position)
+            {
+                CurrentPlayer.Position = position;
+
+                await m_labyrinthView.SetPlayerPosition(CurrentPlayer.Color, position);
+
+                if (IsCurrentPlayerFoundItem())
+                {
+                    Debug.LogFormat("{0}: Player {1, -10} Found item {2}", GetType().Name, CurrentPlayer.Color, CurrentPlayer.CurrentItemToFind);
+                    CurrentPlayer.SetCurrentItemFound();
+                }
+                if (IsCurrentPlayerFoundAllItems())
+                {
+                    EndGame();
+
+                    return;
+                }
             }
 
             public async void SkipMove()
@@ -255,6 +359,9 @@ namespace LabyrinthGame
                 }
 
                 Debug.LogFormat("{0}: Player {1, -10} Skiping move", GetType().Name, CurrentPlayer.Color);
+
+                SendSyncronizeGameState();
+
                 await PassTurn();
             }
 
@@ -321,7 +428,6 @@ namespace LabyrinthGame
 
             async Task PassTurn()
             {
-                SwitchToNextPlayer();
                 m_isShiftAlreadyDone = false;
                 ResetShiftedForPlayers();
 
@@ -341,7 +447,7 @@ namespace LabyrinthGame
 
                 m_controls.InputEnabled = false;
 
-                SendMakeTurnEvent(CurrentPlayer.Settings.ActorId);
+                //SendMakeTurnEvent(false, CurrentPlayer.Settings.ActorId);
             }
 
 
@@ -538,6 +644,7 @@ namespace LabyrinthGame
             private bool m_isShiftAlreadyDone = false;
 
             private static int PlayersInitializedCounter = 0;
+            private int PlayersSynchronizedGameStateCounter = 0;
 
             Controls.TestControls m_controls;
 
