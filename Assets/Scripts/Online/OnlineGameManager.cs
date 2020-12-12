@@ -17,7 +17,7 @@ namespace LabyrinthGame
             public const byte InitializationCompleteEventCode = 198;
             public const byte MakeTurnEventCode = 197;
 
-            public void StartGame()
+            public void InitializeGame()
             {
                 var raiseEventOptions = new RaiseEventOptions { Receivers = ReceiverGroup.All };
                 PhotonNetwork.RaiseEvent(InitializeEventCode, null, raiseEventOptions, SendOptions.SendReliable);
