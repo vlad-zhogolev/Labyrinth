@@ -14,7 +14,7 @@ namespace LabyrinthGame
         public class OnlineGameManager : MonoBehaviour, IOnEventCallback
         {
             public const byte InitializeEventCode = 199;
-            public const byte InitializationCompeteEventCode = 198;
+            public const byte InitializationCompleteEventCode = 198;
             public const byte MakeTurnEventCode = 197;
 
             public void StartGame()
@@ -30,24 +30,50 @@ namespace LabyrinthGame
                 if (eventCode == InitializeEventCode)
                 {
                     Debug.LogFormat("{0}: Received initialization event", GetType().Name);
+
                     Initialize();
+
+                    var raiseEventOptions = new RaiseEventOptions { Receivers = ReceiverGroup.MasterClient };
+                    PhotonNetwork.RaiseEvent(InitializationCompleteEventCode, null, raiseEventOptions, SendOptions.SendReliable);
                 }
-                if (eventCode == InitializationCompeteEventCode)
+                if (eventCode == InitializationCompleteEventCode)
                 {
                     Debug.LogFormat("{0}: Received approval of game initialization", GetType().Name);
+
                     ++PlayersInitializedCounter;
                     if (PlayersInitializedCounter == PhotonNetwork.PlayerList.Length)
                     {
                         Debug.LogFormat("{0}: Everyone initialized game, number of players: {1}", GetType().Name, PlayersInitializedCounter);
-                        var raiseEventOptions = new RaiseEventOptions { Receivers = ReceiverGroup.MasterClient };
-                        PhotonNetwork.RaiseEvent(InitializationCompeteEventCode, null, raiseEventOptions, SendOptions.SendReliable);
+                        SendMakeTurnEvent(CurrentPlayer.Settings.ActorId);
                     }
                 }
                 if (eventCode == MakeTurnEventCode)
                 {
                     Debug.LogFormat("{0}: Received make turn request", GetType().Name);
+
+                    var actorId = (int)photonEvent.CustomData;
+                    HandleMakeTurnEvent(actorId);
                 }
 
+            }
+
+            void SendMakeTurnEvent(int actorId)
+            {
+                var raiseEventOptions = new RaiseEventOptions { Receivers = ReceiverGroup.All };
+                PhotonNetwork.RaiseEvent(MakeTurnEventCode, actorId, raiseEventOptions, SendOptions.SendReliable);
+            }
+
+            void HandleMakeTurnEvent(int actorId)
+            {
+                // TODO: think how to handle player switching (do not need to do this on 1st turn)
+                Debug.LogFormat("{0}: Handling make turn request", GetType().Name);
+
+                if (actorId == PhotonNetwork.LocalPlayer.ActorNumber)
+                {
+                    Debug.LogFormat("{0}: This player maks turn", GetType().Name);
+
+                    m_controls.InputEnabled = true;
+                }
             }
 
             private void OnEnable()
@@ -308,10 +334,14 @@ namespace LabyrinthGame
 
                 Debug.LogFormat("{0}: Player {1, -10} It is your turn now.", GetType().Name, CurrentPlayer.Color);
 
-                if (CurrentPlayer.Settings.IsAi)
-                {
-                    await MakeAiTurnAsync();
-                }
+                //if (CurrentPlayer.Settings.IsAi)
+                //{
+                //    await MakeAiTurnAsync();
+                //}
+
+                m_controls.InputEnabled = false;
+
+                SendMakeTurnEvent(CurrentPlayer.Settings.ActorId);
             }
 
 
@@ -390,9 +420,22 @@ namespace LabyrinthGame
                 }
             }
 
+            Player NextPlayer
+            {
+                get
+                {
+                    return m_players[NextPlayerIndex()];
+                }
+            }
+
             void SwitchToNextPlayer()
             {
                 m_currentPlayerIndex = ++m_currentPlayerIndex % m_players.Count;
+            }
+
+            int NextPlayerIndex()
+            {
+                return (m_currentPlayerIndex + 1) % m_players.Count;
             }
 
             async Task WaitForAnimation(Task task)

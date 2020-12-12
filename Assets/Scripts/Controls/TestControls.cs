@@ -113,7 +113,8 @@ namespace LabyrinthGame
                 if (InputEnabled) cancelShift?.Invoke();
             }
 
-            public bool InputEnabled { get; set; } = true;
+            [SerializeField]
+            public bool InputEnabled { get { return m_inputEnabled; } set { m_inputEnabled = value; } }
 
             [SerializeField]
             private int m_shiftLineNumber = 1;
@@ -122,6 +123,9 @@ namespace LabyrinthGame
             private int m_moveToX = 0;
             [SerializeField]
             private int m_moveToY = 0;
+
+            [SerializeField]
+            private bool m_inputEnabled = true;
         }
 
     } // namespace Controls

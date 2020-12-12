@@ -23,7 +23,7 @@ namespace LabyrinthGame
 
             public override string ToString()
             {
-                return string.Format("IsAi: {0}, Name: '{1}'", IsAi, Name);
+                return string.Format("IsAi: {0}, Name: '{1}', ActorId: {2}", IsAi, Name, ActorId);
             }
         }
 
