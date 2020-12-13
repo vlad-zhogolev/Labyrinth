@@ -117,8 +117,11 @@ namespace LabyrinthGame
             {
                 var raiseEventOptions = new RaiseEventOptions { Receivers = ReceiverGroup.All };
                 var shiftIndex = ShiftIndex.Inverse(m_shiftIndex); // m_shiftIndex contains index of inverse shift after ShiftTiles(). Maybe need to split it to two fields for simplicity?
-                
-                var data = new object[] { shiftIndex, CurrentPlayer.Position.x, CurrentPlayer.Position.y, CurrentPlayer.Settings.ActorId };
+
+                var coords = Labyrinth.Shift.BorderCoordinates[m_unavailableShift].insert; // note: at this point we hadn't run PassTurn 
+                var directions = m_labyrinth.GetTileDirections(coords);
+
+                var data = new object[] { shiftIndex, CurrentPlayer.Position.x, CurrentPlayer.Position.y, CurrentPlayer.Settings.ActorId, directions };
                 
                 Debug.LogFormat("{0}: Send SyncronizeGameState, shiftIndex = {1}, CurrentPlayer position = {2}", GetType().Name, shiftIndex, CurrentPlayer.Position);
                 PhotonNetwork.RaiseEvent(SynchronizeGameStateEventCode, data, raiseEventOptions, SendOptions.SendReliable);
@@ -138,8 +141,10 @@ namespace LabyrinthGame
                     var shiftIndex = (int)data[0];
                     var x = (int)data[1];
                     var y = (int)data[2];
+                    var freeTileRotation = (bool[])data[4];
 
                     await MoveFreeTileAsync(shiftIndex);
+                    await SynchornizeTileRotation(freeTileRotation);
                     await SynchronizeShiftTiles(shiftIndex);
                     await SynchronizeMakeMove(new Vector2Int(x, y));
                 }
@@ -157,6 +162,25 @@ namespace LabyrinthGame
             private void OnDisable()
             {
                 PhotonNetwork.RemoveCallbackTarget(this);
+            }
+
+            public async Task SynchornizeTileRotation(bool[] directions)
+            {
+                Debug.LogFormat("{0}: Synchronize rotation of free tile", GetType().Name);
+
+                var up = directions[0];
+                var down = directions[1];
+                var right = directions[2];
+                var left = directions[3];
+
+                var tile = m_labyrinth.GetFreeTile();
+                Debug.LogFormat("{0}: Tile: {1}, need up: {2}, down: {3}, left: {4}, right: {5} ", GetType().Name, tile, up, down, left, right);
+
+                while (!(tile.up == up && tile.down == down && tile.right == right && tile.left == left))
+                {
+                    Debug.LogFormat("{0}: Tile: {1}, need up: {2}, down: {3}, left: {4}, right: {5} ", GetType().Name, tile, up, down, left, right);
+                    await RotateFreeTileAsync(Labyrinth.Tile.RotationDirection.Clockwise);
+                }
             }
 
             public async void ShiftTiles()
@@ -265,6 +289,11 @@ namespace LabyrinthGame
                     return;
                 }
 
+                await RotateFreeTileAsync(rotationDirection);
+            }
+
+            async Task RotateFreeTileAsync(Labyrinth.Tile.RotationDirection rotationDirection)
+            {
                 Debug.LogFormat("{0}: Player {1, -10} Rotate free tile {2}", GetType().Name, CurrentPlayer.Color, rotationDirection);
 
                 m_labyrinth.RotateFreeTile(rotationDirection);
