@@ -215,6 +215,7 @@ namespace LabyrinthGame
                 m_labyrinth.ShiftTiles(shift);
                 ShiftPlayers(shift);
 
+                await MoveFreeTileAsync(shiftIndex);
                 await m_labyrinthView.ShiftTiles(shiftIndex, shift);
 
                 m_shiftIndex = ShiftIndex.Inverse(shiftIndex);
@@ -565,7 +566,7 @@ namespace LabyrinthGame
 
             async void MakeAiTurnAsync()
             {
-                await Task.Delay(1000);
+                //await Task.Delay(1000);
                 Debug.LogFormat("{0}: AI Player {1, -10} Makes turn", GetType().Name, CurrentPlayer.Color);
 
                 var enumerator = m_availableShifts.GetEnumerator();
@@ -576,34 +577,7 @@ namespace LabyrinthGame
 
                 if (newShiftIndex != m_shiftIndex)
                 {
-                    int index;
-
-                    int countCW = 0;
-
-                    index = m_shiftIndex;
-
-                    while (index != newShiftIndex)
-                    {
-                        index = ShiftIndex.Next(index);
-                        countCW++;
-                    }
-
-                    int countCCW = 0;
-
-                    index = m_shiftIndex;
-
-                    while (index != newShiftIndex)
-                    {
-                        index = ShiftIndex.Prev(index);
-                        countCCW++;
-                    }
-
-                    Labyrinth.Tile.RotationDirection movementDirection;
-
-                    if (countCW <= countCCW) movementDirection = Labyrinth.Tile.RotationDirection.Clockwise;
-                    else movementDirection = Labyrinth.Tile.RotationDirection.CounterClockwise;
-
-                    while (m_shiftIndex != newShiftIndex) await MoveFreeTileAsync(movementDirection);
+                    await MoveFreeTileAsync(newShiftIndex);
                 }
 
                 await ShiftTilesAsync();
@@ -623,38 +597,39 @@ namespace LabyrinthGame
 
                 if (newShiftIndex != m_shiftIndex)
                 {
-                    int index;
-
-                    int countCW = 0;
-
-                    index = m_shiftIndex;
-
-                    while (index != newShiftIndex)
-                    {
-                        index = ShiftIndex.Next(index);
-                        countCW++;
-                    }
-
-                    int countCCW = 0;
-
-                    index = m_shiftIndex;
-
-                    while (index != newShiftIndex)
-                    {
-                        index = ShiftIndex.Prev(index);
-                        countCCW++;
-                    }
-
-                    Labyrinth.Tile.RotationDirection movementDirection;
-
-                    if (countCW <= countCCW) movementDirection = Labyrinth.Tile.RotationDirection.Clockwise;
-                    else movementDirection = Labyrinth.Tile.RotationDirection.CounterClockwise;
-
-                    while (m_shiftIndex != newShiftIndex) await MoveFreeTileAsync(movementDirection);
+                    await MoveFreeTileAsync(newShiftIndex);
                 }
 
                 await ShiftTilesAsync();
                 SkipMove();
+            }
+
+            async Task MoveFreeTileAsync(int newShiftIndex)
+            {
+                var index = m_shiftIndex;
+                var countCW = 0;
+                while (index != newShiftIndex)
+                {
+                    index = ShiftIndex.Next(index);
+                    countCW++;
+                }
+
+                index = m_shiftIndex;
+                var countCCW = 0;
+                while (index != newShiftIndex)
+                {
+                    index = ShiftIndex.Prev(index);
+                    countCCW++;
+                }
+
+                var movementDirection = countCW <= countCCW 
+                    ? Labyrinth.Tile.RotationDirection.Clockwise 
+                    : Labyrinth.Tile.RotationDirection.CounterClockwise;
+
+                while (m_shiftIndex != newShiftIndex)
+                {
+                    await MoveFreeTileAsync(movementDirection);
+                }
             }
 
             Labyrinth.Shift[] m_shifts =
