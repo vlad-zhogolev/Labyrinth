@@ -411,7 +411,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b605bba77b5a70b4986970ee1c0c2d39, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_dumpLabyrinth: 1
+  m_dumpLabyrinth: 0
   m_positionSeed: 4
   m_rotationSeed: 0
   m_itemsSeed: 0
