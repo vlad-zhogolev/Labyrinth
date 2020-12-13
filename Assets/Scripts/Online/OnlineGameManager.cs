@@ -117,6 +117,7 @@ namespace LabyrinthGame
             {
                 var raiseEventOptions = new RaiseEventOptions { Receivers = ReceiverGroup.All };
                 var shiftIndex = ShiftIndex.Inverse(m_shiftIndex); // m_shiftIndex contains index of inverse shift after ShiftTiles(). Maybe need to split it to two fields for simplicity?
+                
                 var data = new object[] { shiftIndex, CurrentPlayer.Position.x, CurrentPlayer.Position.y, CurrentPlayer.Settings.ActorId };
                 
                 Debug.LogFormat("{0}: Send SyncronizeGameState, shiftIndex = {1}, CurrentPlayer position = {2}", GetType().Name, shiftIndex, CurrentPlayer.Position);
@@ -137,7 +138,8 @@ namespace LabyrinthGame
                     var shiftIndex = (int)data[0];
                     var x = (int)data[1];
                     var y = (int)data[2];
-                    
+
+                    await MoveFreeTileAsync(shiftIndex);
                     await SynchronizeShiftTiles(shiftIndex);
                     await SynchronizeMakeMove(new Vector2Int(x, y));
                 }
@@ -203,7 +205,8 @@ namespace LabyrinthGame
             async Task SynchronizeShiftTiles(int shiftIndex)
             {
                 Debug.LogFormat("{0}: Synchronizing shift for index:  {1} ", GetType().Name, shiftIndex);
-                var shift = m_shifts[shiftIndex];
+
+                var shift = m_shifts[m_shiftIndex];
                 if (m_unavailableShift != null)
                 {
                     m_availableShifts.Add(m_unavailableShift);
@@ -215,10 +218,10 @@ namespace LabyrinthGame
                 m_labyrinth.ShiftTiles(shift);
                 ShiftPlayers(shift);
 
-                await MoveFreeTileAsync(shiftIndex);
-                await m_labyrinthView.ShiftTiles(shiftIndex, shift);
+                await m_labyrinthView.ShiftTiles(m_shiftIndex, shift);
 
-                m_shiftIndex = ShiftIndex.Inverse(shiftIndex);
+                m_shiftIndex = ShiftIndex.Inverse(m_shiftIndex);
+                m_isShiftAlreadyDone = true;
             }
 
             public async void CancelShift()
@@ -300,6 +303,7 @@ namespace LabyrinthGame
 
                     m_labyrinth.RotateFreeTile(movementDirection);
                 }
+                Debug.LogFormat("{0}: Making tileMovement: {1}, tile rotation: {2}", GetType().Name, tileMovement, m_labyrinth.GetFreeTileRotation());
 
                 m_shiftIndex = newShiftIndex;
 
@@ -338,7 +342,7 @@ namespace LabyrinthGame
 
                 SendSyncronizeGameState();
 
-                await PassTurn();
+                await PassTurn(); // Consider moving it before SendSyncronizeGameState()
             }
 
             async Task SynchronizeMakeMove(Vector2Int position)
@@ -373,7 +377,7 @@ namespace LabyrinthGame
 
                 SendSyncronizeGameState();
 
-                await PassTurn();
+                await PassTurn(); // Consider moving it before SendSyncronizeGameState()
             }
 
             void EndGame()

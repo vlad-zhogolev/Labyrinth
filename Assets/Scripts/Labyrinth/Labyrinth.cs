@@ -3,6 +3,7 @@ using UnityEngine;
 using System.Linq;
 using System;
 using QuikGraph.Algorithms;
+using Photon.Pun;
 
 namespace LabyrinthGame
 {
@@ -119,7 +120,8 @@ namespace LabyrinthGame
 
             public void Dump()
             {
-                var time = DateTime.UtcNow.ToString();
+                
+                var time = PhotonNetwork.LocalPlayer.NickName + "_" + DateTime.UtcNow.ToString();
                 var path = DumpFolder + @"\" + string.Format(DumpName, time).Replace(':', '_').Replace(' ', '_').Replace('.', '_') + ".txt";
 
                 if (!System.IO.Directory.Exists(DumpFolder))
