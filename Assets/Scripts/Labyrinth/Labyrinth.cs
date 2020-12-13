@@ -3,6 +3,7 @@ using UnityEngine;
 using System.Linq;
 using System;
 using QuikGraph.Algorithms;
+using Photon.Pun;
 
 namespace LabyrinthGame
 {
@@ -119,7 +120,8 @@ namespace LabyrinthGame
 
             public void Dump()
             {
-                var time = DateTime.UtcNow.ToString();
+                
+                var time = PhotonNetwork.LocalPlayer.NickName + "_" + DateTime.UtcNow.ToString();
                 var path = DumpFolder + @"\" + string.Format(DumpName, time).Replace(':', '_').Replace(' ', '_').Replace('.', '_') + ".txt";
 
                 if (!System.IO.Directory.Exists(DumpFolder))
@@ -256,17 +258,42 @@ namespace LabyrinthGame
 
             }
 
-            public Quaternion GetFreeTileRotation()
-            {
-                return m_freeTile.GetRotation();
-            }
-
-            public Item GetTileItem(Vector2Int tileCoordinates)
+            void CheckIndices(Vector2Int tileCoordinates)
             {
                 if (!AreIndicesValid(tileCoordinates))
                 {
                     throw new IndexOutOfRangeException("Invalid indices were provided");
                 }
+            }
+
+            public Quaternion GetFreeTileRotation()
+            {
+                return m_freeTile.GetRotation();
+            }
+
+            public Quaternion GetTileRotation(Vector2Int tileCoordinates)
+            {
+                CheckIndices(tileCoordinates);
+
+                return m_vertices[tileCoordinates.x, tileCoordinates.y].tile.GetRotation();
+            }
+
+            public bool[] GetTileDirections(Vector2Int tileCoordinates)
+            {
+                CheckIndices(tileCoordinates);
+
+                var tile = m_vertices[tileCoordinates.x, tileCoordinates.y].tile;
+                return new bool[] { tile.up, tile.down, tile.right, tile.left };
+            }
+
+            public Tile GetFreeTile()
+            {
+                return m_freeTile;
+            }
+
+            public Item GetTileItem(Vector2Int tileCoordinates)
+            {
+                CheckIndices(tileCoordinates);
 
                 return m_vertices[tileCoordinates.x, tileCoordinates.y].tile.Item;
             }

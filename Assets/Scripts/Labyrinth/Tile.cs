@@ -174,6 +174,11 @@ namespace LabyrinthGame
                 }
             }
 
+            public override string ToString()
+            {
+                return string.Format("{0}, up: {1}, down: {2}, left: {3}, right: {4}", type, up, down, left, right);
+            }
+
             public Type type;
 
             public Item Item { get; set; } = Item.None;
