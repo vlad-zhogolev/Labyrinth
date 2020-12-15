@@ -113,7 +113,7 @@ namespace LabyrinthGame
                 
             }
 
-            void SendSyncronizeGameState()
+            void SendSyncronizeGameState(bool isPlayerFoundItem)
             {
                 var raiseEventOptions = new RaiseEventOptions { Receivers = ReceiverGroup.All };
                 var shiftIndex = ShiftIndex.Inverse(m_shiftIndex); // m_shiftIndex contains index of inverse shift after ShiftTiles(). Maybe need to split it to two fields for simplicity?
@@ -121,7 +121,8 @@ namespace LabyrinthGame
                 var coords = Labyrinth.Shift.BorderCoordinates[m_unavailableShift].insert; // note: at this point we hadn't run PassTurn 
                 var directions = m_labyrinth.GetTileDirections(coords);
 
-                var data = new object[] { shiftIndex, CurrentPlayer.Position.x, CurrentPlayer.Position.y, CurrentPlayer.Settings.ActorId, directions };
+
+                var data = new object[] { shiftIndex, CurrentPlayer.Position.x, CurrentPlayer.Position.y, CurrentPlayer.Settings.ActorId, directions, isPlayerFoundItem };
                 
                 Debug.LogFormat("{0}: Send SyncronizeGameState, shiftIndex = {1}, CurrentPlayer position = {2}", GetType().Name, shiftIndex, CurrentPlayer.Position);
                 PhotonNetwork.RaiseEvent(SynchronizeGameStateEventCode, data, raiseEventOptions, SendOptions.SendReliable);
@@ -131,9 +132,7 @@ namespace LabyrinthGame
             {
                 Debug.LogFormat("{0}: Handling SyncronizeGameState from actorId = {1}", GetType().Name, photonEvent.Sender);
                 var data = (object[])photonEvent.CustomData;
-                var actorId = (int)data[3];
 
-                //if (actorId != PhotonNetwork.LocalPlayer.ActorNumber)
                 if (photonEvent.Sender != PhotonNetwork.LocalPlayer.ActorNumber)
                 {
                     Debug.LogFormat("{0}: Syncronizing state", GetType().Name);
@@ -142,11 +141,17 @@ namespace LabyrinthGame
                     var x = (int)data[1];
                     var y = (int)data[2];
                     var freeTileRotation = (bool[])data[4];
+                    var isPlayerFoundItem = (bool)data[5];
 
                     await MoveFreeTileAsync(shiftIndex);
                     await SynchornizeTileRotation(freeTileRotation);
                     await SynchronizeShiftTiles(shiftIndex);
                     await SynchronizeMakeMove(new Vector2Int(x, y));
+                    if (isPlayerFoundItem)
+                    {
+                        Debug.LogFormat("{0}: Syncronize found item for player {1}", GetType().Name, CurrentPlayer.Color);
+                        CurrentPlayer.SetCurrentItemFound();
+                    }
                 }
 
                 Debug.LogFormat("{0}: Send GameStateSynchronizedEventCode", GetType().Name, photonEvent.Sender);
@@ -339,6 +344,7 @@ namespace LabyrinthGame
                 await WaitForAnimation(m_labyrinthView.MoveFreeTile(m_shiftIndex, m_labyrinth.GetFreeTileRotation(), tileMovement));
             }
 
+            // Consider uniting MakeMove and SkipMove. Player can start turn on tile with item he needs to find.
             public async void MakeMove(Vector2Int position)
             {
                 if (!CanMakeMove())
@@ -357,7 +363,8 @@ namespace LabyrinthGame
 
                 await WaitForAnimation(m_labyrinthView.SetPlayerPosition(CurrentPlayer.Color, position));
 
-                if (IsCurrentPlayerFoundItem())
+                var isCurrentItemFound = IsCurrentPlayerFoundItem();
+                if (isCurrentItemFound)
                 {
                     Debug.LogFormat("{0}: Player {1, -10} Found item {2}", GetType().Name, CurrentPlayer.Color, CurrentPlayer.CurrentItemToFind);
                     CurrentPlayer.SetCurrentItemFound();
@@ -369,9 +376,9 @@ namespace LabyrinthGame
                     return;
                 }
 
-                SendSyncronizeGameState();
+                SendSyncronizeGameState(isCurrentItemFound);
 
-                await PassTurn(); // Consider moving it before SendSyncronizeGameState()
+                PassTurn(); // Consider moving it before SendSyncronizeGameState()
             }
 
             async Task SynchronizeMakeMove(Vector2Int position)
@@ -404,9 +411,9 @@ namespace LabyrinthGame
 
                 Debug.LogFormat("{0}: Player {1, -10} Skiping move", GetType().Name, CurrentPlayer.Color);
 
-                SendSyncronizeGameState();
+                SendSyncronizeGameState(false);
 
-                await PassTurn(); // Consider moving it before SendSyncronizeGameState()
+                PassTurn(); // Consider moving it before SendSyncronizeGameState()
             }
 
             void EndGame()
@@ -470,7 +477,7 @@ namespace LabyrinthGame
                 return true;
             }
 
-            async Task PassTurn()
+            void PassTurn()
             {
                 m_isShiftAlreadyDone = false;
                 ResetShiftedForPlayers();
