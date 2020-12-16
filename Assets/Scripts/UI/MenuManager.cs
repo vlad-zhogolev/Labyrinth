@@ -39,6 +39,11 @@ namespace LabyrinthGame
                 m_mainMenu.SetActive(false);
             }
 
+            public void ExitApplication()
+            {
+                Application.Quit();
+            }
+
             [SerializeField]
             private GameObject m_mainMenu;
 
