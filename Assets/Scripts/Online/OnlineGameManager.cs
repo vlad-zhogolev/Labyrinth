@@ -11,7 +11,7 @@ namespace LabyrinthGame
 {
     namespace GameLogic
     {
-        public class OnlineGameManager : MonoBehaviour, IOnEventCallback
+        public class OnlineGameManager : MonoBehaviourPunCallbacks, IOnEventCallback
         {
             public const byte InitializeEventCode = 199;
             public const byte InitializationCompleteEventCode = 198;
