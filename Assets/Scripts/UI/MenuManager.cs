@@ -18,6 +18,7 @@ namespace LabyrinthGame
                 m_mainMenu.SetActive(true);
                 m_localGameSettings.SetActive(false);
                 m_onlineGameScreen.SetActive(false);
+                m_gameRulesScreen.SetActive(false);
             }
 
             public void SwitchToLocalGameSettings()
@@ -32,6 +33,17 @@ namespace LabyrinthGame
                 m_mainMenu.SetActive(false);
             }
 
+            public void SwitchToGameRulesScreen()
+            {
+                m_gameRulesScreen.SetActive(true);
+                m_mainMenu.SetActive(false);
+            }
+
+            public void ExitApplication()
+            {
+                Application.Quit();
+            }
+
             [SerializeField]
             private GameObject m_mainMenu;
 
@@ -40,6 +52,9 @@ namespace LabyrinthGame
 
             [SerializeField]
             private GameObject m_onlineGameScreen;
+
+            [SerializeField]
+            private GameObject m_gameRulesScreen;
         }
     } // UI
 } // namespace LabyrinthGame
