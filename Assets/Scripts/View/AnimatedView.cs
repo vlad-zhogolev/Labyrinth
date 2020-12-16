@@ -1,7 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
 using UnityEngine;
-using System.Threading.Tasks;
 
 namespace LabyrinthGame
 {

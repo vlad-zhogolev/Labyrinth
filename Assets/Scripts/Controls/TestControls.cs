@@ -8,13 +8,7 @@ namespace LabyrinthGame
     {
 
         [System.Serializable]
-        public class ShiftEvent : UnityEvent<Labyrinth.Shift> { }
-
-        [System.Serializable]
         public class RotateEvent : UnityEvent<Labyrinth.Tile.RotationDirection> { }
-
-        [System.Serializable]
-        public class MoveEvent : UnityEvent<Vector2Int> { }
 
         public class TestControls : MonoBehaviour
         {
@@ -22,7 +16,7 @@ namespace LabyrinthGame
             public UnityEvent cancelShift;
             public RotateEvent rotateFreeTile;
             public RotateEvent moveFreeTile;
-            public MoveEvent movePlayerEvent;
+            public UnityEvent movePlayerEvent;
             public UnityEvent skipMove;
 
             // Update is called once per frame
@@ -71,7 +65,7 @@ namespace LabyrinthGame
             {
                 if (Input.GetKeyDown(KeyCode.M))
                 {
-                    movePlayerEvent?.Invoke(new Vector2Int(m_moveToX, m_moveToY));
+                    movePlayerEvent?.Invoke();
                 }
             }
 
@@ -115,14 +109,6 @@ namespace LabyrinthGame
 
             [SerializeField]
             public bool InputEnabled { get { return m_inputEnabled; } set { m_inputEnabled = value; } }
-
-            [SerializeField]
-            private int m_shiftLineNumber = 1;
-
-            [SerializeField]
-            private int m_moveToX = 0;
-            [SerializeField]
-            private int m_moveToY = 0;
 
             [SerializeField]
             private bool m_inputEnabled = true;

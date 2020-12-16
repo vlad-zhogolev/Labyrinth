@@ -51,6 +51,8 @@ namespace LabyrinthGame
                 Debug.LogFormat("{0}: Player {1, -10} Shift completed", GetType().Name, CurrentPlayer.Color);
 
                 if (m_dumpLabyrinth) m_labyrinth.Dump();
+
+                UpdateButtons();
             }
 
             public async void CancelShift()
@@ -62,6 +64,8 @@ namespace LabyrinthGame
                 }
 
                 Debug.LogFormat("{0}: Player {1, -10} Cancel shift: {2}", GetType().Name, CurrentPlayer.Color, m_unavailableShift);
+
+                ClearSelectedTile();
 
                 var shiftWithInversedDirection = m_unavailableShift.GetShiftWithInversedDirection();
                 m_labyrinth.ShiftTiles(shiftWithInversedDirection);
@@ -84,6 +88,8 @@ namespace LabyrinthGame
                 Debug.LogFormat("{0}: Player {1, -10} Cancel shift completed", GetType().Name, CurrentPlayer.Color);
 
                 if (m_dumpLabyrinth) m_labyrinth.Dump();
+
+                UpdateButtons();
             }
 
             public async void RotateFreeTile(Labyrinth.Tile.RotationDirection rotationDirection)
@@ -138,12 +144,20 @@ namespace LabyrinthGame
                 await WaitForAnimation(m_labyrinthView.MoveFreeTile(m_shiftIndex, m_labyrinth.GetFreeTileRotation(), tileMovement));
             }
 
-            public async void MakeMove(Vector2Int position)
+            public async void MakeMove()
             {
-                if (!CanMakeMove())
+                await MakeMoveAsync();
+            }
+
+            public async Task MakeMoveAsync()
+            {
+                if (!CanMakeMove() || !m_isTileSelected)
                 {
                     return;
                 }
+
+                var position = m_selectedTilePosition;
+
                 if (!m_labyrinth.IsReachable(position, CurrentPlayer.Position))
                 {
                     Debug.LogFormat("{0}: Player {1, -10} Can not move from {2} to {3}", GetType().Name, CurrentPlayer.Color, CurrentPlayer.Position, position);
@@ -151,6 +165,8 @@ namespace LabyrinthGame
                 }
 
                 Debug.LogFormat("{0}: Player {1, -10} Move from {2} to {3}", GetType().Name, CurrentPlayer.Color, CurrentPlayer.Position, position);
+
+                ClearSelectedTile();
 
                 CurrentPlayer.Position = position;
 
@@ -255,6 +271,7 @@ namespace LabyrinthGame
                 m_unavailableShift = shiftWithInversedDirection;
 
                 UpdateCurrentPlayerInformation();
+                UpdateButtons();
 
                 Debug.LogFormat("{0}: Player {1, -10} It is your turn now.", GetType().Name, CurrentPlayer.Color);
 
@@ -315,9 +332,29 @@ namespace LabyrinthGame
                 (var tiles, var freeTile) = m_labyrinth.GetTiles();
                 m_labyrinthView.Initialize(tiles, freeTile);
 
+                m_camera = GameObject.Find("Main Camera").GetComponent<Camera>();
+
                 m_currentPlayerText = GameObject.Find("Current Player Text").GetComponent<Text>();
                 m_currentPlayerItemText = GameObject.Find("Current Player Item Text").GetComponent<Text>();
+
                 UpdateCurrentPlayerInformation();
+
+                m_showItemButton = GameObject.Find("Show Item Button").GetComponent<Button>();
+                m_beforeShiftButtons = new Button[]
+                {
+                    GameObject.Find("Rotate Tile CW Button").GetComponent<Button>(),
+                    GameObject.Find("Rotate Tile CCW Button").GetComponent<Button>(),
+                    GameObject.Find("Move Tile CW Button").GetComponent<Button>(),
+                    GameObject.Find("Move Tile CCW Button").GetComponent<Button>(),
+                    GameObject.Find("Shift Button").GetComponent<Button>()
+                };
+                m_afterShiftButtons = new Button[]
+                {
+                    GameObject.Find("Cancel Shift Button").GetComponent<Button>(),
+                    GameObject.Find("Make Move Button").GetComponent<Button>()
+                };
+
+                UpdateButtons();
 
                 if (CurrentPlayer.Settings.IsAi)
                 {
@@ -329,6 +366,47 @@ namespace LabyrinthGame
             {
                 m_currentPlayerText.text = "Current Player: " + m_players[m_currentPlayerIndex].Color;
                 m_currentPlayerItemText.text = "Current Player Item: " + m_players[m_currentPlayerIndex].CurrentItemToFind;
+
+                if (!m_alwaysShowItems) m_currentPlayerItemText.gameObject.SetActive(false);
+            }
+
+            public async void ShowItem()
+            {
+                if (m_currentPlayerItemText.gameObject.activeSelf) return;
+
+                m_currentPlayerItemText.gameObject.SetActive(true);
+
+                await Task.Delay(1000);
+
+                m_currentPlayerItemText.gameObject.SetActive(false);
+            }
+
+            void UpdateButtons()
+            {
+                if (!CurrentPlayer.Settings.IsAi)
+                {
+                    m_showItemButton.interactable = true;
+                    EnableBeforeShiftButtons(!m_isShiftAlreadyDone);
+                    EnableAfterShiftButtons(m_isShiftAlreadyDone);
+                }
+                else
+                {
+                    m_showItemButton.interactable = false;
+                    EnableBeforeShiftButtons(false);
+                    EnableAfterShiftButtons(false);
+                }
+
+                if (m_alwaysShowItems) m_showItemButton.interactable = false;
+            }
+
+            void EnableBeforeShiftButtons(bool interactible)
+            {
+                foreach (var button in m_beforeShiftButtons) button.interactable = interactible;
+            }
+
+            void EnableAfterShiftButtons(bool interactible)
+            {
+                foreach (var button in m_afterShiftButtons) button.interactable = interactible;
             }
 
             Player CurrentPlayer
@@ -359,6 +437,32 @@ namespace LabyrinthGame
                 await Initiallize();
             }
 
+            void Update()
+            {
+                if (m_isShiftAlreadyDone && Input.GetMouseButtonDown(0))
+                {
+                    var ray = m_camera.ScreenPointToRay(Input.mousePosition);
+
+                    if (Physics.Raycast(ray, out var hit, 100))
+                    {
+                        var tile = hit.transform.GetComponent<View.TileView>();
+                        var tilePosition = m_labyrinthView.GetTilePosition(tile);
+
+                        if (tilePosition != View.LabyrinthView.FREE_TILE_POSITION)
+                        {
+                            if (m_isTileSelected) m_selectedTile.ShowAsNormal();
+
+                            if (m_labyrinth.IsReachable(tilePosition, CurrentPlayer.Position)) tile.ShowAsReachable();
+                            else tile.ShowAsUnreachable();
+
+                            m_isTileSelected = true;
+                            m_selectedTile = tile;
+                            m_selectedTilePosition = tilePosition;
+                        }
+                    }
+                }
+            }
+
             async Task MakeAiTurnAsync()
             {
                 await Task.Delay(1000);
@@ -366,11 +470,56 @@ namespace LabyrinthGame
 
                 var enumerator = m_availableShifts.GetEnumerator();
                 enumerator.MoveNext();
-                var shift = enumerator.Current;
+                //var shift = enumerator.Current;
 
-                var newShiftIndex = Array.IndexOf(m_shifts, shift);
+                var selectedShift = enumerator.Current;
+                var selectedRotation = m_labyrinth.GetFreeTileRotation();
+                var selectedPosition = CurrentPlayer.Position;
 
-                if (newShiftIndex != m_shiftIndex)
+                var minDistance = int.MaxValue;
+
+                foreach (var shift in m_availableShifts)
+                {
+                    for (int i = 0; i < 4; i++)
+                    {
+                        var rotation = m_labyrinth.GetFreeTileRotation();
+
+                        m_labyrinth.ShiftTiles(shift);
+                        ShiftPlayers(shift);
+
+                        var position = m_labyrinth.GetTilePosition(CurrentPlayer.CurrentItemToFind);
+
+                        if (position != Labyrinth.Labyrinth.FREE_TILE_POSITION)
+                        {
+                            var reachablePositions = m_labyrinth.GetReachableTilePositions(CurrentPlayer.Position);
+
+                            foreach (var reachablePosition in reachablePositions)
+                            {
+                                var distance = Math.Abs(position.x - reachablePosition.x) + Math.Abs(position.y - reachablePosition.y);
+
+                                if (distance < minDistance)
+                                {
+                                    selectedShift = shift;
+                                    selectedRotation = rotation;
+                                    selectedPosition = reachablePosition;
+
+                                    minDistance = distance;
+                                }
+                            }
+                        }
+
+                        m_labyrinth.ShiftTiles(shift.GetShiftWithInversedDirection());
+                        UnshiftPlayers();
+
+                        m_labyrinth.RotateFreeTile(Labyrinth.Tile.RotationDirection.Clockwise);
+
+                        await Task.Yield();
+                    }
+                }
+
+                var selectedShiftIndex = Array.IndexOf(m_shifts, selectedShift);
+
+                if (selectedShiftIndex != m_shiftIndex)
                 {
                     int index;
 
@@ -378,7 +527,7 @@ namespace LabyrinthGame
 
                     index = m_shiftIndex;
 
-                    while (index != newShiftIndex)
+                    while (index != selectedShiftIndex)
                     {
                         index = ShiftIndex.Next(index);
                         countCW++;
@@ -388,7 +537,7 @@ namespace LabyrinthGame
 
                     index = m_shiftIndex;
 
-                    while (index != newShiftIndex)
+                    while (index != selectedShiftIndex)
                     {
                         index = ShiftIndex.Prev(index);
                         countCCW++;
@@ -399,11 +548,27 @@ namespace LabyrinthGame
                     if (countCW <= countCCW) movementDirection = Labyrinth.Tile.RotationDirection.Clockwise;
                     else movementDirection = Labyrinth.Tile.RotationDirection.CounterClockwise;
 
-                    while (m_shiftIndex != newShiftIndex) await MoveFreeTileAsync(movementDirection);
+                    while (m_shiftIndex != selectedShiftIndex) await MoveFreeTileAsync(movementDirection);
                 }
 
+                while (m_labyrinth.GetFreeTileRotation() != selectedRotation) m_labyrinth.RotateFreeTile(Labyrinth.Tile.RotationDirection.Clockwise);
+
+                await m_labyrinthView.RotateFreeTile(selectedRotation);
+
                 await ShiftTilesAsync();
-                SkipMove();
+                //SkipMove();
+
+                m_isTileSelected = true;
+                m_selectedTilePosition = selectedPosition;
+
+                await MakeMoveAsync();
+            }
+
+            void ClearSelectedTile()
+            {
+                if (m_isTileSelected) m_selectedTile.ShowAsNormal();
+
+                m_isTileSelected = false;
             }
 
             Labyrinth.Shift[] m_shifts =
@@ -427,8 +592,16 @@ namespace LabyrinthGame
 
             int m_shiftIndex = 0;
 
+            bool m_isTileSelected = false;
+
+            View.TileView m_selectedTile;
+
+            Vector2Int m_selectedTilePosition;
+
             [SerializeField]
             bool m_dumpLabyrinth = true;
+            [SerializeField]
+            bool m_alwaysShowItems = false;
             [SerializeField]
             private int m_positionSeed = 4;
             [SerializeField]
@@ -451,8 +624,15 @@ namespace LabyrinthGame
 
             Controls.TestControls m_controls;
 
+            Camera m_camera;
+
             Text m_currentPlayerText;
             Text m_currentPlayerItemText;
+
+            Button m_showItemButton;
+
+            Button[] m_beforeShiftButtons;
+            Button[] m_afterShiftButtons;
 
             [SerializeField]
             private GameObject m_gameOverPanel;

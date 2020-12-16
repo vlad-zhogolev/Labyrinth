@@ -15,6 +15,9 @@ namespace LabyrinthGame
 
         public class LabyrinthView : MonoBehaviour
         {
+
+            public readonly static Vector2Int FREE_TILE_POSITION = new Vector2Int(-1, -1);
+
             async Task MoveTiles(List<AnimatedView> tiles, List<Vector3> positions)
             {
                 var tasks = new Task[tiles.Count];
@@ -112,12 +115,15 @@ namespace LabyrinthGame
 
                 await MoveTiles(tiles, positions);
 
-                foreach (var mage in m_mageInstanceForColor.Values)
+                foreach (var entry in m_mageInstanceForColor)
                 {
+                    var color = entry.Key;
+                    var mage = entry.Value;
+
                     if (mage.transform.parent == removedTile.transform)
                     {
                         mage.transform.SetParent(null);
-                        await mage.CarryTo(insertedTilePosition, 1, 10);
+                        await mage.CarryTo(insertedTilePosition + m_magePlaceForColor[color], 1, 10);
                         mage.transform.SetParent(insertedTile.transform);
                     }
                 }
@@ -154,13 +160,26 @@ namespace LabyrinthGame
             {
                 var mage = m_mageInstanceForColor[playerColor];
                 var tile = m_tiles[indices.x, indices.y];
-                var position = tile.transform.position;
+                var position = tile.transform.position + m_magePlaceForColor[playerColor];
                 mage.transform.SetParent(null);
-                await mage.CarryTo(new Vector3(position.x, 0, position.z), 1, 10);
+                await mage.CarryTo(position, 1, 10);
                 mage.transform.SetParent(tile.transform);
             }
 
-            private AnimatedView GetPrefabByTileType(Labyrinth.Tile.Type type)
+            public Vector2Int GetTilePosition(TileView tile)
+            {
+                for (int i = 0; i < Labyrinth.Labyrinth.BoardLength; i++)
+                {
+                    for (int j = 0; j < Labyrinth.Labyrinth.BoardLength; j++)
+                    {
+                        if (m_tiles[i, j] == tile) return new Vector2Int(i, j);
+                    }
+                }
+
+                return FREE_TILE_POSITION;
+            }
+
+            private TileView GetPrefabByTileType(Labyrinth.Tile.Type type)
             {
                 switch (type)
                 {
@@ -183,10 +202,18 @@ namespace LabyrinthGame
                 }
             }
 
-            private AnimatedView InstantiateTile(Labyrinth.Tile tile, float x, float z)
+            private TileView InstantiateTile(Labyrinth.Tile tile, float x, float z)
             {
-                AnimatedView prefab = GetPrefabByTileType(tile.type);
+                TileView prefab = GetPrefabByTileType(tile.type);
                 var instance = Instantiate(prefab, new Vector3(x, 0, z), tile.GetRotation());
+
+                if (tile.Item != Labyrinth.Item.None)
+                {
+                    var item = Instantiate(m_itemProvider.GetItemPrefab(tile.Item), new Vector3(x, 0.1f, z), Quaternion.Euler(0, 180, 0));
+                    item.localScale = new Vector3(m_itemScale, m_itemScale, m_itemScale);
+                    item.SetParent(instance.transform);
+                }
+
                 instance.transform.localScale = new Vector3(m_tileScale, m_tileScale, m_tileScale);
 
                 return instance;
@@ -204,10 +231,10 @@ namespace LabyrinthGame
 
                 m_mageInstanceForColor = new Dictionary<GameLogic.Color, AnimatedView>()
                 {
-                    {GameLogic.Color.Yellow, Instantiate(m_magePrefab, new Vector3(-3.0f, 0,  3.0f), Quaternion.identity)},
-                    {GameLogic.Color.Red,    Instantiate(m_magePrefab, new Vector3( 3.0f, 0,  3.0f), Quaternion.identity)},
-                    {GameLogic.Color.Blue,   Instantiate(m_magePrefab, new Vector3( 3.0f, 0, -3.0f), Quaternion.identity)},
-                    {GameLogic.Color.Green,  Instantiate(m_magePrefab, new Vector3(-3.0f, 0, -3.0f), Quaternion.identity)},
+                    {GameLogic.Color.Yellow, Instantiate(m_magePrefab, new Vector3(-3.0f, 0,  3.0f) + m_magePlaceForColor[GameLogic.Color.Yellow], Quaternion.identity)},
+                    {GameLogic.Color.Red,    Instantiate(m_magePrefab, new Vector3( 3.0f, 0,  3.0f) + m_magePlaceForColor[GameLogic.Color.Red], Quaternion.identity)},
+                    {GameLogic.Color.Blue,   Instantiate(m_magePrefab, new Vector3( 3.0f, 0, -3.0f) + m_magePlaceForColor[GameLogic.Color.Blue], Quaternion.identity)},
+                    {GameLogic.Color.Green,  Instantiate(m_magePrefab, new Vector3(-3.0f, 0, -3.0f) + m_magePlaceForColor[GameLogic.Color.Green], Quaternion.identity)},
                 };
 
                 var yellowMage = m_mageInstanceForColor[GameLogic.Color.Yellow];
@@ -229,7 +256,7 @@ namespace LabyrinthGame
 
             public void Initialize(in Labyrinth.Tile[,] tiles, in Labyrinth.Tile freeTile)
             {
-                m_tiles = new AnimatedView[Labyrinth.Labyrinth.BoardLength, Labyrinth.Labyrinth.BoardLength];
+                m_tiles = new TileView[Labyrinth.Labyrinth.BoardLength, Labyrinth.Labyrinth.BoardLength];
 
                 var z = 3.0f;
                 var step = 1.0f;
@@ -252,13 +279,36 @@ namespace LabyrinthGame
                 var freeTileZ = m_freeTilePositions[0].z;
                 m_freeTileInstance = InstantiateTile(freeTile, freeTileX, freeTileZ);
 
+                for (int i = 0; i < 3; i++)
+                {
+                    var marker = Instantiate(m_markerPrefab, new Vector3(-4, 0, 2 - i * 2), Quaternion.Euler(0, 270, 0));
+                    marker.localScale = new Vector3(m_markerScale, m_markerScale, m_markerScale);
+                }
+
+                for (int i = 0; i < 3; i++)
+                {
+                    var marker = Instantiate(m_markerPrefab, new Vector3(4, 0, 2 - i * 2), Quaternion.Euler(0, 90, 0));
+                    marker.localScale = new Vector3(m_markerScale, m_markerScale, m_markerScale);
+                }
+
+                for (int i = 0; i < 3; i++)
+                {
+                    var marker = Instantiate(m_markerPrefab, new Vector3(-2 + i * 2, 0, 4), Quaternion.identity);
+                    marker.localScale = new Vector3(m_markerScale, m_markerScale, m_markerScale);
+                }
+
+                for (int i = 0; i < 3; i++)
+                {
+                    var marker = Instantiate(m_markerPrefab, new Vector3(-2 + i * 2, 0, -4), Quaternion.Euler(0, 180, 0));
+                    marker.localScale = new Vector3(m_markerScale, m_markerScale, m_markerScale);
+                }
+
                 InitializeMages();
             }
 
-            // Start is called before the first frame update
-            void Start()
+            void Awake()
             {
-
+                m_itemProvider = GameObject.Find("Item Provider").GetComponent<ItemProvider>();
             }
 
             // Update is called once per frame
@@ -287,22 +337,41 @@ namespace LabyrinthGame
             };
 
             [SerializeField]
-            private float m_tileScale = 0.95f;
+            private float m_tileScale = 0.98f;
 
-            private AnimatedView[,] m_tiles;
+            [SerializeField]
+            float m_itemScale = 0.4f;
 
-            private AnimatedView m_freeTileInstance;
+            [SerializeField]
+            float m_markerScale = 0.25f;
+
+            private TileView[,] m_tiles;
+
+            private TileView m_freeTileInstance;
 
             private IDictionary<GameLogic.Color, AnimatedView> m_mageInstanceForColor;
 
-            [SerializeField]
-            private AnimatedView m_junctionTilePrefab;
+            IDictionary<GameLogic.Color, Vector3> m_magePlaceForColor = new Dictionary<GameLogic.Color, Vector3>
+            {
+                { GameLogic.Color.Yellow, new Vector3(-0.25f, 0.4f, 0.25f) },
+                { GameLogic.Color.Red, new Vector3(0.25f, 0.4f, 0.25f) },
+                { GameLogic.Color.Blue, new Vector3(0.25f, 0.4f, -0.25f) },
+                { GameLogic.Color.Green, new Vector3(-0.25f, 0.4f, -0.25f) }
+            };
+
+            ItemProvider m_itemProvider;
 
             [SerializeField]
-            private AnimatedView m_turnTilePrefab;
+            private TileView m_junctionTilePrefab;
 
             [SerializeField]
-            private AnimatedView m_straightTilePrefab;
+            private TileView m_turnTilePrefab;
+
+            [SerializeField]
+            private TileView m_straightTilePrefab;
+
+            [SerializeField]
+            private Transform m_markerPrefab;
 
             [SerializeField]
             private AnimatedView m_magePrefab;
