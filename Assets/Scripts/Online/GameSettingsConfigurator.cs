@@ -21,7 +21,7 @@ namespace LabyrinthGame
             public const byte GameSettingsConfiguredEventCode = 2;
 
             private static string AiName = "Bot";
-            private static int PlayersConfiguredCounter = 0;
+            public static int PlayersConfiguredCounter = 0;
 
             private void Start()
             {
