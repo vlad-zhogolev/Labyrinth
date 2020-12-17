@@ -19,6 +19,7 @@ namespace LabyrinthGame
             public static readonly int MovableTurnTilesNumber = 15;
             public static readonly int MovableStraightTilesNumber = 13;
             public static readonly int TileSidesNumber = 4;
+            public static readonly Vector2Int FREE_TILE_POSITION = new Vector2Int(-1, -1);
 
             private static readonly string DumpName = "LabyrinthDump {0}";
             private static readonly string DumpFolder = Application.dataPath + @"\..\Logs\LabyrinthDumps\";
@@ -298,6 +299,18 @@ namespace LabyrinthGame
                 return m_vertices[tileCoordinates.x, tileCoordinates.y].tile.Item;
             }
 
+            public Vector2Int GetTilePosition(Item item)
+            {
+                if (item == m_freeTile.Item) return FREE_TILE_POSITION;
+
+                foreach (var vertex in m_vertices)
+                {
+                    if (item == vertex.tile.Item) return vertex.indices;
+                }
+
+                throw new ArgumentException("The item wasn't found");
+            }
+
             public void RotateFreeTile(Tile.RotationDirection rotationDirection)
             {
                 m_freeTile.Rotate(rotationDirection);
@@ -334,12 +347,34 @@ namespace LabyrinthGame
                     throw new IndexOutOfRangeException("Invalid indices were provided");
                 }
 
+                if (source == target) return true;
+
                 var sourceVertex = m_vertices[source.x, source.y];
                 var tryGetPath = m_graph.ShortestPathsDijkstra(edge => 1.0, sourceVertex);
 
                 var targetVertex = m_vertices[target.x, target.y];
                 IEnumerable<QuikGraph.EquatableUndirectedEdge<Vertex>> path;
                 return tryGetPath(targetVertex, out path);
+            }
+
+            public List<Vector2Int> GetReachableTilePositions(Vector2Int source)
+            {
+                if (!AreIndicesValid(source))
+                {
+                    throw new IndexOutOfRangeException("Invalid indices were provided");
+                }
+
+                var sourceVertex = m_vertices[source.x, source.y];
+                var tryGetPath = m_graph.ShortestPathsDijkstra(edge => 1.0, sourceVertex);
+
+                var list = new List<Vector2Int>();
+
+                foreach (var vertex in m_vertices)
+                {
+                    if (tryGetPath(vertex, out var path)) list.Add(vertex.indices);
+                }
+
+                return list;
             }
 
             /// <summary>

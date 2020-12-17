@@ -731,29 +731,29 @@ MonoBehaviour:
     m_VerticalOverflow: 0
     m_LineSpacing: 1
   m_Text: "Turns are taken in clockwise direction. If you are the first player, look
-    at your first treasure card and return it, face down, to your pile of cards.
-    This\r is your first GOAL in the labyrinth. You may not look at your other cards
-    until you have reached this first\r GOAL.\r\n\nTo reach your goal you must shift
-    the walls of the maze. This is done by pushing the extra maze card into\r the
-    labyrinth at some point so that you can move as far as you wish along its open
-    passageways.\r From the edge of the board push the extra maze card into the labyrinth.
-    The places where the maze card can\r be added are indicated on the edge of the
-    board by an arrow. The maze card that is pushed out will become\r the next player's
-    means of shifthing the maze.\nYou must move the maze before each turn, even if
-    you don't need to in order to reach your goal. This way\r you can wall in another
-    player!\r\nYou may not immediately reverse the last player's move by returning
-    the extra card to the position it was\r just pushed out of.\r\nIf the shifting
-    maze pushes out a player's piece, the piece is transferred to the newly inserted
-    maze card at\r the other side. This applies whether the piece belongs to the
-    person making the move or to another player.\r\nTransferring this piece does
-    not count as a move.\r\n\nAfter shifting the maze, move your playing piece as
-    far as you choose along the open corridor. You can also\r choose not to move
-    at all. Often you will be able to reach your goal in one move. If not, try to
-    get in the best\r possible position for your next turn.\r More than one playing
-    piece can occupy a single square. Once you reach your first goal, turn over the
-    top\r treasure card and leave it face up beside your pile of cards. The next
-    card in the pile will be your next goal.\r The turn then passes to the next player.\r\n\nEND
-    OF GAME:  The winner is the first player to turn up all the treasure cards."
+    at your first treasure card and return it, face down, to your pile of cards. This\r
+    is your first GOAL in the labyrinth. You may not look at your other cards until
+    you have reached this first\r GOAL.\r\n\nTo reach your goal you must shift the
+    walls of the maze. This is done by pushing the extra maze card into\r the labyrinth
+    at some point so that you can move as far as you wish along its open passageways.\r
+    From the edge of the board push the extra maze card into the labyrinth. The places
+    where the maze card can\r be added are indicated on the edge of the board by an
+    arrow. The maze card that is pushed out will become\r the next player's means
+    of shifthing the maze.\nYou must move the maze before each turn, even if you don't
+    need to in order to reach your goal. This way\r you can wall in another player!\r\nYou
+    may not immediately reverse the last player's move by returning the extra card
+    to the position it was\r just pushed out of.\r\nIf the shifting maze pushes out
+    a player's piece, the piece is transferred to the newly inserted maze card at\r
+    the other side. This applies whether the piece belongs to the person making the
+    move or to another player.\r\nTransferring this piece does not count as a move.\r\n\nAfter
+    shifting the maze, move your playing piece as far as you choose along the open
+    corridor. You can also\r choose not to move at all. Often you will be able to
+    reach your goal in one move. If not, try to get in the best\r possible position
+    for your next turn.\r More than one playing piece can occupy a single square.
+    Once you reach your first goal, turn over the top\r treasure card and leave it
+    face up beside your pile of cards. The next card in the pile will be your next
+    goal.\r The turn then passes to the next player.\r\n\nEND OF GAME:  The winner
+    is the first player to turn up all the treasure cards."
 --- !u!222 &262714081
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -4591,12 +4591,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0cd44c1031e13a943bb63640046fad76, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_UiScaleMode: 0
+  m_UiScaleMode: 1
   m_ReferencePixelsPerUnit: 100
   m_ScaleFactor: 1
   m_ReferenceResolution: {x: 800, y: 600}
   m_ScreenMatchMode: 0
-  m_MatchWidthOrHeight: 0
+  m_MatchWidthOrHeight: 0.5
   m_PhysicalUnit: 3
   m_FallbackScreenDPI: 96
   m_DefaultSpriteDPI: 96

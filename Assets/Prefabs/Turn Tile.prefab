@@ -11,7 +11,8 @@ GameObject:
   - component: {fileID: 7641795954208513355}
   - component: {fileID: 6747174526986130158}
   - component: {fileID: 8810782712781760036}
-  - component: {fileID: 166712216516348862}
+  - component: {fileID: 1116094068778877816}
+  - component: {fileID: 4399395952233647614}
   m_Layer: 0
   m_Name: Turn Tile
   m_TagString: Untagged
@@ -81,7 +82,20 @@ MeshRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
---- !u!114 &166712216516348862
+--- !u!65 &1116094068778877816
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7009514454596306929}
+  m_Material: {fileID: 0}
+  m_IsTrigger: 1
+  m_Enabled: 1
+  serializedVersion: 2
+  m_Size: {x: 1, y: 0.2, z: 1}
+  m_Center: {x: 0, y: 0.1, z: 0}
+--- !u!114 &4399395952233647614
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -90,6 +104,12 @@ MonoBehaviour:
   m_GameObject: {fileID: 7009514454596306929}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: ea70f222dc435a646a7c16eef215ff51, type: 3}
+  m_Script: {fileID: 11500000, guid: ef1269e0f2458dd43a1f0a96155d4e7c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  m_reachableMaterials:
+  - {fileID: 2100000, guid: 58bbfe7a080a2324191686018c0e688d, type: 2}
+  - {fileID: 2100000, guid: 31c1f6b11ff2de14796959a6d9cb0477, type: 2}
+  m_unreachableMaterials:
+  - {fileID: 2100000, guid: ec09d629f2e7bf9459937a274e373b82, type: 2}
+  - {fileID: 2100000, guid: 1a68745e0007d4247879d68a3454bbda, type: 2}
