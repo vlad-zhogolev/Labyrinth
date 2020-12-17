@@ -350,11 +350,11 @@ MonoBehaviour:
           m_BoolArgument: 0
         m_CallState: 2
   m_inputEnabled: 1
-  m_EndGamePanel: {fileID: 0}
-  m_ButtonsGroup: {fileID: 0}
-  m_viewButton: {fileID: 0}
-  m_showItemButton: {fileID: 0}
-  m_endGameButton: {fileID: 0}
+  m_EndGamePanel: {fileID: 444856971}
+  m_ButtonsGroup: {fileID: 1810567587}
+  m_viewButton: {fileID: 1932111598}
+  m_showItemButton: {fileID: 1179696388}
+  m_endGameButton: {fileID: 1283775937}
 --- !u!114 &15432046
 MonoBehaviour:
   m_ObjectHideFlags: 0
