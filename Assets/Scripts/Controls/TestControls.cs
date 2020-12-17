@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using UnityEngine.Events;
+using Photon.Pun;
 
 namespace LabyrinthGame
 {
@@ -10,7 +11,7 @@ namespace LabyrinthGame
         [System.Serializable]
         public class RotateEvent : UnityEvent<Labyrinth.Tile.RotationDirection> { }
 
-        public class TestControls : MonoBehaviour
+        public class TestControls : MonoBehaviourPunCallbacks
         {
             public UnityEvent shiftEvent;
             public UnityEvent cancelShift;
@@ -130,6 +131,23 @@ namespace LabyrinthGame
                 m_endGameButton.interactable = !IsGamePaused;
             }
 
+            public override void OnPlayerLeftRoom(Photon.Realtime.Player otherPlayer)
+            {
+                m_otherPlayerLeftPanel.SetActive(true);
+                SetIsGamePaused(true);
+            }
+
+            public void HandleGameOver(GameLogic.Color color)
+            {
+                m_gameOverPanel.SetActive(true);
+
+                var text = GameObject.Find("PlayerWinText").GetComponent<UnityEngine.UI.Text>();
+                text.text = color + " player wins!";
+
+                SetIsGamePaused(true);
+                m_EndGamePanel.SetActive(false);
+            }
+
             [SerializeField]
             public bool InputEnabled { get { return m_inputEnabled; } set { m_inputEnabled = value; } }
 
@@ -150,6 +168,12 @@ namespace LabyrinthGame
 
             [SerializeField]
             private UnityEngine.UI.Button m_endGameButton;
+
+            [SerializeField]
+            private GameObject m_otherPlayerLeftPanel;
+
+            [SerializeField]
+            private GameObject m_gameOverPanel;
         }
 
     } // namespace Controls

@@ -31,6 +31,13 @@ namespace LabyrinthGame
                 GameLogic.OnlineGameManager.PlayersInitializedCounter = 0;
                 GoToMainMenuHandler();
             }
+
+            public static void EndGame()
+            {
+                Debug.LogFormat("Leave room");
+                Time.timeScale = 1;
+                PhotonNetwork.LeaveRoom(true);
+            }
         }
     } // namespace UI
 } // namespace LabyrinthGame
