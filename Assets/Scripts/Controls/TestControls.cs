@@ -23,6 +23,7 @@ namespace LabyrinthGame
             void Awake()
             {
                 SetIsGamePaused(false);
+                Debug.LogFormat("{0}: Set IsGamePaused to false", GetType().Name);
             }
 
             // Update is called once per frame

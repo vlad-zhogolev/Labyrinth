@@ -21,11 +21,14 @@ namespace LabyrinthGame
             {
                 Debug.LogFormat("{0}: Leave room", GetType().Name);
                 Time.timeScale = 1;
-                PhotonNetwork.LeaveRoom();
+                PhotonNetwork.LeaveRoom(true);
+                //PhotonNetwork.Disconnect();
             }
 
             public override void OnLeftRoom()
             {
+                GameLogic.GameSettingsConfigurator.PlayersConfiguredCounter = 0;
+                GameLogic.OnlineGameManager.PlayersInitializedCounter = 0;
                 GoToMainMenuHandler();
             }
         }

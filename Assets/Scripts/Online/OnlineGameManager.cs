@@ -900,7 +900,7 @@ namespace LabyrinthGame
             private Labyrinth.Shift m_previousUnavailableShift;
             private bool m_isShiftAlreadyDone = false;
 
-            private static int PlayersInitializedCounter = 0;
+            public static int PlayersInitializedCounter = 0;
             private int PlayersSynchronizedGameStateCounter = 0;
 
             Controls.TestControls m_controls;
