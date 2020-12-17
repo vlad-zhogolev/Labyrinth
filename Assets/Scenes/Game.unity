@@ -355,6 +355,8 @@ MonoBehaviour:
   m_viewButton: {fileID: 1932111598}
   m_showItemButton: {fileID: 1179696388}
   m_endGameButton: {fileID: 1283775937}
+  m_otherPlayerLeftPanel: {fileID: 0}
+  m_gameOverPanel: {fileID: 0}
 --- !u!114 &15432046
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3385,7 +3387,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
-  m_Color: {r: 1, g: 1, b: 1, a: 0.392}
+  m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_RaycastTarget: 1
   m_Maskable: 1
   m_OnCullStateChanged:

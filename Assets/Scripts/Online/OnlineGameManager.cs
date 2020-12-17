@@ -19,6 +19,7 @@ namespace LabyrinthGame
             public const byte MakeTurnEventCode = 197;
             public const byte SynchronizeGameStateEventCode = 196;
             public const byte GameStateSynchronizedEventCode = 195;
+            public const byte ExitGameEventCode = 194;
 
             public void InitializeGame()
             {
@@ -74,6 +75,10 @@ namespace LabyrinthGame
                         Debug.LogFormat("{0}: Making turn for player: {1}, IsAi: {2}", GetType().Name, NextPlayer.Color, NextPlayer.Settings.IsAi);
                         SendMakeTurnEvent(false, NextPlayer.Settings.ActorId, NextPlayer.Settings.IsAi);
                     }
+                }
+                if (eventCode == ExitGameEventCode)
+                {
+                    HandleEndGameEvent(photonEvent);
                 }
             }
 
@@ -435,13 +440,26 @@ namespace LabyrinthGame
                 PassTurn(); // Consider moving it before SendSyncronizeGameState()
             }
 
+            void SendEndGameEvent()
+            {
+                var raiseEventOptions = new RaiseEventOptions { Receivers = ReceiverGroup.All };
+                var data = new object[] { CurrentPlayer.Color };
+                PhotonNetwork.RaiseEvent(ExitGameEventCode, data, raiseEventOptions, SendOptions.SendReliable);
+            }
+
+            void HandleEndGameEvent(EventData photonEvent)
+            {
+                var data = (object[])photonEvent.CustomData;
+                var color = (GameLogic.Color)data[0];
+
+                m_controls.HandleGameOver(color);
+            }
+
             void EndGame()
             {
                 Debug.LogFormat("{0}: Player {1, -10} GAME OVER", GetType().Name, CurrentPlayer.Color);
 
-                m_gameOverPanel.SetActive(true);
-                var text = GameObject.Find("PlayerWinText").GetComponent<Text>();
-                text.text = CurrentPlayer.Color + " player wins!";
+                SendEndGameEvent();
             }
 
             bool IsCurrentPlayerFoundItem()

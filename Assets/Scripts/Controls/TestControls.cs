@@ -137,6 +137,17 @@ namespace LabyrinthGame
                 SetIsGamePaused(true);
             }
 
+            public void HandleGameOver(GameLogic.Color color)
+            {
+                m_gameOverPanel.SetActive(true);
+
+                var text = GameObject.Find("PlayerWinText").GetComponent<UnityEngine.UI.Text>();
+                text.text = color + " player wins!";
+
+                SetIsGamePaused(true);
+                m_EndGamePanel.SetActive(false);
+            }
+
             [SerializeField]
             public bool InputEnabled { get { return m_inputEnabled; } set { m_inputEnabled = value; } }
 
@@ -160,6 +171,9 @@ namespace LabyrinthGame
 
             [SerializeField]
             private GameObject m_otherPlayerLeftPanel;
+
+            [SerializeField]
+            private GameObject m_gameOverPanel;
         }
 
     } // namespace Controls
