@@ -19,6 +19,12 @@ namespace LabyrinthGame
             public UnityEvent movePlayerEvent;
             public UnityEvent skipMove;
 
+            public static bool IsGamePaused;
+            void Awake()
+            {
+                SetIsGamePaused(false);
+            }
+
             // Update is called once per frame
             void Update()
             {
@@ -107,11 +113,42 @@ namespace LabyrinthGame
                 if (InputEnabled) cancelShift?.Invoke();
             }
 
+            public void SetIsGamePaused(bool value)
+            {
+                IsGamePaused = value;
+                Time.timeScale = IsGamePaused ? 0 : 1;
+                m_EndGamePanel.SetActive(IsGamePaused);
+
+                var buttons = m_ButtonsGroup.GetComponentsInChildren<UnityEngine.UI.Button>();
+                foreach (var button in buttons)
+                {
+                    button.interactable = !IsGamePaused;
+                }
+                m_viewButton.interactable = !IsGamePaused;
+                m_showItemButton.interactable = !IsGamePaused;
+                m_endGameButton.interactable = !IsGamePaused;
+            }
+
             [SerializeField]
             public bool InputEnabled { get { return m_inputEnabled; } set { m_inputEnabled = value; } }
 
             [SerializeField]
             private bool m_inputEnabled = true;
+
+            [SerializeField]
+            private GameObject m_EndGamePanel;
+
+            [SerializeField]
+            private GameObject m_ButtonsGroup;
+
+            [SerializeField]
+            private UnityEngine.UI.Button m_viewButton;
+
+            [SerializeField]
+            private UnityEngine.UI.Button m_showItemButton;
+
+            [SerializeField]
+            private UnityEngine.UI.Button m_endGameButton;
         }
 
     } // namespace Controls
