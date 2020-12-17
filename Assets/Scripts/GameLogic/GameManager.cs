@@ -439,7 +439,7 @@ namespace LabyrinthGame
 
             void Update()
             {
-                if (m_isShiftAlreadyDone && Input.GetMouseButtonDown(0))
+                if (!CurrentPlayer.Settings.IsAi && m_isShiftAlreadyDone && Input.GetMouseButtonDown(0))
                 {
                     var ray = m_camera.ScreenPointToRay(Input.mousePosition);
 
