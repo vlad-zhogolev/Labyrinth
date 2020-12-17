@@ -84,13 +84,29 @@ namespace LabyrinthGame {
                 }
                 else
                 {
-                    var roomName = m_roomNameInputField.text;
+                    if (m_isRoomPrivateToggle.isOn)
+                    {
+                        Debug.LogFormat("{0}: Join or create private room", GetType().Name);
+                        var roomName = m_roomNameInputField.text;
 
-                    RoomOptions roomOptions = new RoomOptions();
-                    roomOptions.IsVisible = m_isRoomPrivateToggle.isOn;
-                    roomOptions.MaxPlayers = 4;
+                        RoomOptions roomOptions = new RoomOptions();
+                        roomOptions.IsVisible = false;
+                        roomOptions.MaxPlayers = 4;
 
-                    PhotonNetwork.JoinOrCreateRoom(roomName, roomOptions, TypedLobby.Default);
+                        PhotonNetwork.JoinOrCreateRoom(roomName, roomOptions, TypedLobby.Default);
+                    }
+                    else
+                    {
+                        Debug.LogFormat("{0}: join random room", GetType().Name);
+                        //PhotonNetwork.JoinRandomRoom();
+                        //var roomOptions = new RoomOptions();
+                        //roomOptions.IsVisible = m_isRoomPrivateToggle.isOn;
+                        //roomOptions.MaxPlayers = 4;
+
+                        //var enterRoomParams = new EnterRoomParams();
+                        //enterRoomParams.RoomOptions = roomOptions;
+                        PhotonNetwork.NetworkingClient.OpJoinRandomOrCreateRoom(null, null);
+                    }
                 }
             }
 
@@ -115,7 +131,13 @@ namespace LabyrinthGame {
                 Debug.LogFormat("{0}:OnJoinRandomFailed() was called by PUN. No random room available, so we create one.\nCalling: PhotonNetwork.CreateRoom", GetType().Name);
 
                 // #Critical: we failed to join a random room, maybe none exists or they are all full. No worries, we create a new room.
-                PhotonNetwork.CreateRoom(null, new RoomOptions());
+                //RoomOptions roomOptions = new RoomOptions();
+                //roomOptions.IsVisible = m_isRoomPrivateToggle.isOn;
+                //roomOptions.IsOpen = true;
+                //roomOptions.MaxPlayers = 4;
+                //PhotonNetwork.CreateRoom("hell", roomOptions);
+
+                //PhotonNetwork.CreateRoom("hell", new RoomOptions());
             }
 
             public override void OnJoinedRoom()
