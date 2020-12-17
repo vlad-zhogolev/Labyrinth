@@ -6,6 +6,7 @@ using UnityEngine.UI;
 using Photon.Pun;
 using Photon.Realtime;
 using ExitGames.Client.Photon;
+using System.Linq;
 
 namespace LabyrinthGame
 {
@@ -99,6 +100,8 @@ namespace LabyrinthGame
                 }
 
                 Debug.LogFormat("{0}: Current player - {1}", GetType().Name, CurrentPlayer.Color);
+                UpdateButtons();
+                UpdateCurrentPlayerInformation();
 
                 if (actorId < 0 && PhotonNetwork.LocalPlayer.ActorNumber == photonEvent.Sender)
                 {
@@ -603,7 +606,16 @@ namespace LabyrinthGame
             void UpdateCurrentPlayerInformation()
             {
                 m_currentPlayerText.text = "Current Player: " + m_players[m_currentPlayerIndex].Color;
-                m_currentPlayerItemText.text = "Current Player Item: " + m_players[m_currentPlayerIndex].CurrentItemToFind;
+                //m_currentPlayerItemText.text = "Current Player Item: " + m_players[m_currentPlayerIndex].CurrentItemToFind;
+
+                var isThisPlayerMakesTurn = CurrentPlayer.Settings.ActorId == PhotonNetwork.LocalPlayer.ActorNumber;
+
+                var thisPlayer =
+                    (from player in m_players
+                     where player.Settings.ActorId == PhotonNetwork.LocalPlayer.ActorNumber
+                     select player).ToArray()[0];
+
+                m_currentPlayerItemText.text = "Item to find next: " + thisPlayer.CurrentItemToFind;
 
                 if (!m_alwaysShowItems) m_currentPlayerItemText.gameObject.SetActive(false);
             }
