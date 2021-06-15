@@ -1,6 +1,7 @@
 ﻿using UnityEngine;
 using Photon.Pun;
 using Photon.Realtime;
+using UnityEngine.UI;
 
 namespace LabyrinthGame {
 
@@ -69,8 +70,13 @@ namespace LabyrinthGame {
 
                 if (PhotonNetwork.IsConnectedAndReady)
                 {
+                    if (PhotonNetwork.InRoom)
+                    {
+                        PhotonNetwork.LeaveRoom();
+                    }
                     PhotonNetwork.Disconnect();
                     m_joinRoomButton.GetComponentInChildren<UnityEngine.UI.Text>().text = "Join room";
+                    m_joinRoomButton.interactable = true;
                 }
             }
 
@@ -154,9 +160,50 @@ namespace LabyrinthGame {
                 {
                     m_joinRoomButton.interactable = false;
                 }
+                UpdateContent(PhotonNetwork.PlayerList);
+            }
+
+            public override void OnPlayerEnteredRoom(Player newPlayer)
+            {
+                UpdateContent(PhotonNetwork.PlayerList);
+            }
+
+            public override void OnPlayerLeftRoom(Player otherPlayer)
+            {
+                UpdateContent(PhotonNetwork.PlayerList);
+            }
+
+            public override void OnLeftRoom()
+            {
+                UpdateContent(PhotonNetwork.PlayerList);
             }
 
             #endregion
+
+
+            public RectTransform prefab;
+            public RectTransform content;
+
+            public void UpdateContent(Player[] players)
+            {
+                Debug.LogFormat("{0}: UpdatingContent", GetType().Name);
+                foreach (Transform child in content)
+                {
+                    Destroy(child.gameObject);
+                }
+
+                if (players != null)
+                {
+                    GameObject instance;
+                    foreach (var player in players)
+                    {
+                        instance = GameObject.Instantiate(prefab.gameObject) as GameObject;
+                        instance.transform.SetParent(content, false);
+                        instance.GetComponentInChildren<Text>().text = player.NickName;
+                    }
+                }
+            }
+
 
             [SerializeField]
             private UnityEngine.UI.InputField m_playerNameInputField;
