@@ -439,8 +439,7 @@ namespace LabyrinthGame
                 }
             }
 
-
-            void InitializeVertices()
+            void CreateVertices()
             {
                 m_vertices = new Vertex[BoardLength, BoardLength];
                 // Create vertices
@@ -451,7 +450,10 @@ namespace LabyrinthGame
                         m_vertices[i, j] = new Vertex(i, j);
                     }
                 }
+            }
 
+            void InitializeFixedTiles()
+            {
                 // Associate tile with each vertex
                 // Corner fixed tiles
                 var turnTile = new Tile(Tile.Type.Turn);
@@ -500,18 +502,20 @@ namespace LabyrinthGame
                 junctionTile.RotateCW();
                 m_vertices[4, 2].tile = junctionTile.Copy();
                 m_vertices[4, 2].tile.Item = Item.Item12;
+            }
 
+            void InitializeMovableTiles()
+            {
                 int[] range = new int[MovableTilesNumber];
                 for (var i = 0; i < range.Length; ++i)
                 {
                     range[i] = i;
                 }
 
-                var positionRandomier = new System.Random(m_positionSeed);
-                Shuffle(range, positionRandomier);
+                var positionRandomzier = new System.Random(m_positionSeed);
+                Shuffle(range, positionRandomzier);
 
                 var rotationRandomizer = new System.Random(m_rotationSeed);
-                // Movable tiles
                 var counter = 0;
                 for (var i = 0; i < BoardLength; ++i)
                 {
@@ -528,8 +532,14 @@ namespace LabyrinthGame
                     }
                 }
 
-                // Free tile
                 m_freeTile = MovableTiles[range[counter]].Copy();
+            }
+
+            void InitializeVertices()
+            {
+                CreateVertices();
+                InitializeFixedTiles();
+                InitializeMovableTiles();
             }
 
             void AddEdges(Func<int, int, Tuple<Vertex, Vertex>> adjacentVerticesProvider, Tile.Side side)
