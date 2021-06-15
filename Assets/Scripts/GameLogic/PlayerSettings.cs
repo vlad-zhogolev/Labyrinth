@@ -37,24 +37,42 @@ namespace LabyrinthGame
                 {Color.Blue,    null},
             };
 
-            public static Dictionary<byte, object> GetPhotonCompatibleSettings()
+            public static int TilesPositionsSeed;
+            public static int TilesRotationsSeed;
+
+            public static object[] GetPhotonCompatibleSettings()
             {
-                var settings = new Dictionary<byte, object>();
+                var playerSettings = new Dictionary<byte, object>();
+
                 foreach (var pair in PlayersSettings)
                 {
-                    settings.Add((byte)pair.Key, (object)pair.Value);
+                    playerSettings.Add((byte)pair.Key, (object)pair.Value);
                 }
 
-                return settings;
+                var settings = new List<object>();
+                settings.Add(playerSettings);
+                settings.Add(TilesPositionsSeed);
+                settings.Add(TilesRotationsSeed);
+
+                return settings.ToArray();
             }
 
-            public static void SetPhotonCompatibleSettings(Dictionary<byte, object> settings)
+            public static void SetPhotonCompatibleSettings(object[] settings)
             {
                 PlayersSettings.Clear();
-                foreach (var pair in settings)
+
+                var playerSettings = (Dictionary<byte, object>)settings[0];
+                foreach (var pair in playerSettings)
                 {
                     PlayersSettings.Add((GameLogic.Color)pair.Key, (PlayerSettings)pair.Value);
                 }
+
+                Trace();
+
+                TilesPositionsSeed = (int)settings[1];
+                TilesRotationsSeed = (int)settings[2];
+
+                Debug.LogFormat("GameSettings: Settings TilesPositionsSeed {0}  TilesRotationsSeed: {1}", TilesPositionsSeed, TilesRotationsSeed);
             }
 
             public static void Trace()

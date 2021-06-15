@@ -91,7 +91,7 @@ namespace LabyrinthGame
                 byte eventCode = photonEvent.Code;
                 if (eventCode == ConfigureGameSettingsEventCode)
                 {
-                    var playersSettings = (Dictionary<byte, object>)photonEvent.CustomData;
+                    var playersSettings = (object[])photonEvent.CustomData;
                     GameSettings.SetPhotonCompatibleSettings(playersSettings);
                     Debug.LogFormat("{0}: Received game settings", GetType().Name);
 
