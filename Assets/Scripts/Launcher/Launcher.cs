@@ -86,6 +86,7 @@ namespace LabyrinthGame {
                 PhotonNetwork.NickName = m_playerNameInputField.text;
                 if (PhotonNetwork.IsMasterClient)
                 {
+                    PhotonNetwork.CurrentRoom.IsOpen = false;
                     PhotonNetwork.LoadLevel("OnlineGame");
                 }
                 else
@@ -114,6 +115,12 @@ namespace LabyrinthGame {
                         PhotonNetwork.NetworkingClient.OpJoinRandomOrCreateRoom(null, null);
                     }
                 }
+            }
+
+            public void ConvertJoinButtonToStartButton()
+            {
+                var text = m_joinRoomButton.GetComponentInChildren<UnityEngine.UI.Text>();
+                text.text = "Start game";
             }
 
             #endregion
@@ -153,8 +160,7 @@ namespace LabyrinthGame {
                 Debug.LogFormat("{0}: Is client master: {1}", GetType().Name, PhotonNetwork.IsMasterClient);
                 if (PhotonNetwork.IsMasterClient)
                 {
-                    var text = m_joinRoomButton.GetComponentInChildren<UnityEngine.UI.Text>();
-                    text.text = "Start game";
+                    ConvertJoinButtonToStartButton();
                 }
                 else
                 {
@@ -171,6 +177,11 @@ namespace LabyrinthGame {
             public override void OnPlayerLeftRoom(Player otherPlayer)
             {
                 UpdateContent(PhotonNetwork.PlayerList);
+                if (PhotonNetwork.IsMasterClient)
+                {
+                    ConvertJoinButtonToStartButton();
+                    m_joinRoomButton.interactable = true;
+                }
             }
 
             public override void OnLeftRoom()
