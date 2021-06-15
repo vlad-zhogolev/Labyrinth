@@ -544,6 +544,8 @@ namespace LabyrinthGame
             {
                 m_gameOverPanel.SetActive(false);
 
+                // Take configuration from GameSettings
+
                 foreach (var playerSettings in GameSettings.PlayersSettings)
                 {
                     Debug.LogFormat("{0}: settings for {1} player: {2}", GetType().Name, playerSettings.Key, playerSettings.Value);
@@ -556,6 +558,11 @@ namespace LabyrinthGame
                     new Player(Color.Blue, GameSettings.PlayersSettings[Color.Blue]),
                     new Player(Color.Green, GameSettings.PlayersSettings[Color.Green]),
                 };
+
+                m_positionSeed = GameSettings.TilesPositionsSeed;
+                m_rotationSeed = GameSettings.TilesRotationsSeed;
+
+                // Deal cards
 
                 m_itemsDealer = new ItemsDealer(m_itemsSeed);
                 m_itemsDealer.DealItems(m_players);

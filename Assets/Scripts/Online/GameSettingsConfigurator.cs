@@ -29,6 +29,8 @@ namespace LabyrinthGame
                 {
                     Debug.LogFormat("{0}: Configure game settings", GetType().Name);
 
+                    // Configure players settings
+
                     var players = PhotonNetwork.PlayerList;
                     var actorNumbers = new int[4];
                     
@@ -78,6 +80,13 @@ namespace LabyrinthGame
                         playerSettings = new GameLogic.PlayerSettings(true, AiName);
                     }
                     GameLogic.GameSettings.PlayersSettings[Color.Green] = playerSettings;
+
+                    // Configure maze settings
+
+                    var randomizer = new System.Random();
+                    GameSettings.TilesPositionsSeed = randomizer.Next();
+                    GameSettings.TilesRotationsSeed = randomizer.Next();
+
 
                     var raiseEventOptions = new RaiseEventOptions { Receivers = ReceiverGroup.All };
                    
