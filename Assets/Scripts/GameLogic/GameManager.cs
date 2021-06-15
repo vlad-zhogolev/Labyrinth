@@ -298,6 +298,13 @@ namespace LabyrinthGame
                     new Player(Color.Green, GameSettings.PlayersSettings[Color.Green]),
                 };
 
+                // Configure tiles seeds
+                var randomizer = new System.Random();
+                m_positionSeed = randomizer.Next();
+                m_rotationSeed = randomizer.Next();
+
+                // Deal the cards
+
                 m_itemsDealer = new ItemsDealer(m_itemsSeed);
                 m_itemsDealer.DealItems(m_players);
 
