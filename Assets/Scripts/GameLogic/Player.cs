@@ -115,6 +115,11 @@ namespace LabyrinthGame
                 ++m_currentItemIndex;
             }
 
+            public int GetItemsLeftCount()
+            {
+                return 6 - m_currentItemIndex;
+            }
+
             public Color Color { get; set; }
             public PlayerSettings Settings{ get; set;}
 
