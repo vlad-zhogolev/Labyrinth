@@ -159,6 +159,7 @@ namespace LabyrinthGame
                     {
                         Debug.LogFormat("{0}: Syncronize found item for player {1}", GetType().Name, CurrentPlayer.Color);
                         CurrentPlayer.SetCurrentItemFound();
+                        SetPlayerLeftItems(CurrentPlayer);
                     }
                 }
 
@@ -392,6 +393,7 @@ namespace LabyrinthGame
                 {
                     Debug.LogFormat("{0}: Player {1, -10} Found item {2}", GetType().Name, CurrentPlayer.Color, CurrentPlayer.CurrentItemToFind);
                     CurrentPlayer.SetCurrentItemFound();
+                    SetPlayerLeftItems(CurrentPlayer);
                 }
                 if (IsCurrentPlayerFoundAllItems())
                 {
@@ -415,6 +417,7 @@ namespace LabyrinthGame
                 {
                     Debug.LogFormat("{0}: Player {1, -10} Found item {2}", GetType().Name, CurrentPlayer.Color, CurrentPlayer.CurrentItemToFind);
                     CurrentPlayer.SetCurrentItemFound();
+                    SetPlayerLeftItems(CurrentPlayer);
                 }
                 if (IsCurrentPlayerFoundAllItems())
                 {
@@ -567,9 +570,16 @@ namespace LabyrinthGame
                 m_itemsDealer = new ItemsDealer(m_itemsSeed);
                 m_itemsDealer.DealItems(m_players);
 
+                foreach (var player in m_players)
+                {
+                    SetPlayerLeftItems(player);
+                }
+
+                // !!! IMPORTANT only for testing purposes
                 var item = m_players[0].ItemsToFind[0];
                 m_players[0].ItemsToFind.Clear();
                 m_players[0].ItemsToFind.Add(item);
+                // !!! IMPORTANT
 
                 m_availableShifts = new HashSet<Labyrinth.Shift>()
                 {
@@ -874,6 +884,35 @@ namespace LabyrinthGame
                 m_isTileSelected = false;
             }
 
+            void SetPlayerLeftItems(LabyrinthGame.GameLogic.Player player)
+            {
+                string text = player.Color.ToString() + " Player Items Left: " + player.GetItemsLeftCount();
+
+                switch (player.Color)
+                {
+                    case Color.Yellow:
+                    {
+                        m_yellowPlayerLeftItems.text = text;
+                    }
+                    break;
+                    case Color.Red:
+                    {
+                        m_redPlayerLeftItems.text = text;
+                    }
+                    break;
+                    case Color.Green:
+                    {
+                        m_greenPlayerLeftItems.text = text;
+                    }
+                    break;
+                    case Color.Blue:
+                    {
+                        m_bluePlayerLeftItems.text = text;
+                    }
+                    break;
+                }
+            }
+
             Labyrinth.Shift[] m_shifts =
             {
                 new Labyrinth.Shift(Labyrinth.Shift.Orientation.Vertical,   Labyrinth.Shift.Direction.Positive, 1),
@@ -934,6 +973,14 @@ namespace LabyrinthGame
 
             Text m_currentPlayerText;
             Text m_currentPlayerItemText;
+            [SerializeField]
+            Text m_yellowPlayerLeftItems;
+            [SerializeField]
+            Text m_redPlayerLeftItems;
+            [SerializeField]
+            Text m_greenPlayerLeftItems;
+            [SerializeField]
+            Text m_bluePlayerLeftItems;
 
             Button m_showItemButton;
 
