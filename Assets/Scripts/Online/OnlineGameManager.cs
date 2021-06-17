@@ -861,7 +861,7 @@ namespace LabyrinthGame
 
             void ClearSelectedTile()
             {
-                if (m_isTileSelected) m_selectedTile.ShowAsNormal();
+                if (m_isTileSelected && m_selectedTile != null) m_selectedTile.ShowAsNormal();
 
                 m_isTileSelected = false;
             }
