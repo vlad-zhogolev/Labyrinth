@@ -420,7 +420,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_dumpLabyrinth: 0
-  m_alwaysShowItems: 1
   m_positionSeed: 4
   m_rotationSeed: 0
   m_itemsSeed: 0

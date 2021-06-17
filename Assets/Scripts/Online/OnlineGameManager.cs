@@ -604,7 +604,6 @@ namespace LabyrinthGame
 
                 UpdateCurrentPlayerInformation();
 
-                //m_showItemButton = GameObject.Find("Show Item Button").GetComponent<Button>();
                 m_beforeShiftButtons = new Button[]
                 {
                     GameObject.Find("Rotate Tile CW Button").GetComponent<Button>(),
@@ -640,8 +639,6 @@ namespace LabyrinthGame
                      select player).ToArray()[0];
 
                 m_currentPlayerItemText.text = "Item to find next: " + thisPlayer.CurrentItemToFind;
-
-                if (!m_alwaysShowItems) m_currentPlayerItemText.gameObject.SetActive(false);
             }
 
             public async void ShowItem()
@@ -659,18 +656,14 @@ namespace LabyrinthGame
             {
                 if (!CurrentPlayer.Settings.IsAi && CurrentPlayer.Settings.ActorId == PhotonNetwork.LocalPlayer.ActorNumber)
                 {
-                    //m_showItemButton.interactable = true;
                     EnableBeforeShiftButtons(!m_isShiftAlreadyDone);
                     EnableAfterShiftButtons(m_isShiftAlreadyDone);
                 }
                 else
                 {
-                    //m_showItemButton.interactable = false;
                     EnableBeforeShiftButtons(false);
                     EnableAfterShiftButtons(false);
                 }
-
-                //if (m_alwaysShowItems) m_showItemButton.interactable = false;
             }
 
             void EnableBeforeShiftButtons(bool interactible)
@@ -932,8 +925,6 @@ namespace LabyrinthGame
             [SerializeField]
             bool m_dumpLabyrinth = true;
             [SerializeField]
-            bool m_alwaysShowItems = true;
-            [SerializeField]
             private int m_positionSeed = 4;
             [SerializeField]
             private int m_rotationSeed = 0;
@@ -970,8 +961,6 @@ namespace LabyrinthGame
             Text m_greenPlayerLeftItems;
             [SerializeField]
             Text m_bluePlayerLeftItems;
-
-            //Button m_showItemButton;
 
             Button[] m_beforeShiftButtons;
             Button[] m_afterShiftButtons;
