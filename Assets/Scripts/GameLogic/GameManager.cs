@@ -283,7 +283,7 @@ namespace LabyrinthGame
                 }
             }
 
-            async Task Initiallize()
+            async Task Initialize()
             {
                 m_gameOverPanel.SetActive(false);
 
@@ -353,8 +353,6 @@ namespace LabyrinthGame
                 m_currentPlayerText = GameObject.Find("Current Player Text").GetComponent<Text>();
                 m_currentPlayerItemText = GameObject.Find("Current Player Item Text").GetComponent<Text>();
 
-                UpdateCurrentPlayerInformation();
-
                 m_showItemButton = GameObject.Find("Show Item Button").GetComponent<Button>();
                 if (!GameSettings.IsMultipleHumanPlayers())
                 {
@@ -363,6 +361,8 @@ namespace LabyrinthGame
                     m_alwaysShowItems = true;
                     m_singeHumanPlayer = GetSingleHumanPlayer();
                 }
+
+                UpdateCurrentPlayerInformation();
                 
                 m_beforeShiftButtons = new Button[]
                 {
@@ -466,7 +466,7 @@ namespace LabyrinthGame
             // Start is called before the first frame update
             async void Start()
             {
-                await Initiallize();
+                await Initialize();
             }
 
             void Update()
@@ -598,7 +598,7 @@ namespace LabyrinthGame
 
             void ClearSelectedTile()
             {
-                if (m_isTileSelected) m_selectedTile.ShowAsNormal();
+                if (m_isTileSelected && m_selectedTile != null) m_selectedTile.ShowAsNormal();
 
                 m_isTileSelected = false;
             }
