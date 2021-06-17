@@ -604,7 +604,7 @@ namespace LabyrinthGame
 
                 UpdateCurrentPlayerInformation();
 
-                m_showItemButton = GameObject.Find("Show Item Button").GetComponent<Button>();
+                //m_showItemButton = GameObject.Find("Show Item Button").GetComponent<Button>();
                 m_beforeShiftButtons = new Button[]
                 {
                     GameObject.Find("Rotate Tile CW Button").GetComponent<Button>(),
@@ -659,18 +659,18 @@ namespace LabyrinthGame
             {
                 if (!CurrentPlayer.Settings.IsAi && CurrentPlayer.Settings.ActorId == PhotonNetwork.LocalPlayer.ActorNumber)
                 {
-                    m_showItemButton.interactable = true;
+                    //m_showItemButton.interactable = true;
                     EnableBeforeShiftButtons(!m_isShiftAlreadyDone);
                     EnableAfterShiftButtons(m_isShiftAlreadyDone);
                 }
                 else
                 {
-                    m_showItemButton.interactable = false;
+                    //m_showItemButton.interactable = false;
                     EnableBeforeShiftButtons(false);
                     EnableAfterShiftButtons(false);
                 }
 
-                if (m_alwaysShowItems) m_showItemButton.interactable = false;
+                //if (m_alwaysShowItems) m_showItemButton.interactable = false;
             }
 
             void EnableBeforeShiftButtons(bool interactible)
@@ -932,7 +932,7 @@ namespace LabyrinthGame
             [SerializeField]
             bool m_dumpLabyrinth = true;
             [SerializeField]
-            bool m_alwaysShowItems = false;
+            bool m_alwaysShowItems = true;
             [SerializeField]
             private int m_positionSeed = 4;
             [SerializeField]
@@ -971,7 +971,7 @@ namespace LabyrinthGame
             [SerializeField]
             Text m_bluePlayerLeftItems;
 
-            Button m_showItemButton;
+            //Button m_showItemButton;
 
             Button[] m_beforeShiftButtons;
             Button[] m_afterShiftButtons;
