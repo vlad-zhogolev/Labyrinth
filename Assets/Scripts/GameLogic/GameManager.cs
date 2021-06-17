@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.UI;
+using System.Linq;
 
 namespace LabyrinthGame
 {
@@ -355,6 +356,14 @@ namespace LabyrinthGame
                 UpdateCurrentPlayerInformation();
 
                 m_showItemButton = GameObject.Find("Show Item Button").GetComponent<Button>();
+                if (!GameSettings.IsMultipleHumanPlayers())
+                {
+                    m_showItemButton.gameObject.SetActive(false);
+                    m_currentPlayerItemText.gameObject.SetActive(true);
+                    m_alwaysShowItems = true;
+                    m_singeHumanPlayer = GetSingleHumanPlayer();
+                }
+                
                 m_beforeShiftButtons = new Button[]
                 {
                     GameObject.Find("Rotate Tile CW Button").GetComponent<Button>(),
@@ -377,10 +386,18 @@ namespace LabyrinthGame
                 }
             }
 
+            public Player GetSingleHumanPlayer()
+            {
+                return (from player in m_players
+                        where player.Settings.IsAi == false
+                        select player).ToArray()[0];
+            }
+
             void UpdateCurrentPlayerInformation()
             {
                 m_currentPlayerText.text = "Current Player: " + m_players[m_currentPlayerIndex].Color;
-                m_currentPlayerItemText.text = "Current Player Item: " + m_players[m_currentPlayerIndex].CurrentItemToFind;
+
+                m_currentPlayerItemText.text = "Current Player Item: " + (m_singeHumanPlayer != null ? m_singeHumanPlayer.CurrentItemToFind : m_players[m_currentPlayerIndex].CurrentItemToFind);
 
                 if (!m_alwaysShowItems) m_currentPlayerItemText.gameObject.SetActive(false);
             }
@@ -660,6 +677,7 @@ namespace LabyrinthGame
 
             private IList<Player> m_players;
             private int m_currentPlayerIndex = 0;
+            private Player m_singeHumanPlayer = null;
 
             private ISet<Labyrinth.Shift> m_availableShifts;
             private Labyrinth.Shift m_unavailableShift;
