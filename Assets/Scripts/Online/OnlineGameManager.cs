@@ -99,6 +99,13 @@ namespace LabyrinthGame
                 var actorId = (int)data[1];
                 var isAi = (bool)data[2];
 
+                // Must check it here so everybody updates their state before the notification will be shown.
+                if (IsCurrentPlayerFoundAllItems())
+                {
+                    EndGame();
+                    return;
+                }
+
                 if (!isFirst)
                 {
                     SwitchToNextPlayer();
@@ -155,12 +162,6 @@ namespace LabyrinthGame
                     await SynchornizeTileRotation(freeTileRotation);
                     await SynchronizeShiftTiles(shiftIndex);
                     await SynchronizeMakeMove(new Vector2Int(x, y));
-                    if (isPlayerFoundItem)
-                    {
-                        Debug.LogFormat("{0}: Syncronize found item for player {1}", GetType().Name, CurrentPlayer.Color);
-                        CurrentPlayer.SetCurrentItemFound();
-                        SetPlayerLeftItems(CurrentPlayer);
-                    }
                 }
 
                 Debug.LogFormat("{0}: Send GameStateSynchronizedEventCode", GetType().Name, photonEvent.Sender);
@@ -395,12 +396,6 @@ namespace LabyrinthGame
                     CurrentPlayer.SetCurrentItemFound();
                     SetPlayerLeftItems(CurrentPlayer);
                 }
-                if (IsCurrentPlayerFoundAllItems())
-                {
-                    EndGame();
-
-                    return;
-                }
 
                 SendSyncronizeGameState(isCurrentItemFound);
 
@@ -418,12 +413,6 @@ namespace LabyrinthGame
                     Debug.LogFormat("{0}: Player {1, -10} Found item {2}", GetType().Name, CurrentPlayer.Color, CurrentPlayer.CurrentItemToFind);
                     CurrentPlayer.SetCurrentItemFound();
                     SetPlayerLeftItems(CurrentPlayer);
-                }
-                if (IsCurrentPlayerFoundAllItems())
-                {
-                    EndGame();
-
-                    return;
                 }
 
                 PassTurn();
