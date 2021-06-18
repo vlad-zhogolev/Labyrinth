@@ -308,9 +308,9 @@ namespace LabyrinthGame
 
                 // Configure tiles seeds
                 var randomizer = new System.Random();
-                //m_positionSeed = randomizer.Next();
-                //m_rotationSeed = randomizer.Next();
-                //m_itemsSeed = randomizer.Next();
+                m_positionSeed = randomizer.Next();
+                m_rotationSeed = randomizer.Next();
+                m_itemsSeed = randomizer.Next();
                 Debug.LogFormat("{0}: m_positionSeed = {1}, m_rotationSeed = {2}, m_itemsSeed = {3}", GetType().Name, m_positionSeed, m_rotationSeed, m_itemsSeed);
 
                 // Deal the cards
