@@ -86,6 +86,7 @@ namespace LabyrinthGame
                     var randomizer = new System.Random();
                     //GameSettings.TilesPositionsSeed = randomizer.Next();
                     //GameSettings.TilesRotationsSeed = randomizer.Next();
+                    //GameSettings.ItemsSeed = randomizer.Next();
 
                     GameSettings.TilesPositionsSeed = 5;
                     GameSettings.TilesRotationsSeed = 0;

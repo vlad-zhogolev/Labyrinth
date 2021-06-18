@@ -310,6 +310,8 @@ namespace LabyrinthGame
                 var randomizer = new System.Random();
                 //m_positionSeed = randomizer.Next();
                 //m_rotationSeed = randomizer.Next();
+                //m_itemsSeed = randomizer.Next();
+                Debug.LogFormat("{0}: m_positionSeed = {1}, m_rotationSeed = {2}, m_itemsSeed = {3}", GetType().Name, m_positionSeed, m_rotationSeed, m_itemsSeed);
 
                 // Deal the cards
 
@@ -323,9 +325,9 @@ namespace LabyrinthGame
 
                 // !!! IMPORTANT: for testing purposes only
                 var item = m_players[0].ItemsToFind[0];
-                m_players[0].ItemsToFind.Clear();
-                m_players[0].ItemsToFind.Add(item);
-                m_players[0].ItemsToFind.Add(Labyrinth.Item.Home);
+                //m_players[1].ItemsToFind.Clear();
+                //m_players[1].ItemsToFind.Add(item);
+                //m_players[1].ItemsToFind.Add(Labyrinth.Item.Home);
                 // !!! IMPORTANT
 
                 m_availableShifts = new HashSet<Labyrinth.Shift>()
@@ -526,7 +528,15 @@ namespace LabyrinthGame
                         m_labyrinth.ShiftTiles(shift);
                         ShiftPlayers(shift);
 
-                        var position = m_labyrinth.GetTilePosition(CurrentPlayer.CurrentItemToFind);
+                        Vector2Int position;
+                        if (CurrentPlayer.CurrentItemToFind == Labyrinth.Item.Home)
+                        {
+                            Player.InitialPositionsForColor.TryGetValue(CurrentPlayer.Color, out position);
+                        }
+                        else
+                        {
+                            position = m_labyrinth.GetTilePosition(CurrentPlayer.CurrentItemToFind);
+                        }
 
                         if (position != Labyrinth.Labyrinth.FREE_TILE_POSITION)
                         {
@@ -670,8 +680,8 @@ namespace LabyrinthGame
             bool m_dumpLabyrinth = true;
             [SerializeField]
             bool m_alwaysShowItems = false;
-            [SerializeField]
-            private int m_positionSeed = 4;
+            //[SerializeField]
+            private int m_positionSeed = 5;
             [SerializeField]
             private int m_rotationSeed = 0;
             private Labyrinth.Labyrinth m_labyrinth;

@@ -558,6 +558,8 @@ namespace LabyrinthGame
 
                 m_positionSeed = GameSettings.TilesPositionsSeed;
                 m_rotationSeed = GameSettings.TilesRotationsSeed;
+                m_itemsSeed = GameSettings.ItemsSeed;
+                Debug.LogFormat("{0}: m_positionSeed = {1}, m_rotationSeed = {2}, m_itemsSeed = {3}", GetType().Name, m_positionSeed, m_rotationSeed, m_itemsSeed);
 
                 // Deal cards
 
@@ -570,10 +572,10 @@ namespace LabyrinthGame
                 }
 
                 // !!! IMPORTANT only for testing purposes
-                var item = m_players[0].ItemsToFind[0];
-                m_players[0].ItemsToFind.Clear();
-                m_players[0].ItemsToFind.Add(Labyrinth.Item.Item1);
-                m_players[0].ItemsToFind.Add(Labyrinth.Item.Home);
+                //var item = m_players[0].ItemsToFind[0];
+                //m_players[1].ItemsToFind.Clear();
+                //m_players[1].ItemsToFind.Add(Labyrinth.Item.Item2);
+                //m_players[1].ItemsToFind.Add(Labyrinth.Item.Home);
                 // !!! IMPORTANT
 
                 m_availableShifts = new HashSet<Labyrinth.Shift>()
@@ -767,7 +769,15 @@ namespace LabyrinthGame
                         m_labyrinth.ShiftTiles(shift);
                         ShiftPlayers(shift);
 
-                        var position = m_labyrinth.GetTilePosition(CurrentPlayer.CurrentItemToFind);
+                        Vector2Int position; 
+                        if (CurrentPlayer.CurrentItemToFind == Labyrinth.Item.Home)
+                        {
+                            Player.InitialPositionsForColor.TryGetValue(CurrentPlayer.Color, out position);
+                        }
+                        else
+                        {
+                            position = m_labyrinth.GetTilePosition(CurrentPlayer.CurrentItemToFind);
+                        }
 
                         if (position != Labyrinth.Labyrinth.FREE_TILE_POSITION)
                         {

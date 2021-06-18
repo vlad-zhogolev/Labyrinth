@@ -39,6 +39,7 @@ namespace LabyrinthGame
 
             public static int TilesPositionsSeed;
             public static int TilesRotationsSeed;
+            public static int ItemsSeed;
 
             public static object[] GetPhotonCompatibleSettings()
             {
