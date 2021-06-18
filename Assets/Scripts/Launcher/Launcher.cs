@@ -75,8 +75,12 @@ namespace LabyrinthGame {
                         PhotonNetwork.LeaveRoom();
                     }
                     PhotonNetwork.Disconnect();
-                    m_joinRoomButton.GetComponentInChildren<UnityEngine.UI.Text>().text = "Join room";
-                    m_joinRoomButton.interactable = true;
+                    m_joinRoomButton.interactable = false;
+                    var text = m_joinRoomButton.GetComponentInChildren<UnityEngine.UI.Text>();
+                    text.text = "Wait for connection...";
+
+                    //m_joinRoomButton.GetComponentInChildren<UnityEngine.UI.Text>().text = "Join room";
+                    //m_joinRoomButton.interactable = true;
                 }
             }
 
@@ -132,6 +136,8 @@ namespace LabyrinthGame {
             public override void OnConnectedToMaster()
             {
                 Debug.LogFormat("{0}: OnConnectedToMaster() was called by PUN", GetType().Name);
+                m_joinRoomButton.interactable = true;
+                m_joinRoomButton.GetComponentInChildren<UnityEngine.UI.Text>().text = "Join room";
             }
 
             public override void OnDisconnected(DisconnectCause cause)
