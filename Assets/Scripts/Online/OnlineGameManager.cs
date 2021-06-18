@@ -162,6 +162,12 @@ namespace LabyrinthGame
                     await SynchornizeTileRotation(freeTileRotation);
                     await SynchronizeShiftTiles(shiftIndex);
                     await SynchronizeMakeMove(new Vector2Int(x, y));
+                    if (isPlayerFoundItem)
+                    {
+                        Debug.LogFormat("{0}: Player {1, -10} Found item {2}", GetType().Name, CurrentPlayer.Color, CurrentPlayer.CurrentItemToFind);
+                        CurrentPlayer.SetCurrentItemFound();
+                        SetPlayerLeftItems(CurrentPlayer);
+                    }
                 }
 
                 Debug.LogFormat("{0}: Send GameStateSynchronizedEventCode", GetType().Name, photonEvent.Sender);
@@ -408,12 +414,12 @@ namespace LabyrinthGame
 
                 await m_labyrinthView.SetPlayerPosition(CurrentPlayer.Color, position);
 
-                if (IsCurrentPlayerFoundItem())
-                {
-                    Debug.LogFormat("{0}: Player {1, -10} Found item {2}", GetType().Name, CurrentPlayer.Color, CurrentPlayer.CurrentItemToFind);
-                    CurrentPlayer.SetCurrentItemFound();
-                    SetPlayerLeftItems(CurrentPlayer);
-                }
+                //if (IsCurrentPlayerFoundItem())
+                //{
+                //    Debug.LogFormat("{0}: Player {1, -10} Found item {2}", GetType().Name, CurrentPlayer.Color, CurrentPlayer.CurrentItemToFind);
+                //    CurrentPlayer.SetCurrentItemFound();
+                //    SetPlayerLeftItems(CurrentPlayer);
+                //}
 
                 PassTurn();
             }
