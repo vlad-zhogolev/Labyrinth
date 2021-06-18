@@ -84,11 +84,11 @@ namespace LabyrinthGame
                     // Configure maze settings
 
                     var randomizer = new System.Random();
-                    GameSettings.TilesPositionsSeed = randomizer.Next();
-                    GameSettings.TilesRotationsSeed = randomizer.Next();
+                    //GameSettings.TilesPositionsSeed = randomizer.Next();
+                    //GameSettings.TilesRotationsSeed = randomizer.Next();
 
-                    //GameSettings.TilesPositionsSeed = 4;
-                    //GameSettings.TilesRotationsSeed = 0;
+                    GameSettings.TilesPositionsSeed = 5;
+                    GameSettings.TilesRotationsSeed = 0;
 
 
                     var raiseEventOptions = new RaiseEventOptions { Receivers = ReceiverGroup.All };

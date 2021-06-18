@@ -34,13 +34,15 @@ namespace LabyrinthGame
 
                 var itemsList = new List<Labyrinth.Item>((Labyrinth.Item[])Enum.GetValues(typeof(Labyrinth.Item)));
                 itemsList.Remove(Labyrinth.Item.None);
+                itemsList.Remove(Labyrinth.Item.Home);
 
                 Utils.Randomization.Shuffle(itemsList, m_randomizer);
 
                 for (var i = 0; i < PlayersNumber; ++i)
                 {
                     players[i].ItemsToFind = itemsList.GetRange(i * CardsInHand, CardsInHand);
-                }
+                    players[i].ItemsToFind.Add(Labyrinth.Item.Home);
+                }                
             }
 
             private System.Random m_randomizer;

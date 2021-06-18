@@ -217,7 +217,13 @@ namespace LabyrinthGame
 
             bool IsCurrentPlayerFoundAllItems()
             {
-                return CurrentPlayer.CurrentItemToFind == Labyrinth.Item.None;
+                //return CurrentPlayer.CurrentItemToFind == Labyrinth.Item.None;
+                if (CurrentPlayer.GetItemsLeftCount() != 0)
+                    return false;
+
+                Vector2Int initialPosition;
+                Player.InitialPositionsForColor.TryGetValue(CurrentPlayer.Color, out initialPosition);
+                return CurrentPlayer.Position == initialPosition;
             }
 
             void ShiftPlayers(Labyrinth.Shift shift)
@@ -316,9 +322,10 @@ namespace LabyrinthGame
                 }
 
                 // !!! IMPORTANT: for testing purposes only
-                //var item = m_players[0].ItemsToFind[0];
-                //m_players[0].ItemsToFind.Clear();
-                //m_players[0].ItemsToFind.Add(item);
+                var item = m_players[0].ItemsToFind[0];
+                m_players[0].ItemsToFind.Clear();
+                m_players[0].ItemsToFind.Add(item);
+                m_players[0].ItemsToFind.Add(Labyrinth.Item.Home);
                 // !!! IMPORTANT
 
                 m_availableShifts = new HashSet<Labyrinth.Shift>()

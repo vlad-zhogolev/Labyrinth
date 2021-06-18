@@ -9,6 +9,7 @@ namespace LabyrinthGame
         public enum Item
         {
             None,
+            Home,
             Item1,
             Item2,
             Item3,

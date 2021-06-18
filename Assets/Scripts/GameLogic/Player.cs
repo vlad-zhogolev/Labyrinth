@@ -18,7 +18,7 @@ namespace LabyrinthGame
 
         public class Player
         {
-            private static IDictionary<Color, Vector2Int> InitialPositionsForColor = new Dictionary<Color, Vector2Int>()
+            public static IDictionary<Color, Vector2Int> InitialPositionsForColor = new Dictionary<Color, Vector2Int>()
             {
                 {Color.Yellow,  new Vector2Int(0, 0)},
                 {Color.Red,     new Vector2Int(0, 6)},
@@ -117,7 +117,8 @@ namespace LabyrinthGame
 
             public int GetItemsLeftCount()
             {
-                return 6 - m_currentItemIndex;
+                var numberOfItems = ItemsToFind.Count - 1 - m_currentItemIndex;
+                return numberOfItems >= 0 ? numberOfItems : 0;
             }
 
             public Color Color { get; set; }
