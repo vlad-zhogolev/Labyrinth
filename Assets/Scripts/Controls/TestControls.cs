@@ -133,6 +133,10 @@ namespace LabyrinthGame
 
             public override void OnPlayerLeftRoom(Photon.Realtime.Player otherPlayer)
             {
+                if (IsGameOver)
+                {
+                    return;
+                }
                 m_otherPlayerLeftPanel.SetActive(true);
                 SetIsGamePaused(true);
             }
@@ -174,6 +178,8 @@ namespace LabyrinthGame
 
             [SerializeField]
             private GameObject m_gameOverPanel;
+
+            public bool IsGameOver = false;
         }
 
     } // namespace Controls

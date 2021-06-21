@@ -450,6 +450,7 @@ namespace LabyrinthGame
                 var data = (object[])photonEvent.CustomData;
                 var color = (GameLogic.Color)data[0];
 
+                m_controls.IsGameOver = true;
                 m_controls.HandleGameOver(color);
             }
 
@@ -579,9 +580,9 @@ namespace LabyrinthGame
 
                 // !!! IMPORTANT only for testing purposes
                 //var item = m_players[0].ItemsToFind[0];
-                //m_players[1].ItemsToFind.Clear();
-                //m_players[1].ItemsToFind.Add(Labyrinth.Item.Item2);
-                //m_players[1].ItemsToFind.Add(Labyrinth.Item.Home);
+                m_players[0].ItemsToFind.Clear();
+                m_players[0].ItemsToFind.Add(Labyrinth.Item.Item1);
+                m_players[0].ItemsToFind.Add(Labyrinth.Item.Home);
                 // !!! IMPORTANT
 
                 m_availableShifts = new HashSet<Labyrinth.Shift>()
