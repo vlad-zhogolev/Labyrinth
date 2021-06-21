@@ -9,9 +9,9 @@ namespace LabyrinthGame
         public class AnimatedView : MonoBehaviour
         {
 
-            const float MOVEMENT_SPEED = 1;
+            const float MOVEMENT_SPEED = 2;
 
-            const float ROTATION_SPEED = 360;
+            const float ROTATION_SPEED = 720;
 
             const float CARRYING_HEIGHT = 1;
 

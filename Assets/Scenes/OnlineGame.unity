@@ -340,6 +340,7 @@ MonoBehaviour:
   m_endGameButton: {fileID: 329729985}
   m_otherPlayerLeftPanel: {fileID: 87280316}
   m_gameOverPanel: {fileID: 1561341754}
+  IsGameOver: 0
 --- !u!114 &15432046
 MonoBehaviour:
   m_ObjectHideFlags: 0
