@@ -88,8 +88,9 @@ namespace LabyrinthGame
                     GameSettings.TilesRotationsSeed = randomizer.Next();
                     GameSettings.ItemsSeed = randomizer.Next();
 
-                    //GameSettings.TilesPositionsSeed = 5;
+                    //GameSettings.TilesPositionsSeed = 4;
                     //GameSettings.TilesRotationsSeed = 0;
+                    //GameSettings.ItemsSeed = 0;
 
 
                     var raiseEventOptions = new RaiseEventOptions { Receivers = ReceiverGroup.All };
