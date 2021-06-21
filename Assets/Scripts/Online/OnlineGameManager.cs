@@ -580,9 +580,9 @@ namespace LabyrinthGame
 
                 // !!! IMPORTANT only for testing purposes
                 //var item = m_players[0].ItemsToFind[0];
-                m_players[0].ItemsToFind.Clear();
-                m_players[0].ItemsToFind.Add(Labyrinth.Item.Item1);
-                m_players[0].ItemsToFind.Add(Labyrinth.Item.Home);
+                //m_players[0].ItemsToFind.Clear();
+                //m_players[0].itemstofind.add(labyrinth.item.item1);
+                //m_players[0].itemstofind.add(labyrinth.item.home);
                 // !!! IMPORTANT
 
                 m_availableShifts = new HashSet<Labyrinth.Shift>()

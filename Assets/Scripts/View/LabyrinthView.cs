@@ -240,18 +240,22 @@ namespace LabyrinthGame
                 var yellowMage = m_mageInstanceForColor[GameLogic.Color.Yellow];
                 yellowMage.GetComponent<Renderer>().material.color = Color.yellow;
                 yellowMage.transform.SetParent(m_tiles[0, 0].transform);
+                yellowMage.GetComponent<MeshRenderer>().shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
 
                 var blueMage = m_mageInstanceForColor[GameLogic.Color.Blue];
                 blueMage.GetComponent<Renderer>().material.color = Color.blue;
                 blueMage.transform.SetParent(m_tiles[6, 6].transform);
+                blueMage.GetComponent<MeshRenderer>().shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
 
                 var greenMage = m_mageInstanceForColor[GameLogic.Color.Green];
                 greenMage.GetComponent<Renderer>().material.color = Color.green;
                 greenMage.transform.SetParent(m_tiles[6, 0].transform);
+                greenMage.GetComponent<MeshRenderer>().shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
 
                 var redMage = m_mageInstanceForColor[GameLogic.Color.Red];
                 redMage.GetComponent<Renderer>().material.color = Color.red;
                 redMage.transform.SetParent(m_tiles[0, 6].transform);
+                redMage.GetComponent<MeshRenderer>().shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
             }
 
             public void Initialize(in Labyrinth.Tile[,] tiles, in Labyrinth.Tile freeTile)
